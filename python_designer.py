@@ -38,8 +38,16 @@ class Python_Designer():
     """Python_Designer class"""
     def __init__(self):
         """ Initial class, establish TKinter usage, labels, dropdowns and buttons"""
-        self.datestamp: str = "07_15_2026"
-        self.link_rows_count = 10
+        self.datestamp: str = "07_20_2026"
+
+        self.weapon_rows_count             =  2
+        self.link_rows_count               = 10
+        self.bt_rows_count                 = 10
+        self.accessory_rows_count          = 30
+        self.component_armor_rows_count    =  5
+        self.rocket_booster_rows_count     =  5
+        self.personal_equipment_rows_count = 10
+
         self.set_columns()
         self.root = tk.Tk()
         self.root.state('zoomed')
@@ -54,66 +62,15 @@ class Python_Designer():
         #Add drop down menus
         self.load_menus()
 
-        self.selected_sub_weapon_1 = None
-        self.sub_weapon_dropdown_1 = None
-        self.selected_sub_weapon_1_canvas = None
-        self.sub_weapon_dropdown_1_canvas = None
-        self.selected_sub_weapon_2_canvas = None
-        self.sub_weapon_dropdown_2_canvas = None
-        self.selected_sub_weapon_3_canvas = None
-        self.sub_weapon_dropdown_3_canvas = None
-        self.selected_sub_weapon_4_canvas = None
-        self.sub_weapon_dropdown_4_canvas = None
-        self.selected_sub_weapon_5_canvas = None
-        self.sub_weapon_dropdown_5_canvas = None
-        self.selected_sub_weapon_6_canvas = None
-        self.sub_weapon_dropdown_6_canvas = None
-        self.selected_sub_weapon_7_canvas = None
-        self.sub_weapon_dropdown_7_canvas = None
-        self.selected_sub_weapon_8_canvas = None
-        self.sub_weapon_dropdown_8_canvas = None
-        self.selected_sub_weapon_9_canvas = None
-        self.sub_weapon_dropdown_9_canvas = None
-        self.selected_sub_weapon_10_canvas = None
-        self.sub_weapon_dropdown_10_canvas = None
-        self.weapon_armor_facing_1 = None
-        self.weapon_armor_facing_1_dropdown = None
-        self.weapon_armor_facing_2 = None
-        self.weapon_armor_facing_2_dropdown = None
-        self.weapon_armor_facing_3 = None
-        self.weapon_armor_facing_3_dropdown = None
-        self.weapon_armor_facing_4 = None
-        self.weapon_armor_facing_4_dropdown = None
-        self.weapon_armor_facing_5 = None
-        self.weapon_armor_facing_5_dropdown = None
-        self.weapon_armor_facing_6 = None
-        self.weapon_armor_facing_6_dropdown = None
-        self.weapon_armor_facing_7 = None
-        self.weapon_armor_facing_7_dropdown = None
-        self.weapon_armor_facing_8 = None
-        self.weapon_armor_facing_8_dropdown = None
-        self.weapon_armor_facing_9 = None
-        self.weapon_armor_facing_9_dropdown = None
-        self.weapon_armor_facing_10 = None
-        self.weapon_armor_facing_10_dropdown = None
-        self.gas_tank_dropdown = None
-
-        # Add this inside __init__() to replace the previous dropdown variables
-        self.link_dropdown_sources = [None] * self.link_rows_count
-        self.link_dropdown_targets = [None] * self.link_rows_count
-        self.link_selections = [[] for _ in range(self.link_rows_count)]  # Holds lists of chosen actions
-        self.link_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.link_rows_count)]
-        self.link_entry_fields = [None] * self.link_rows_count
-
-        # Add this inside __init__() near your Link row variables
-        self.bt_rows_count = 10
-        self.bt_selections = [[] for _ in range(self.bt_rows_count)]  # Holds lists of chosen actions for Bumper Triggers
-        self.bt_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.bt_rows_count)]
-        self.bt_entry_fields = [None] * self.bt_rows_count
-
-        # Added facing tracking variables for each bumper trigger row
-        self.selected_bt_facing = [tk.StringVar(value="Front") for _ in range(self.bt_rows_count)]
-
+        for index in range(1, self.weapon_rows_count + 1):
+            setattr(self, f"selected_sub_weapon_{index}", None)
+            setattr(self, f"sub_weapon_dropdown_{index}", None)
+            setattr(self, f"selected_sub_weapon_{index}_canvas", None)
+            setattr(self, f"sub_weapon_dropdown_{index}_canvas", None)
+            setattr(self, f"weapon_armor_facing_{index}", None)
+            setattr(self, f"weapon_armor_facing_{index}_dropdown", None)
+        
+        self.gas_tank_dropdown = None     
         self.hc_adjusted: float = 0.0
         self.age_value: int = 0
 
@@ -137,16 +94,45 @@ class Python_Designer():
         #add the new frame to a window in the canvas
         self.my_canvas.create_window((0,0), window=self.second_frame, anchor="nw")
 
+        # Locate this existing line in your __init__:
+        self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion = self.my_canvas.bbox("all")))
+        # 3. BINDINGS PASS: Link mouse wheel rotations across all operating systems
+        # Windows & macOS mouse wheel events
+        self.my_canvas.bind_all("<MouseWheel>", self._on_mouse_wheel_unified)
+        
+        # Linux mouse wheel up/down events
+        self.my_canvas.bind_all("<Button-4>", self._on_mouse_wheel_unified)
+        self.my_canvas.bind_all("<Button-5>", self._on_mouse_wheel_unified)
+
         self.add_labels_canvas(canvas_type=self.second_frame)
         self.add_dropdowns_canvas(canvas_type=self.second_frame)
         self.add_buttons_canvas(canvas_type=self.second_frame)
         self.add_labels_buttons_weapon_header(canvas_type=self.second_frame)
 
-        for row_number in range(1,11):
-            self.add_labels_buttons_weapon_row_unified(row_number=row_number, canvas_type=self.second_frame)
-            self.add_dropdown_weapon_alt_unified(row_number=row_number, canvas_type=self.second_frame)
-            self.add_dropdown_sub_weapon_unified(row_number=row_number, canvas_type=self.second_frame)
+        #######################WEAPONS SECTION########################
+        #This is required before any weapon row actions can occur
+        for index in range(1, self.weapon_rows_count + 1):
+            weapon_options_list: list = self.get_weapon_options_alt()
+            self.add_labels_buttons_weapon_row_unified(row_number=index, canvas_type=self.second_frame)
+            self.add_dropdown_weapon_alt_unified(row_number=index, canvas_type=self.second_frame)        
+        #######################WEAPONS SECTION########################
 
+
+        # Add this inside __init__() to replace the previous dropdown variables
+        self.link_dropdown_sources = [None] * self.link_rows_count
+        self.link_dropdown_targets = [None] * self.link_rows_count
+        self.link_selections = [[] for _ in range(self.link_rows_count)]  # Holds lists of chosen actions
+        self.link_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.link_rows_count)]
+        self.link_entry_fields = [None] * self.link_rows_count
+
+        # Add this inside __init__() near your Link row variables
+        self.bt_rows_count = 10
+        self.bt_selections = [[] for _ in range(self.bt_rows_count)]  # Holds lists of chosen actions for Bumper Triggers
+        self.bt_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.bt_rows_count)]
+        self.bt_entry_fields = [None] * self.bt_rows_count
+
+        # Added facing tracking variables for each bumper trigger row
+        self.selected_bt_facing = [tk.StringVar(value="Front") for _ in range(self.bt_rows_count)]
         self.add_labels_buttons_link_rows(canvas_type=self.second_frame)
         self.add_labels_buttons_bumper_trigger_rows(canvas_type=self.second_frame)
         self.add_labels_buttons_accessories_1_canvas(canvas_type=self.second_frame)
@@ -179,7 +165,7 @@ class Python_Designer():
         self.add_labels_buttons_accessories_28_canvas(canvas_type=self.second_frame)
         self.add_labels_buttons_accessories_29_canvas(canvas_type=self.second_frame)
         self.add_labels_buttons_accessories_30_canvas(canvas_type=self.second_frame)
-        self.add_dropdown_weapons(canvas_type=self.second_frame)
+        #self.add_dropdown_weapons(canvas_type=self.second_frame)
         self.add_component_armor_rows(canvas_type=self.second_frame)
         self.get_component_armor_facing_dictionaries()
         self.add_dropdown_component_armor_canvas(canvas_type=self.second_frame)
@@ -252,166 +238,196 @@ class Python_Designer():
         self.selected_rear_tire.set('Tires')
         self.selected_outer_armor.set('Outer Armor')
         self.selected_inner_armor.set('Inner Armor')
-        self.selected_weapon_alt_1.set('Weapon')
-        if self.sub_weapon_dropdown_1_canvas is not None:
-            self.sub_weapon_dropdown_1_canvas.grid_forget()
-        self.selected_sub_weapon_1_canvas = None
-        self.var_sub_weapon_1_qty.set(0)
-        self.var_sub_weapon_ammo_1_qty.set(0)
-        self.var_sub_weapon_extra_mags_1_qty.set(0)
-        self.label_sub_weapon_1_cost.configure(text="0")
-        self.label_sub_weapon_1_weight.configure(text="0")
-        self.label_sub_weapon_1_space.configure(text="0")
-        self.label_sub_weapon_1_shots.configure(text="0")
-        self.label_sub_weapon_1_ammo_cost.configure(text="0")
-        self.label_sub_weapon_1_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_1.set("Facing")
-        self.label_sub_weapon_1_tohit.configure(text="")
-        self.label_sub_weapon_1_damage.configure(text="")
-        self.selected_weapon_alt_2.set('Weapon')
-        if self.sub_weapon_dropdown_2_canvas is not None:
-            self.sub_weapon_dropdown_2_canvas.grid_forget()
-        self.selected_sub_weapon_2_canvas = None
-        self.var_sub_weapon_2_qty.set(0)
-        self.var_sub_weapon_ammo_2_qty.set(0)
-        self.var_sub_weapon_extra_mags_2_qty.set(0)
-        self.label_sub_weapon_2_cost.configure(text="0")
-        self.label_sub_weapon_2_weight.configure(text="0")
-        self.label_sub_weapon_2_space.configure(text="0")
-        self.label_sub_weapon_2_shots.configure(text="0")
-        self.label_sub_weapon_2_ammo_cost.configure(text="0")
-        self.label_sub_weapon_2_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_2.set("Facing")
-        self.label_sub_weapon_2_tohit.configure(text="")
-        self.label_sub_weapon_2_damage.configure(text="")
-        self.selected_weapon_alt_3.set('Weapon')
-        if self.sub_weapon_dropdown_3_canvas is not None:
-            self.sub_weapon_dropdown_3_canvas.grid_forget()
-        self.selected_sub_weapon_3_canvas = None
-        self.var_sub_weapon_3_qty.set(0)
-        self.var_sub_weapon_ammo_3_qty.set(0)
-        self.var_sub_weapon_extra_mags_3_qty.set(0)
-        self.label_sub_weapon_3_cost.configure(text="0")
-        self.label_sub_weapon_3_weight.configure(text="0")
-        self.label_sub_weapon_3_space.configure(text="0")
-        self.label_sub_weapon_3_shots.configure(text="0")
-        self.label_sub_weapon_3_ammo_cost.configure(text="0")
-        self.label_sub_weapon_3_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_3.set("Facing")
-        self.label_sub_weapon_3_tohit.configure(text="")
-        self.label_sub_weapon_3_damage.configure(text="")
-        self.selected_weapon_alt_4.set('Weapon')
-        if self.sub_weapon_dropdown_4_canvas is not None:
-            self.sub_weapon_dropdown_4_canvas.grid_forget()
-        self.selected_sub_weapon_4_canvas = None
-        self.var_sub_weapon_4_qty.set(0)
-        self.var_sub_weapon_ammo_4_qty.set(0)
-        self.var_sub_weapon_extra_mags_4_qty.set(0)
-        self.label_sub_weapon_4_cost.configure(text="0")
-        self.label_sub_weapon_4_weight.configure(text="0")
-        self.label_sub_weapon_4_space.configure(text="0")
-        self.label_sub_weapon_4_shots.configure(text="0")
-        self.label_sub_weapon_4_ammo_cost.configure(text="0")
-        self.label_sub_weapon_4_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_4.set("Facing")
-        self.label_sub_weapon_4_tohit.configure(text="")
-        self.label_sub_weapon_4_damage.configure(text="")
-        self.selected_weapon_alt_5.set('Weapon')
-        if self.sub_weapon_dropdown_5_canvas is not None:
-            self.sub_weapon_dropdown_5_canvas.grid_forget()
-        self.selected_sub_weapon_5_canvas = None
-        self.var_sub_weapon_5_qty.set(0)
-        self.var_sub_weapon_ammo_5_qty.set(0)
-        self.var_sub_weapon_extra_mags_5_qty.set(0)
-        self.label_sub_weapon_5_cost.configure(text="0")
-        self.label_sub_weapon_5_weight.configure(text="0")
-        self.label_sub_weapon_5_space.configure(text="0")
-        self.label_sub_weapon_5_shots.configure(text="0")
-        self.label_sub_weapon_5_ammo_cost.configure(text="0")
-        self.label_sub_weapon_5_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_5.set("Facing")
-        self.label_sub_weapon_5_tohit.configure(text="")
-        self.label_sub_weapon_5_damage.configure(text="")
-        self.selected_weapon_alt_6.set('Weapon')
-        if self.sub_weapon_dropdown_6_canvas is not None:
-            self.sub_weapon_dropdown_6_canvas.grid_forget()
-        self.selected_sub_weapon_6_canvas = None
-        self.var_sub_weapon_6_qty.set(0)
-        self.var_sub_weapon_ammo_6_qty.set(0)
-        self.var_sub_weapon_extra_mags_6_qty.set(0)
-        self.label_sub_weapon_6_cost.configure(text="0")
-        self.label_sub_weapon_6_weight.configure(text="0")
-        self.label_sub_weapon_6_space.configure(text="0")
-        self.label_sub_weapon_6_shots.configure(text="0")
-        self.label_sub_weapon_6_ammo_cost.configure(text="0")
-        self.label_sub_weapon_6_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_6.set("Facing")
-        self.label_sub_weapon_6_tohit.configure(text="")
-        self.label_sub_weapon_6_damage.configure(text="")
-        self.selected_weapon_alt_7.set('Weapon')
-        if self.sub_weapon_dropdown_7_canvas is not None:
-            self.sub_weapon_dropdown_7_canvas.grid_forget()
-        self.selected_sub_weapon_7_canvas = None
-        self.var_sub_weapon_7_qty.set(0)
-        self.var_sub_weapon_ammo_7_qty.set(0)
-        self.var_sub_weapon_extra_mags_7_qty.set(0)
-        self.label_sub_weapon_7_cost.configure(text="0")
-        self.label_sub_weapon_7_weight.configure(text="0")
-        self.label_sub_weapon_7_space.configure(text="0")
-        self.label_sub_weapon_7_shots.configure(text="0")
-        self.label_sub_weapon_7_ammo_cost.configure(text="0")
-        self.label_sub_weapon_7_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_7.set("Facing")
-        self.label_sub_weapon_7_tohit.configure(text="")
-        self.label_sub_weapon_7_damage.configure(text="")
-        self.selected_weapon_alt_8.set('Weapon')
-        if self.sub_weapon_dropdown_8_canvas is not None:
-            self.sub_weapon_dropdown_8_canvas.grid_forget()
-        self.selected_sub_weapon_8_canvas = None
-        self.var_sub_weapon_8_qty.set(0)
-        self.var_sub_weapon_ammo_8_qty.set(0)
-        self.var_sub_weapon_extra_mags_8_qty.set(0)
-        self.label_sub_weapon_8_cost.configure(text="0")
-        self.label_sub_weapon_8_weight.configure(text="0")
-        self.label_sub_weapon_8_space.configure(text="0")
-        self.label_sub_weapon_8_shots.configure(text="0")
-        self.label_sub_weapon_8_ammo_cost.configure(text="0")
-        self.label_sub_weapon_8_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_8.set("Facing")
-        self.label_sub_weapon_8_tohit.configure(text="")
-        self.label_sub_weapon_8_damage.configure(text="")
-        self.selected_weapon_alt_9.set('Weapon')
-        if self.sub_weapon_dropdown_9_canvas is not None:
-            self.sub_weapon_dropdown_9_canvas.grid_forget()
-        self.selected_sub_weapon_9_canvas = None
-        self.var_sub_weapon_9_qty.set(0)
-        self.var_sub_weapon_ammo_9_qty.set(0)
-        self.var_sub_weapon_extra_mags_9_qty.set(0)
-        self.label_sub_weapon_9_cost.configure(text="0")
-        self.label_sub_weapon_9_weight.configure(text="0")
-        self.label_sub_weapon_9_space.configure(text="0")
-        self.label_sub_weapon_9_shots.configure(text="0")
-        self.label_sub_weapon_9_ammo_cost.configure(text="0")
-        self.label_sub_weapon_9_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_9.set("Facing")
-        self.label_sub_weapon_9_tohit.configure(text="")
-        self.label_sub_weapon_9_damage.configure(text="")
-        self.selected_weapon_alt_10.set('Weapon')
-        if self.sub_weapon_dropdown_10_canvas is not None:
-            self.sub_weapon_dropdown_10_canvas.grid_forget()
-        self.selected_sub_weapon_10_canvas = None
-        self.var_sub_weapon_10_qty.set(0)
-        self.var_sub_weapon_ammo_10_qty.set(0)
-        self.var_sub_weapon_extra_mags_10_qty.set(0)
-        self.label_sub_weapon_10_cost.configure(text="0")
-        self.label_sub_weapon_10_weight.configure(text="0")
-        self.label_sub_weapon_10_space.configure(text="0")
-        self.label_sub_weapon_10_shots.configure(text="0")
-        self.label_sub_weapon_10_ammo_cost.configure(text="0")
-        self.label_sub_weapon_10_ammo_weight.configure(text="0")
-        self.weapon_armor_facing_10.set("Facing")
-        self.label_sub_weapon_10_tohit.configure(text="")
-        self.label_sub_weapon_10_damage.configure(text="")
+
+        for index in range(1, self.weapon_rows_count + 1):
+            # Set Tkinter string/variable values
+            getattr(self, f"selected_weapon_alt_{index}").set('Weapon')
+            getattr(self, f"weapon_armor_facing_{index}").set('Facing')
+            getattr(self, f"var_sub_weapon_{index}_qty").set(0)
+            getattr(self, f"var_sub_weapon_ammo_{index}_qty").set(0)
+            getattr(self, f"var_sub_weapon_extra_mags_{index}_qty").set(0)
+    
+            # Safely clear Tkinter canvas grid placement
+            canvas_attr = getattr(self, f"sub_weapon_dropdown_{index}_canvas", None)
+            if canvas_attr is not None:
+                canvas_attr.grid_forget()
+        
+            # Reset canvas reference
+            setattr(self, f"selected_sub_weapon_{index}_canvas", None)
+    
+            # Configure Tkinter label text values
+            getattr(self, f"label_sub_weapon_{index}_cost").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_weight").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_space").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_shots").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_ammo_cost").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_ammo_weight").configure(text="0")
+            getattr(self, f"label_sub_weapon_{index}_tohit").configure(text="")
+            getattr(self, f"label_sub_weapon_{index}_damage").configure(text="")
+
+
+        #self.selected_weapon_alt_1.set('Weapon')
+        #if self.sub_weapon_dropdown_1_canvas is not None:
+        #    self.sub_weapon_dropdown_1_canvas.grid_forget()
+        #self.selected_sub_weapon_1_canvas = None
+        #self.var_sub_weapon_1_qty.set(0)
+        #self.var_sub_weapon_ammo_1_qty.set(0)
+        #self.var_sub_weapon_extra_mags_1_qty.set(0)
+        #self.label_sub_weapon_1_cost.configure(text="0")
+        #self.label_sub_weapon_1_weight.configure(text="0")
+        #self.label_sub_weapon_1_space.configure(text="0")
+        #self.label_sub_weapon_1_shots.configure(text="0")
+        #self.label_sub_weapon_1_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_1_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_1.set("Facing")
+        #self.label_sub_weapon_1_tohit.configure(text="")
+        #self.label_sub_weapon_1_damage.configure(text="")
+
+        #self.selected_weapon_alt_2.set('Weapon')
+        #if self.sub_weapon_dropdown_2_canvas is not None:
+        #    self.sub_weapon_dropdown_2_canvas.grid_forget()
+        #self.selected_sub_weapon_2_canvas = None
+        #self.var_sub_weapon_2_qty.set(0)
+        #self.var_sub_weapon_ammo_2_qty.set(0)
+        #self.var_sub_weapon_extra_mags_2_qty.set(0)
+        #self.label_sub_weapon_2_cost.configure(text="0")
+        #self.label_sub_weapon_2_weight.configure(text="0")
+        #self.label_sub_weapon_2_space.configure(text="0")
+        #self.label_sub_weapon_2_shots.configure(text="0")
+        #self.label_sub_weapon_2_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_2_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_2.set("Facing")
+        #self.label_sub_weapon_2_tohit.configure(text="")
+        #self.label_sub_weapon_2_damage.configure(text="")
+        #self.selected_weapon_alt_3.set('Weapon')
+        #if self.sub_weapon_dropdown_3_canvas is not None:
+        #    self.sub_weapon_dropdown_3_canvas.grid_forget()
+        #self.selected_sub_weapon_3_canvas = None
+        #self.var_sub_weapon_3_qty.set(0)
+        #self.var_sub_weapon_ammo_3_qty.set(0)
+        #self.var_sub_weapon_extra_mags_3_qty.set(0)
+        #self.label_sub_weapon_3_cost.configure(text="0")
+        #self.label_sub_weapon_3_weight.configure(text="0")
+        #self.label_sub_weapon_3_space.configure(text="0")
+        #self.label_sub_weapon_3_shots.configure(text="0")
+        #self.label_sub_weapon_3_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_3_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_3.set("Facing")
+        #self.label_sub_weapon_3_tohit.configure(text="")
+        #self.label_sub_weapon_3_damage.configure(text="")
+        #self.selected_weapon_alt_4.set('Weapon')
+        #if self.sub_weapon_dropdown_4_canvas is not None:
+        #    self.sub_weapon_dropdown_4_canvas.grid_forget()
+        #self.selected_sub_weapon_4_canvas = None
+        #self.var_sub_weapon_4_qty.set(0)
+        #self.var_sub_weapon_ammo_4_qty.set(0)
+        #self.var_sub_weapon_extra_mags_4_qty.set(0)
+        #self.label_sub_weapon_4_cost.configure(text="0")
+        #self.label_sub_weapon_4_weight.configure(text="0")
+        #self.label_sub_weapon_4_space.configure(text="0")
+        #self.label_sub_weapon_4_shots.configure(text="0")
+        #self.label_sub_weapon_4_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_4_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_4.set("Facing")
+        #self.label_sub_weapon_4_tohit.configure(text="")
+        #self.label_sub_weapon_4_damage.configure(text="")
+        #self.selected_weapon_alt_5.set('Weapon')
+        #if self.sub_weapon_dropdown_5_canvas is not None:
+        #    self.sub_weapon_dropdown_5_canvas.grid_forget()
+        #self.selected_sub_weapon_5_canvas = None
+        #self.var_sub_weapon_5_qty.set(0)
+        #self.var_sub_weapon_ammo_5_qty.set(0)
+        #self.var_sub_weapon_extra_mags_5_qty.set(0)
+        #self.label_sub_weapon_5_cost.configure(text="0")
+        #self.label_sub_weapon_5_weight.configure(text="0")
+        #self.label_sub_weapon_5_space.configure(text="0")
+        #self.label_sub_weapon_5_shots.configure(text="0")
+        #self.label_sub_weapon_5_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_5_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_5.set("Facing")
+        #self.label_sub_weapon_5_tohit.configure(text="")
+        #self.label_sub_weapon_5_damage.configure(text="")
+        #self.selected_weapon_alt_6.set('Weapon')
+        #if self.sub_weapon_dropdown_6_canvas is not None:
+        #    self.sub_weapon_dropdown_6_canvas.grid_forget()
+        #self.selected_sub_weapon_6_canvas = None
+        #self.var_sub_weapon_6_qty.set(0)
+        #self.var_sub_weapon_ammo_6_qty.set(0)
+        #self.var_sub_weapon_extra_mags_6_qty.set(0)
+        #self.label_sub_weapon_6_cost.configure(text="0")
+        #self.label_sub_weapon_6_weight.configure(text="0")
+        #self.label_sub_weapon_6_space.configure(text="0")
+        #self.label_sub_weapon_6_shots.configure(text="0")
+        #self.label_sub_weapon_6_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_6_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_6.set("Facing")
+        #self.label_sub_weapon_6_tohit.configure(text="")
+        #self.label_sub_weapon_6_damage.configure(text="")
+        #self.selected_weapon_alt_7.set('Weapon')
+        #if self.sub_weapon_dropdown_7_canvas is not None:
+        #    self.sub_weapon_dropdown_7_canvas.grid_forget()
+        #self.selected_sub_weapon_7_canvas = None
+        #self.var_sub_weapon_7_qty.set(0)
+        #self.var_sub_weapon_ammo_7_qty.set(0)
+        #self.var_sub_weapon_extra_mags_7_qty.set(0)
+        #self.label_sub_weapon_7_cost.configure(text="0")
+        #self.label_sub_weapon_7_weight.configure(text="0")
+        #self.label_sub_weapon_7_space.configure(text="0")
+        #self.label_sub_weapon_7_shots.configure(text="0")
+        #self.label_sub_weapon_7_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_7_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_7.set("Facing")
+        #self.label_sub_weapon_7_tohit.configure(text="")
+        #self.label_sub_weapon_7_damage.configure(text="")
+        #self.selected_weapon_alt_8.set('Weapon')
+        #if self.sub_weapon_dropdown_8_canvas is not None:
+        #    self.sub_weapon_dropdown_8_canvas.grid_forget()
+        #self.selected_sub_weapon_8_canvas = None
+        #self.var_sub_weapon_8_qty.set(0)
+        #self.var_sub_weapon_ammo_8_qty.set(0)
+        #self.var_sub_weapon_extra_mags_8_qty.set(0)
+        #self.label_sub_weapon_8_cost.configure(text="0")
+        #self.label_sub_weapon_8_weight.configure(text="0")
+        #self.label_sub_weapon_8_space.configure(text="0")
+        #self.label_sub_weapon_8_shots.configure(text="0")
+        #self.label_sub_weapon_8_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_8_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_8.set("Facing")
+        #self.label_sub_weapon_8_tohit.configure(text="")
+        #self.label_sub_weapon_8_damage.configure(text="")
+        #self.selected_weapon_alt_9.set('Weapon')
+        #if self.sub_weapon_dropdown_9_canvas is not None:
+        #    self.sub_weapon_dropdown_9_canvas.grid_forget()
+        #self.selected_sub_weapon_9_canvas = None
+        #self.var_sub_weapon_9_qty.set(0)
+        #self.var_sub_weapon_ammo_9_qty.set(0)
+        #self.var_sub_weapon_extra_mags_9_qty.set(0)
+        #self.label_sub_weapon_9_cost.configure(text="0")
+        #self.label_sub_weapon_9_weight.configure(text="0")
+        #self.label_sub_weapon_9_space.configure(text="0")
+        #self.label_sub_weapon_9_shots.configure(text="0")
+        #self.label_sub_weapon_9_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_9_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_9.set("Facing")
+        #self.label_sub_weapon_9_tohit.configure(text="")
+        #self.label_sub_weapon_9_damage.configure(text="")
+        #self.selected_weapon_alt_10.set('Weapon')
+        #if self.sub_weapon_dropdown_10_canvas is not None:
+        #    self.sub_weapon_dropdown_10_canvas.grid_forget()
+        #self.selected_sub_weapon_10_canvas = None
+        #self.var_sub_weapon_10_qty.set(0)
+        #self.var_sub_weapon_ammo_10_qty.set(0)
+        #self.var_sub_weapon_extra_mags_10_qty.set(0)
+        #self.label_sub_weapon_10_cost.configure(text="0")
+        #self.label_sub_weapon_10_weight.configure(text="0")
+        #self.label_sub_weapon_10_space.configure(text="0")
+        #self.label_sub_weapon_10_shots.configure(text="0")
+        #self.label_sub_weapon_10_ammo_cost.configure(text="0")
+        #self.label_sub_weapon_10_ammo_weight.configure(text="0")
+        #self.weapon_armor_facing_10.set("Facing")
+        #self.label_sub_weapon_10_tohit.configure(text="")
+        #self.label_sub_weapon_10_damage.configure(text="")
+        
         self.selected_accessories_1.set('Accessory')
         self.var_accessories_1_qty.set(0)
         self.selected_accessories_2.set('Accessory')
@@ -472,6 +488,7 @@ class Python_Designer():
         self.var_accessories_29_qty.set(0)
         self.selected_accessories_30.set('Accessory')
         self.var_accessories_30_qty.set(0)
+        
         self.selected_component_armor_1.set('Component armor')
         self.selected_component_armor_facing_1.set('Facing')
         self.var_component_armor_spaces_qty_1.set(0)
@@ -492,6 +509,7 @@ class Python_Designer():
         self.selected_component_armor_facing_5.set('Facing')
         self.var_component_armor_spaces_qty_5.set(0)
         self.var_component_armor_count_qty_5.set(0)
+        
         self.var_rocket_booster_pounds_qty_1.set(0)
         self.selected_rocket_booster_facing_1.set('Facing')
         self.var_rocket_booster_pounds_qty_2.set(0)
@@ -502,6 +520,7 @@ class Python_Designer():
         self.selected_rocket_booster_facing_4.set('Facing')
         self.var_rocket_booster_pounds_qty_5.set(0)
         self.selected_rocket_booster_facing_5.set('Facing')
+        
         self.selected_personal_equipment_1.set('Personal Equipment')
         self.var_personal_equipment_1_qty.set(0)
         self.selected_personal_equipment_2.set('Personal Equipment')
@@ -522,6 +541,7 @@ class Python_Designer():
         self.var_personal_equipment_9_qty.set(0)
         self.selected_personal_equipment_10.set('Personal Equipment')
         self.var_personal_equipment_10_qty.set(0)
+        
         self.var_six_wheel_chassis.set(0)
         self.var_sloped_armor.set(0)
         self.label_total_cost.configure(text="0")
@@ -665,177 +685,201 @@ class Python_Designer():
         output_dict["armor_inner_top_qty"]    = str(self.var_inner_top_armor_allocation_qty.get())
         output_dict["armor_inner_bottom_qty"] = str(self.var_inner_underbody_armor_allocation_qty.get())
 
-        if self.selected_sub_weapon_1_canvas is not None:
-            output_dict["weapon_1_qty"]    = self.var_sub_weapon_1_qty.get()
-            output_dict["weapon_1_name"]   = self.selected_sub_weapon_1_canvas.get()
-            output_dict["weapon_1_facing"] = self.weapon_armor_facing_1.get()
-            output_dict["weapon_1_to_hit"] = self.label_sub_weapon_1_tohit.cget("text")
-            output_dict["weapon_1_damage"] = self.label_sub_weapon_1_damage.cget("text")
-            output_dict["weapon_1_ammo"]   = self.var_sub_weapon_ammo_1_qty.get()
-            output_dict["weapon_1_dp"]     = self.label_hidden_sub_weapon_1_dp.cget("text")
-        else:
-            output_dict["weapon_1_qty"]    = ""
-            output_dict["weapon_1_name"]   = ""
-            output_dict["weapon_1_facing"] = ""
-            output_dict["weapon_1_to_hit"] = ""
-            output_dict["weapon_1_damage"] = ""
-            output_dict["weapon_1_ammo"]   = ""
-            output_dict["weapon_1_dp"]     = ""
-        if self.selected_sub_weapon_2_canvas is not None:
-            output_dict["weapon_2_qty"]    = self.var_sub_weapon_2_qty.get()
-            output_dict["weapon_2_name"]   = self.selected_sub_weapon_2_canvas.get()
-            output_dict["weapon_2_facing"] = self.weapon_armor_facing_2.get()
-            output_dict["weapon_2_to_hit"] = self.label_sub_weapon_2_tohit.cget("text")
-            output_dict["weapon_2_damage"] = self.label_sub_weapon_2_damage.cget("text")
-            output_dict["weapon_2_ammo"]   = self.var_sub_weapon_ammo_2_qty.get()
-            output_dict["weapon_2_dp"]     = self.label_hidden_sub_weapon_2_dp.cget("text")
-        else:
-            output_dict["weapon_2_qty"]    = ""
-            output_dict["weapon_2_name"]   = ""
-            output_dict["weapon_2_facing"] = ""
-            output_dict["weapon_2_to_hit"] = ""
-            output_dict["weapon_2_damage"] = ""
-            output_dict["weapon_2_ammo"]   = ""
-            output_dict["weapon_2_dp"]     = ""
-        if self.selected_sub_weapon_3_canvas is not None:
-            output_dict["weapon_3_qty"]    = self.var_sub_weapon_3_qty.get()
-            output_dict["weapon_3_name"]   = self.selected_sub_weapon_3_canvas.get()
-            output_dict["weapon_3_facing"] = self.weapon_armor_facing_3.get()
-            output_dict["weapon_3_to_hit"] = self.label_sub_weapon_3_tohit.cget("text")
-            output_dict["weapon_3_damage"] = self.label_sub_weapon_3_damage.cget("text")
-            output_dict["weapon_3_ammo"]   = self.var_sub_weapon_ammo_3_qty.get()
-            output_dict["weapon_3_dp"]     = self.label_hidden_sub_weapon_3_dp.cget("text")
-        else:
-            output_dict["weapon_3_qty"]    = ""
-            output_dict["weapon_3_name"]   = ""
-            output_dict["weapon_3_facing"] = ""
-            output_dict["weapon_3_to_hit"] = ""
-            output_dict["weapon_3_damage"] = ""
-            output_dict["weapon_3_ammo"]   = ""
-            output_dict["weapon_3_dp"]     = ""
-        if self.selected_sub_weapon_4_canvas is not None:
-            output_dict["weapon_4_qty"]    = self.var_sub_weapon_4_qty.get()
-            output_dict["weapon_4_name"]   = self.selected_sub_weapon_4_canvas.get()
-            output_dict["weapon_4_facing"] = self.weapon_armor_facing_4.get()
-            output_dict["weapon_4_to_hit"] = self.label_sub_weapon_4_tohit.cget("text")
-            output_dict["weapon_4_damage"] = self.label_sub_weapon_4_damage.cget("text")
-            output_dict["weapon_4_ammo"]   = self.var_sub_weapon_ammo_4_qty.get()
-            output_dict["weapon_4_dp"]     = self.label_hidden_sub_weapon_4_dp.cget("text")
-        else:
-            output_dict["weapon_4_qty"]    = ""
-            output_dict["weapon_4_name"]   = ""
-            output_dict["weapon_4_facing"] = ""
-            output_dict["weapon_4_to_hit"] = ""
-            output_dict["weapon_4_damage"] = ""
-            output_dict["weapon_4_ammo"]   = ""
-            output_dict["weapon_4_dp"]     = ""
-        if self.selected_sub_weapon_5_canvas is not None:
-            output_dict["weapon_5_qty"]    = self.var_sub_weapon_5_qty.get()
-            output_dict["weapon_5_name"]   = self.selected_sub_weapon_5_canvas.get()
-            output_dict["weapon_5_facing"] = self.weapon_armor_facing_5.get()
-            output_dict["weapon_5_to_hit"] = self.label_sub_weapon_5_tohit.cget("text")
-            output_dict["weapon_5_damage"] = self.label_sub_weapon_5_damage.cget("text")
-            output_dict["weapon_5_ammo"]   = self.var_sub_weapon_ammo_5_qty.get()
-            output_dict["weapon_5_dp"]     = self.label_hidden_sub_weapon_5_dp.cget("text")
-        else:
-            output_dict["weapon_5_qty"]    = ""
-            output_dict["weapon_5_name"]   = ""
-            output_dict["weapon_5_facing"] = ""
-            output_dict["weapon_5_to_hit"] = ""
-            output_dict["weapon_5_damage"] = ""
-            output_dict["weapon_5_ammo"]   = ""
-            output_dict["weapon_5_dp"]     = ""
-        if self.selected_sub_weapon_6_canvas is not None:
-            output_dict["weapon_6_qty"]    = self.var_sub_weapon_6_qty.get()
-            output_dict["weapon_6_name"]   = self.selected_sub_weapon_6_canvas.get()
-            output_dict["weapon_6_facing"] = self.weapon_armor_facing_6.get()
-            output_dict["weapon_6_to_hit"] = self.label_sub_weapon_6_tohit.cget("text")
-            output_dict["weapon_6_damage"] = self.label_sub_weapon_6_damage.cget("text")
-            output_dict["weapon_6_ammo"]   = self.var_sub_weapon_ammo_6_qty.get()
-            output_dict["weapon_6_dp"]     = self.label_hidden_sub_weapon_6_dp.cget("text")
-        else:
-            output_dict["weapon_6_qty"]    = ""
-            output_dict["weapon_6_name"]   = ""
-            output_dict["weapon_6_facing"] = ""
-            output_dict["weapon_6_to_hit"] = ""
-            output_dict["weapon_6_damage"] = ""
-            output_dict["weapon_6_ammo"]   = ""
-            output_dict["weapon_6_dp"]     = ""
-        if self.selected_sub_weapon_7_canvas is not None:
-            output_dict["weapon_7_qty"]    = self.var_sub_weapon_7_qty.get()
-            output_dict["weapon_7_name"]   = self.selected_sub_weapon_7_canvas.get()
-            output_dict["weapon_7_facing"] = self.weapon_armor_facing_7.get()
-            output_dict["weapon_7_to_hit"] = self.label_sub_weapon_7_tohit.cget("text")
-            output_dict["weapon_7_damage"] = self.label_sub_weapon_7_damage.cget("text")
-            output_dict["weapon_7_ammo"]   = self.var_sub_weapon_ammo_7_qty.get()
-            output_dict["weapon_7_dp"]     = self.label_hidden_sub_weapon_7_dp.cget("text")
-        else:
-            output_dict["weapon_7_qty"]    = ""
-            output_dict["weapon_7_name"]   = ""
-            output_dict["weapon_7_facing"] = ""
-            output_dict["weapon_7_to_hit"] = ""
-            output_dict["weapon_7_damage"] = ""
-            output_dict["weapon_7_ammo"]   = ""
-            output_dict["weapon_7_dp"]     = ""
-        if self.selected_sub_weapon_8_canvas is not None:
-            output_dict["weapon_8_qty"]    = self.var_sub_weapon_8_qty.get()
-            output_dict["weapon_8_name"]   = self.selected_sub_weapon_8_canvas.get()
-            output_dict["weapon_8_facing"] = self.weapon_armor_facing_8.get()
-            output_dict["weapon_8_to_hit"] = self.label_sub_weapon_8_tohit.cget("text")
-            output_dict["weapon_8_damage"] = self.label_sub_weapon_8_damage.cget("text")
-            output_dict["weapon_8_ammo"]   = self.var_sub_weapon_ammo_8_qty.get()
-            output_dict["weapon_8_dp"]     = self.label_hidden_sub_weapon_8_dp.cget("text")
-        else:
-            output_dict["weapon_8_qty"]    = ""
-            output_dict["weapon_8_name"]   = ""
-            output_dict["weapon_8_facing"] = ""
-            output_dict["weapon_8_to_hit"] = ""
-            output_dict["weapon_8_damage"] = ""
-            output_dict["weapon_8_ammo"]   = ""
-            output_dict["weapon_8_dp"]     = ""
-        if self.selected_sub_weapon_9_canvas is not None:
-            output_dict["weapon_9_qty"]    = self.var_sub_weapon_9_qty.get()
-            output_dict["weapon_9_name"]   = self.selected_sub_weapon_9_canvas.get()
-            output_dict["weapon_9_facing"] = self.weapon_armor_facing_9.get()
-            output_dict["weapon_9_to_hit"] = self.label_sub_weapon_9_tohit.cget("text")
-            output_dict["weapon_9_damage"] = self.label_sub_weapon_9_damage.cget("text")
-            output_dict["weapon_9_ammo"]   = self.var_sub_weapon_ammo_9_qty.get()
-            output_dict["weapon_9_dp"]     = self.label_hidden_sub_weapon_9_dp.cget("text")
-        else:
-            output_dict["weapon_9_qty"]    = ""
-            output_dict["weapon_9_name"]   = ""
-            output_dict["weapon_9_facing"] = ""
-            output_dict["weapon_9_to_hit"] = ""
-            output_dict["weapon_9_damage"] = ""
-            output_dict["weapon_9_ammo"]   = ""
-            output_dict["weapon_9_dp"]     = ""
-        if self.selected_sub_weapon_10_canvas is not None:
-            output_dict["weapon_10_qty"]    = self.var_sub_weapon_10_qty.get()
-            output_dict["weapon_10_name"]   = self.selected_sub_weapon_10_canvas.get()
-            output_dict["weapon_10_facing"] = self.weapon_armor_facing_10.get()
-            output_dict["weapon_10_to_hit"] = self.label_sub_weapon_10_tohit.cget("text")
-            output_dict["weapon_10_damage"] = self.label_sub_weapon_10_damage.cget("text")
-            output_dict["weapon_10_ammo"]   = self.var_sub_weapon_ammo_10_qty.get()
-            output_dict["weapon_10_dp"]     = self.label_hidden_sub_weapon_10_dp.cget("text")
-        else:
-            output_dict["weapon_10_qty"]    = ""
-            output_dict["weapon_10_name"]   = ""
-            output_dict["weapon_10_facing"] = ""
-            output_dict["weapon_10_to_hit"] = ""
-            output_dict["weapon_10_damage"] = ""
-            output_dict["weapon_10_ammo"]   = ""
-            output_dict["weapon_10_dp"]     = ""
+        for index in range(1, self.weapon_rows_count + 1):
+            # Safely fetch the main conditional canvas attribute
+            canvas_attr = getattr(self, f"selected_sub_weapon_{index}_canvas", None)
+            
+            if canvas_attr is not None:
+                output_dict[f"weapon_{index}_qty"]    = getattr(self, f"var_sub_weapon_{index}_qty").get()
+                output_dict[f"weapon_{index}_name"]   = canvas_attr.get()
+                output_dict[f"weapon_{index}_facing"] = getattr(self, f"weapon_armor_facing_{index}").get()
+                output_dict[f"weapon_{index}_to_hit"] = getattr(self, f"label_sub_weapon_{index}_tohit").cget("text")
+                output_dict[f"weapon_{index}_damage"] = getattr(self, f"label_sub_weapon_{index}_damage").cget("text")
+                output_dict[f"weapon_{index}_ammo"]   = getattr(self, f"var_sub_weapon_ammo_{index}_qty").get()
+                output_dict[f"weapon_{index}_dp"]     = getattr(self, f"label_hidden_sub_weapon_{index}_dp").cget("text")
+                output_dict[f"weapon_type_{index}"]   = str(getattr(self, f"selected_weapon_alt_{index}").get())
+            else:
+                output_dict[f"weapon_{index}_qty"]    = ""
+                output_dict[f"weapon_{index}_name"]   = ""
+                output_dict[f"weapon_{index}_facing"] = ""
+                output_dict[f"weapon_{index}_to_hit"] = ""
+                output_dict[f"weapon_{index}_damage"] = ""
+                output_dict[f"weapon_{index}_ammo"]   = ""
+                output_dict[f"weapon_{index}_dp"]     = ""
+                output_dict[f"weapon_type_{index}"]   = ""
 
-        output_dict["weapon_type_1"] = str(self.selected_weapon_alt_1.get())
-        output_dict["weapon_type_2"] = str(self.selected_weapon_alt_2.get())
-        output_dict["weapon_type_3"] = str(self.selected_weapon_alt_3.get())
-        output_dict["weapon_type_4"] = str(self.selected_weapon_alt_4.get())
-        output_dict["weapon_type_5"] = str(self.selected_weapon_alt_5.get())
-        output_dict["weapon_type_6"] = str(self.selected_weapon_alt_6.get())
-        output_dict["weapon_type_7"] = str(self.selected_weapon_alt_7.get())
-        output_dict["weapon_type_8"] = str(self.selected_weapon_alt_8.get())
-        output_dict["weapon_type_9"] = str(self.selected_weapon_alt_9.get())
-        output_dict["weapon_type_10"] = str(self.selected_weapon_alt_10.get())
+
+        #if self.selected_sub_weapon_1_canvas is not None:
+        #    output_dict["weapon_1_qty"]    = self.var_sub_weapon_1_qty.get()
+        #    output_dict["weapon_1_name"]   = self.selected_sub_weapon_1_canvas.get()
+        #    output_dict["weapon_1_facing"] = self.weapon_armor_facing_1.get()
+        #    output_dict["weapon_1_to_hit"] = self.label_sub_weapon_1_tohit.cget("text")
+        #    output_dict["weapon_1_damage"] = self.label_sub_weapon_1_damage.cget("text")
+        #    output_dict["weapon_1_ammo"]   = self.var_sub_weapon_ammo_1_qty.get()
+        #    output_dict["weapon_1_dp"]     = self.label_hidden_sub_weapon_1_dp.cget("text")
+        #else:
+        #    output_dict["weapon_1_qty"]    = ""
+        #    output_dict["weapon_1_name"]   = ""
+        #    output_dict["weapon_1_facing"] = ""
+        #    output_dict["weapon_1_to_hit"] = ""
+        #    output_dict["weapon_1_damage"] = ""
+        #    output_dict["weapon_1_ammo"]   = ""
+        #    output_dict["weapon_1_dp"]     = ""
+        #if self.selected_sub_weapon_2_canvas is not None:
+        #    output_dict["weapon_2_qty"]    = self.var_sub_weapon_2_qty.get()
+        #    output_dict["weapon_2_name"]   = self.selected_sub_weapon_2_canvas.get()
+        #    output_dict["weapon_2_facing"] = self.weapon_armor_facing_2.get()
+        #    output_dict["weapon_2_to_hit"] = self.label_sub_weapon_2_tohit.cget("text")
+        #    output_dict["weapon_2_damage"] = self.label_sub_weapon_2_damage.cget("text")
+        #    output_dict["weapon_2_ammo"]   = self.var_sub_weapon_ammo_2_qty.get()
+        #    output_dict["weapon_2_dp"]     = self.label_hidden_sub_weapon_2_dp.cget("text")
+        #else:
+        #    output_dict["weapon_2_qty"]    = ""
+        #    output_dict["weapon_2_name"]   = ""
+        #    output_dict["weapon_2_facing"] = ""
+        #    output_dict["weapon_2_to_hit"] = ""
+        #    output_dict["weapon_2_damage"] = ""
+        #    output_dict["weapon_2_ammo"]   = ""
+        #    output_dict["weapon_2_dp"]     = ""
+        #if self.selected_sub_weapon_3_canvas is not None:
+        #    output_dict["weapon_3_qty"]    = self.var_sub_weapon_3_qty.get()
+        #    output_dict["weapon_3_name"]   = self.selected_sub_weapon_3_canvas.get()
+        #    output_dict["weapon_3_facing"] = self.weapon_armor_facing_3.get()
+        #    output_dict["weapon_3_to_hit"] = self.label_sub_weapon_3_tohit.cget("text")
+        #    output_dict["weapon_3_damage"] = self.label_sub_weapon_3_damage.cget("text")
+        #    output_dict["weapon_3_ammo"]   = self.var_sub_weapon_ammo_3_qty.get()
+        #    output_dict["weapon_3_dp"]     = self.label_hidden_sub_weapon_3_dp.cget("text")
+        #else:
+        #    output_dict["weapon_3_qty"]    = ""
+        #    output_dict["weapon_3_name"]   = ""
+        #    output_dict["weapon_3_facing"] = ""
+        #    output_dict["weapon_3_to_hit"] = ""
+        #    output_dict["weapon_3_damage"] = ""
+        #    output_dict["weapon_3_ammo"]   = ""
+        #    output_dict["weapon_3_dp"]     = ""
+        #if self.selected_sub_weapon_4_canvas is not None:
+        #    output_dict["weapon_4_qty"]    = self.var_sub_weapon_4_qty.get()
+        #    output_dict["weapon_4_name"]   = self.selected_sub_weapon_4_canvas.get()
+        #    output_dict["weapon_4_facing"] = self.weapon_armor_facing_4.get()
+        #    output_dict["weapon_4_to_hit"] = self.label_sub_weapon_4_tohit.cget("text")
+        #    output_dict["weapon_4_damage"] = self.label_sub_weapon_4_damage.cget("text")
+        #    output_dict["weapon_4_ammo"]   = self.var_sub_weapon_ammo_4_qty.get()
+        #    output_dict["weapon_4_dp"]     = self.label_hidden_sub_weapon_4_dp.cget("text")
+        #else:
+        #    output_dict["weapon_4_qty"]    = ""
+        #    output_dict["weapon_4_name"]   = ""
+        #    output_dict["weapon_4_facing"] = ""
+        #    output_dict["weapon_4_to_hit"] = ""
+        #    output_dict["weapon_4_damage"] = ""
+        #    output_dict["weapon_4_ammo"]   = ""
+        #    output_dict["weapon_4_dp"]     = ""
+        #if self.selected_sub_weapon_5_canvas is not None:
+        #    output_dict["weapon_5_qty"]    = self.var_sub_weapon_5_qty.get()
+        #    output_dict["weapon_5_name"]   = self.selected_sub_weapon_5_canvas.get()
+        #    output_dict["weapon_5_facing"] = self.weapon_armor_facing_5.get()
+        #    output_dict["weapon_5_to_hit"] = self.label_sub_weapon_5_tohit.cget("text")
+        #    output_dict["weapon_5_damage"] = self.label_sub_weapon_5_damage.cget("text")
+        #    output_dict["weapon_5_ammo"]   = self.var_sub_weapon_ammo_5_qty.get()
+        #    output_dict["weapon_5_dp"]     = self.label_hidden_sub_weapon_5_dp.cget("text")
+        #else:
+        #    output_dict["weapon_5_qty"]    = ""
+        #    output_dict["weapon_5_name"]   = ""
+        #    output_dict["weapon_5_facing"] = ""
+        #    output_dict["weapon_5_to_hit"] = ""
+        #    output_dict["weapon_5_damage"] = ""
+        #    output_dict["weapon_5_ammo"]   = ""
+        #    output_dict["weapon_5_dp"]     = ""
+        #if self.selected_sub_weapon_6_canvas is not None:
+        #    output_dict["weapon_6_qty"]    = self.var_sub_weapon_6_qty.get()
+        #    output_dict["weapon_6_name"]   = self.selected_sub_weapon_6_canvas.get()
+        #    output_dict["weapon_6_facing"] = self.weapon_armor_facing_6.get()
+        #    output_dict["weapon_6_to_hit"] = self.label_sub_weapon_6_tohit.cget("text")
+        #    output_dict["weapon_6_damage"] = self.label_sub_weapon_6_damage.cget("text")
+        #    output_dict["weapon_6_ammo"]   = self.var_sub_weapon_ammo_6_qty.get()
+        #    output_dict["weapon_6_dp"]     = self.label_hidden_sub_weapon_6_dp.cget("text")
+        #else:
+        #    output_dict["weapon_6_qty"]    = ""
+        #    output_dict["weapon_6_name"]   = ""
+        #    output_dict["weapon_6_facing"] = ""
+        #    output_dict["weapon_6_to_hit"] = ""
+        #    output_dict["weapon_6_damage"] = ""
+        #    output_dict["weapon_6_ammo"]   = ""
+        #    output_dict["weapon_6_dp"]     = ""
+        #if self.selected_sub_weapon_7_canvas is not None:
+        #    output_dict["weapon_7_qty"]    = self.var_sub_weapon_7_qty.get()
+        #    output_dict["weapon_7_name"]   = self.selected_sub_weapon_7_canvas.get()
+        #    output_dict["weapon_7_facing"] = self.weapon_armor_facing_7.get()
+        #    output_dict["weapon_7_to_hit"] = self.label_sub_weapon_7_tohit.cget("text")
+        #    output_dict["weapon_7_damage"] = self.label_sub_weapon_7_damage.cget("text")
+        #    output_dict["weapon_7_ammo"]   = self.var_sub_weapon_ammo_7_qty.get()
+        #    output_dict["weapon_7_dp"]     = self.label_hidden_sub_weapon_7_dp.cget("text")
+        #else:
+        #    output_dict["weapon_7_qty"]    = ""
+        #    output_dict["weapon_7_name"]   = ""
+        #    output_dict["weapon_7_facing"] = ""
+        #    output_dict["weapon_7_to_hit"] = ""
+        #    output_dict["weapon_7_damage"] = ""
+        #    output_dict["weapon_7_ammo"]   = ""
+        #    output_dict["weapon_7_dp"]     = ""
+        #if self.selected_sub_weapon_8_canvas is not None:
+        #    output_dict["weapon_8_qty"]    = self.var_sub_weapon_8_qty.get()
+        #    output_dict["weapon_8_name"]   = self.selected_sub_weapon_8_canvas.get()
+        #    output_dict["weapon_8_facing"] = self.weapon_armor_facing_8.get()
+        #    output_dict["weapon_8_to_hit"] = self.label_sub_weapon_8_tohit.cget("text")
+        #    output_dict["weapon_8_damage"] = self.label_sub_weapon_8_damage.cget("text")
+        #    output_dict["weapon_8_ammo"]   = self.var_sub_weapon_ammo_8_qty.get()
+        #    output_dict["weapon_8_dp"]     = self.label_hidden_sub_weapon_8_dp.cget("text")
+        #else:
+        #    output_dict["weapon_8_qty"]    = ""
+        #    output_dict["weapon_8_name"]   = ""
+        #    output_dict["weapon_8_facing"] = ""
+        #    output_dict["weapon_8_to_hit"] = ""
+        #    output_dict["weapon_8_damage"] = ""
+        #    output_dict["weapon_8_ammo"]   = ""
+        #    output_dict["weapon_8_dp"]     = ""
+        #if self.selected_sub_weapon_9_canvas is not None:
+        #    output_dict["weapon_9_qty"]    = self.var_sub_weapon_9_qty.get()
+        #    output_dict["weapon_9_name"]   = self.selected_sub_weapon_9_canvas.get()
+        #    output_dict["weapon_9_facing"] = self.weapon_armor_facing_9.get()
+        #    output_dict["weapon_9_to_hit"] = self.label_sub_weapon_9_tohit.cget("text")
+        #    output_dict["weapon_9_damage"] = self.label_sub_weapon_9_damage.cget("text")
+        #    output_dict["weapon_9_ammo"]   = self.var_sub_weapon_ammo_9_qty.get()
+        #    output_dict["weapon_9_dp"]     = self.label_hidden_sub_weapon_9_dp.cget("text")
+        #else:
+        #    output_dict["weapon_9_qty"]    = ""
+        #    output_dict["weapon_9_name"]   = ""
+        #    output_dict["weapon_9_facing"] = ""
+        #    output_dict["weapon_9_to_hit"] = ""
+        #    output_dict["weapon_9_damage"] = ""
+        #    output_dict["weapon_9_ammo"]   = ""
+        #    output_dict["weapon_9_dp"]     = ""
+        #if self.selected_sub_weapon_10_canvas is not None:
+        #    output_dict["weapon_10_qty"]    = self.var_sub_weapon_10_qty.get()
+        #    output_dict["weapon_10_name"]   = self.selected_sub_weapon_10_canvas.get()
+        #    output_dict["weapon_10_facing"] = self.weapon_armor_facing_10.get()
+        #    output_dict["weapon_10_to_hit"] = self.label_sub_weapon_10_tohit.cget("text")
+        #    output_dict["weapon_10_damage"] = self.label_sub_weapon_10_damage.cget("text")
+        #    output_dict["weapon_10_ammo"]   = self.var_sub_weapon_ammo_10_qty.get()
+        #    output_dict["weapon_10_dp"]     = self.label_hidden_sub_weapon_10_dp.cget("text")
+        #else:
+        #    output_dict["weapon_10_qty"]    = ""
+        #    output_dict["weapon_10_name"]   = ""
+        #    output_dict["weapon_10_facing"] = ""
+        #    output_dict["weapon_10_to_hit"] = ""
+        #    output_dict["weapon_10_damage"] = ""
+        #    output_dict["weapon_10_ammo"]   = ""
+        #    output_dict["weapon_10_dp"]     = ""
+
+        #output_dict["weapon_type_1"] = str(self.selected_weapon_alt_1.get())
+        #output_dict["weapon_type_2"] = str(self.selected_weapon_alt_2.get())
+        #output_dict["weapon_type_3"] = str(self.selected_weapon_alt_3.get())
+        #output_dict["weapon_type_4"] = str(self.selected_weapon_alt_4.get())
+        #output_dict["weapon_type_5"] = str(self.selected_weapon_alt_5.get())
+        #output_dict["weapon_type_6"] = str(self.selected_weapon_alt_6.get())
+        #output_dict["weapon_type_7"] = str(self.selected_weapon_alt_7.get())
+        #output_dict["weapon_type_8"] = str(self.selected_weapon_alt_8.get())
+        #output_dict["weapon_type_9"] = str(self.selected_weapon_alt_9.get())
+        #output_dict["weapon_type_10"] = str(self.selected_weapon_alt_10.get())
 
         output_dict["accessory_1_qty"]   = str(self.var_accessories_1_qty.get())
         output_dict["accessory_1_name"]  = str(self.selected_accessories_1.get())
@@ -1020,6 +1064,20 @@ class Python_Designer():
         with open(path, "r", encoding="UTF-8") as input_file:
             file_incoming_entry = input_file.readline()
 
+        for index in range(1, self.weapon_rows_count + 1):
+            # Safe initialization for the weapon name StringVar
+            if not hasattr(self, f"selected_sub_weapon_{index}_canvas") or getattr(self, f"selected_sub_weapon_{index}_canvas") is None:
+                setattr(self, f"selected_sub_weapon_{index}_canvas", tk.StringVar(value="Weapon"))
+                
+            # Safe initialization for the sub-weapon quantity IntVar
+            if not hasattr(self, f"var_sub_weapon_{index}_qty") or getattr(self, f"var_sub_weapon_{index}_qty") is None:
+                setattr(self, f"var_sub_weapon_{index}_qty", tk.IntVar(value=0))
+            
+            # Safe initialization for the ammunition quantity IntVar
+            if not hasattr(self, f"var_sub_weapon_ammo_{index}_qty") or getattr(self, f"var_sub_weapon_ammo_{index}_qty") is None:
+                setattr(self, f"var_sub_weapon_ammo_{index}_qty", tk.IntVar(value=0))
+
+
         string_of_dicts_cleaned = re.sub(r"'(?=[^:]*:)", '"', file_incoming_entry)
         string_of_dicts_cleaned = re.sub(r"(?<=:)'", '"', string_of_dicts_cleaned)
         file_input_list = json.loads(string_of_dicts_cleaned)
@@ -1066,95 +1124,92 @@ class Python_Designer():
         # 1. ACTIVATE LOGICAL LOADING SAFEGUARDS
         self.is_loading = True
 
-        # STEP 1: Pass One - Restore Categories and FORCE physically drawing the sub-menus
-        for i in range(1, 11):
-            alt_attr = f"selected_weapon_alt_{i}"
-            alt_key = f"self.{alt_attr}"
+        for index in range(1, self.weapon_rows_count + 1):
+            self.add_labels_buttons_weapon_row_unified(row_number = index, canvas_type=self.second_frame)
+
+            # Update values for existing Tkinter variables using .set()
+            getattr(self, f"selected_weapon_alt_{index}").set(dict_list[f"self.selected_weapon_alt_{index}"])
+            selected_category: str = getattr(self, f"selected_weapon_alt_{index}").get()
+            dropdown_list = self.get_weapon_sub_list(category=selected_category)
+
+            self.add_dropdown_sub_weapon_unified(row_number = index, canvas_type=self.second_frame, dropdown_list=dropdown_list)
+
+            #This canvas (aka self.selected_sub_weapon_1_canvas needs to exist first before a .set can be called on it
+            getattr(self, f"selected_sub_weapon_{index}_canvas").set(dict_list[f"self.selected_sub_weapon_{index}_canvas"])
             
-            if alt_key in dict_list and hasattr(self, alt_attr):
-                selected_category_string = dict_list[alt_key]
-                
-                # Update the core text variable state pointer
-                getattr(self, alt_attr).set(selected_category_string)
-                
-                # FIXED: Forcefully invoke your unified layout engine to draw the menu frame container.
-                # We pass the custom positional argument 'load' to override trace execution silencing traps.
-                self.on_select_weapon_alt_unified_canvas(i, self.second_frame, "load")
+            # Reassign or load raw dictionary data directly into the attributes
+            # --- FIXED PATHWAY FOR AMMO QUANTITY TRACKING VARIABLES ---
+            # 1. Main Weapon/Ammo Quantity
+            qty_var = getattr(self, f"var_sub_weapon_{index}_qty", None)
+            if qty_var and hasattr(qty_var, "set"):
+                qty_var.set(dict_list.get(f"self.var_sub_weapon_{index}_qty", 0))
+            elif qty_var is None:
+                # Fallback block if variable names use alternate tracking keys
+                alt_qty_var = getattr(self, f"selected_weapon_qty_{index}", None)
+                if alt_qty_var and hasattr(alt_qty_var, "set"):
+                    alt_qty_var.set(dict_list.get(f"self.var_sub_weapon_{index}_qty", 0))
 
-        # Force an execution flush to completely render all newly spawned list boxes
-        if hasattr(self, 'root'):
-            self.root.update_idletasks()
-        elif hasattr(self, 'master') and self.master:
-            self.master.update_idletasks()
+            # 2. Ammo Count Capacity / Reserve Settings (if tracked separately)
+            ammo_var = getattr(self, f"var_sub_weapon_ammo_{index}_qty", None)
+            if ammo_var and hasattr(ammo_var, "set"):
+                ammo_var.set(dict_list.get(f"self.var_sub_weapon_ammo_{index}_qty", 0))
+            #getattr(self, f"var_sub_weapon_{index}_qty").set(dict_list.get(f"self.var_sub_weapon_{index}_qty", 0))
+            #getattr(self, f"var_sub_weapon_ammo_{index}_qty").set(dict_list.get(f"self.var_sub_weapon_ammo_{index}_qty", 0))
 
-        # STEP 2: Pass Two - Select the actual weapon text name and facing direction
-        for i in range(1, 11):
-            weapon_text_mappings = [
-                (f"selected_sub_weapon_{i}_canvas", f"self.selected_sub_weapon_{i}_canvas"),
-                (f"weapon_armor_facing_{i}", f"self.weapon_armor_facing_{i}")
-            ]
+            tohit_widget = getattr(self, f"label_sub_weapon_{index}_tohit", None)
+            if tohit_widget is not None:
+                tohit_widget.configure(text=dict_list.get(f"self.label_sub_weapon_{index}_tohit", ""))            
+            #setattr(self, f"label_sub_weapon_{index}_tohit", dict_list[f"self.label_sub_weapon_{index}_tohit"])
             
-            for attr_name, file_key in weapon_text_mappings:
-                if attr_name.startswith("weapon_armor_facing") and not hasattr(self, attr_name):
-                    attr_name = f"selected_sub_weapon_{i}_facing"
-                    
-                if file_key in dict_list and hasattr(self, attr_name) and getattr(self, attr_name):
-                    getattr(self, attr_name).set(dict_list[file_key])
+            damage_widget = getattr(self, f"label_sub_weapon_{index}_damage", None)
+            if damage_widget is not None:
+                damage_widget.configure(text=dict_list.get(f"self.label_sub_weapon_{index}_damage", ""))
+            #setattr(self, f"label_sub_weapon_{index}_damage", dict_list[f"self.label_sub_weapon_{index}_damage"])
 
-        # Secondary synchronization pass to let cascading layouts settle
-        if hasattr(self, 'root'):
-            self.root.update_idletasks()
-        elif hasattr(self, 'master') and self.master:
-            self.master.update_idletasks()
+            #setattr(self, f"var_sub_weapon_ammo_{index}_qty", dict_list[f"self.var_sub_weapon_ammo_{index}_qty"])
+
+            dp_widget = getattr(self, f"label_hidden_sub_weapon_{index}_dp", None)
+            if dp_widget is not None:
+                dp_widget.configure(text=dict_list.get(f"self.label_hidden_sub_weapon_{index}_dp", "0"))
+            #setattr(self, f"label_hidden_sub_weapon_{index}_dp", dict_list[f"self.label_hidden_sub_weapon_{index}_dp"])
+
+            # Dynamic lookup for extra magazine variable and dictionary states
+            mag_var = getattr(self, f"var_sub_weapon_extra_mags_{index}_qty", None)
+            if mag_var and hasattr(mag_var, "set"):
+                mag_var.set(dict_list.get(f"self.var_sub_weapon_extra_mags_{index}_qty", 0))
+
+            # --- Change this old fallback block inside your load_record loop: ---
+            # if hasattr(self, "on_select_weapon_alt_unified_canvas"):
+            #     self.on_select_weapon_alt_unified_canvas(index, self.second_frame)
+            # elif hasattr(self, "on_weapon_select"):
+            #     ...
+
+            # --- To this explicit forced evaluation: ---
+            self.update_weapon_row_statistics_forced(index)
+
+        #self.selected_weapon_alt_1.set(dict_list["self.selected_weapon_alt_1"])
+        #self.selected_sub_weapon_1_canvas.set(dict_list['self.selected_sub_weapon_1_canvas'])
+        #self.var_sub_weapon_1_qty         = dict_list['self.var_sub_weapon_1_qty']
+        #self.weapon_armor_facing_1        = dict_list['self.weapon_armor_facing_1']
+        #self.label_sub_weapon_1_tohit     = dict_list['self.label_sub_weapon_1_tohit']
+        #self.label_sub_weapon_1_damage    = dict_list['self.label_sub_weapon_1_damage']
+        #self.var_sub_weapon_ammo_1_qty    = dict_list['self.var_sub_weapon_ammo_1_qty']
+        #self.label_hidden_sub_weapon_1_dp = dict_list['self.label_hidden_sub_weapon_1_dp']
                     
         # 2. DEACTIVATE PROTECTION FLAG
-        self.is_loading = False
-
-        # FIX: Force clean refresh on all row label blocks now that loading isolation is open
-        for i in range(1, 11):
-            var_name = f"selected_weapon_alt_{i}"
-            if not hasattr(self, var_name):
-                return
-            
-            selected_category = str(getattr(self, var_name).get()).strip().upper()
-            compiled_list = None
-
-            if selected_category == "SMALL BORE WEAPONS":
-                compiled_list = getattr(self, "weapons_small_bore_list", None)
-            elif selected_category == "LARGE BORE WEAPONS":
-                compiled_list = getattr(self, "weapons_large_bore_list", None)
-            elif selected_category == "GRENADE LAUNCHERS":
-                compiled_list = getattr(self, "weapons_grenade_launchers_list", None)
-            elif selected_category == "GRENADE AMMO":
-                compiled_list = getattr(self, "weapons_grenade_ammo_list", None)
-            elif selected_category == "ROCKETS":
-                compiled_list = getattr(self, "weapons_rockets_list", None)
-            elif selected_category == "ENERGY WEAPONS":
-                compiled_list = getattr(self, "weapons_energy_list", None)
-            elif selected_category == "FLAMETHROWERS":
-                compiled_list = getattr(self, "weapons_flamethrower_list", None)
-            elif selected_category == "DROPPED GASSES":
-                compiled_list = getattr(self, "weapons_dropped_gas_list", None)
-            elif selected_category == "DROPPED LIQUIDS":
-                compiled_list = getattr(self, "weapons_dropped_liquid_list", None)
-            elif selected_category == "DROPPED SOLIDS":
-                compiled_list = getattr(self, "weapons_dropped_solid_list", None)
-            elif selected_category == "MINEDROPPERS":
-                compiled_list = getattr(self, "weapons_minedroppers_list", None)
-            elif selected_category == "DISCHARGERS":
-                compiled_list = getattr(self, "weapons_dischargers_list", None)
-
-            # We invoke your dropdown select hook directly without the "load" string lock,
-            # forcing the application to read database stats and paint the labels.
-            if hasattr(self, f"selected_weapon_alt_{i}"):
-                # Passes current selection index back to standard updating channel
-                #self.on_select_weapon_alt_unified_canvas(i, self.second_frame)
-                self.on_select_sub_weapon_unified(row_number=i, dropdown_list=compiled_list)
-
-        # Run calculation aggregation matrix pass
-        #self.recalculate()
         
         self.is_loading = False
+        # =====================================================================
+        # 2. CALCULATION SYNC PASS: Force your unified traces to process values
+        # =====================================================================
+        for index in range(1, self.weapon_rows_count + 1):
+            # Check if an extra magazines text tracking variable exists
+            mag_attr = f"var_sub_weapon_extra_mags_{index}_qty"
+            if hasattr(self, mag_attr) and getattr(self, mag_attr) is not None:
+                # Forcefully kick-run the calculations engine for this row
+                if hasattr(self, "on_update_sub_weapon_qty_unified"):
+                    self.on_update_sub_weapon_qty_unified(row_number=index)
+
         # --- RESTORE ACCESSORIES (1 to 30) ---
         for i in range(1, 31):
             attr_name = f"selected_accessories_{i}"
@@ -1221,47 +1276,12 @@ class Python_Designer():
         self.var_inner_right_armor_allocation_qty.set(    dict_list['self.var_inner_right_armor_allocation_qty'])
         self.var_inner_top_armor_allocation_qty.set(      dict_list['self.var_inner_top_armor_allocation_qty'])
         self.var_inner_underbody_armor_allocation_qty.set(dict_list['self.var_inner_underbody_armor_allocation_qty'])
-
-        # === VERY BOTTOM OF YOUR load_record METHOD ===
-        # Force validation update so user selections map nicely against newly active fields
-        #self.update_link_dropdowns()
-        self.recalculate()
         
-        # 1. FORCE THE WINDOW TO FULLY UPDATE THE GRAPHICS LAYER
-        # This synchronizes the state of all input fields and clears trace queues
-        if hasattr(self, 'root'):
-            self.root.update_idletasks()
-            
-        # 2. RUN A CLEAN ROW EVALUATION AND PAINT THE LABELS
-        # This runs safely outside the loading flag block, pulling fresh values from your database
-        #for i in range(1, 11):
-            # Verify the row tracking components exist on the screen layout
-        #    if hasattr(self, f"selected_weapon_alt_{i}"):
-        #        try:
-                    # Capture the current selected string values from the UI state variables
-        #            current_category = getattr(self, f"selected_weapon_alt_{i}").get()
-                    
-                    # Explicitly re-invoke your layout rendering engine. 
-                    # Do NOT pass the "load" override keyword here.
-        #            self.on_select_weapon_alt_unified_canvas(i, self.second_frame)
-                    
-        #        except Exception as row_error:
-                    # Prevents a validation crash on an empty row from breaking subsequent loops
-        #            print(f"Row {i} rendering pass bypassed: {row_error}")
-
-        # STEP 3: Pass Three - Lock down numeric quantities (Spinboxes, Ammo, Extra Magazines)
-        for i in range(1, 11):
-            numeric_mappings = [
-                (f"var_sub_weapon_{i}_qty", f"self.var_sub_weapon_{i}_qty"),
-                (f"var_sub_weapon_ammo_{i}_qty", f"self.var_sub_weapon_ammo_{i}_qty"),
-                (f"var_sub_weapon_extra_mags_{i}_qty", f"self.var_sub_weapon_extra_mags_{i}_qty")
-            ]
-            
-            for attr_name, file_key in numeric_mappings:
-                if file_key in dict_list and hasattr(self, attr_name) and getattr(self, attr_name):
-                    getattr(self, attr_name).set(int(dict_list[file_key]))
-
-        # Final layout synchronization pass
+        self.is_init = False
+        self.is_loading = False
+        
+        # Run a synchronous screen refresh pass
+        self.root.update_idletasks()
         self.recalculate()
 
     def save_record(self, path: str):
@@ -1313,28 +1333,73 @@ class Python_Designer():
         entry_dict["self.selected_outer_armor"]                     = self.selected_outer_armor.get()
         entry_dict["self.selected_inner_armor"]                     = self.selected_inner_armor.get()
 
-        # --- WEAPONS (1 to 10) ---
-        for i in range(1, 11):
-            # Gather text entries and selections
-            for suffix in ["_qty", "", "_facing", "_extra_mag", "_radio", "_laser", "_tracer", "_smart"]:
-                attr_name = f"selected_sub_weapon_{i}{suffix}"
-                if hasattr(self, attr_name) and getattr(self, attr_name):
-                    entry_dict[f"self.{attr_name}"] = getattr(self, attr_name).get()
-            # NEW HIGH-UTILITY EXPORT TRACKING FOR WEBSERVER:
-            # Dynamically grabs the active To-Hit value displayed on your interface row
-            to_hit_label_attr = f"label_sub_weapon_{i}_tohit"
-            if hasattr(self, to_hit_label_attr):
-                # Extract the raw string ("7", "6", etc.) from the active Tkinter screen widget
-                to_hit_screen_value = getattr(self, to_hit_label_attr).cget("text")
+        # =====================================================================
+        # EXPLICIT RESTORATION: WEAPON ROW 1 ONLY (ZERO LOOP DISCONNECTS)
+        # =====================================================================
+        for index in range(1, self.weapon_rows_count + 1):
+            entry_dict[f"self.selected_weapon_alt_{index}"] = getattr(self, f"selected_weapon_alt_{index}").get()
+            entry_dict[f"self.var_sub_weapon_{index}_qty"] = getattr(self, f"var_sub_weapon_{index}_qty").get()
             
-                # Save it explicitly using the standardized clean token name for the server payload
-                entry_dict[f"self.selected_sub_weapon_{i}_tohit"] = str(to_hit_screen_value)
+            # Verify the sub-weapon canvas object wrapper has drawn before extracting text values
+            canvas_attr = getattr(self, f"selected_sub_weapon_{index}_canvas", None)
+            if canvas_attr is not None:
+                if hasattr(canvas_attr, "get"):
+                    entry_dict[f"self.selected_sub_weapon_{index}_canvas"] = canvas_attr.get()
+                else:
+                    entry_dict[f"self.selected_sub_weapon_{index}_canvas"] = str(canvas_attr)
+            else:
+                entry_dict[f"self.selected_sub_weapon_{index}_canvas"] = "None"
+                
+            # Target the explicit facing layout variable tracker assigned on Page 1
+            entry_dict[f"self.weapon_armor_facing_{index}"] = getattr(self, f"weapon_armor_facing_{index}").get()
+            
+            # Save static text stats for formatting parity checks
+            entry_dict[f"self.label_sub_weapon_{index}_tohit"] = getattr(self, f"label_sub_weapon_{index}_tohit").cget("text")
+            entry_dict[f"self.label_sub_weapon_{index}_damage"] = getattr(self, f"label_sub_weapon_{index}_damage").cget("text")
+            try:
+                entry_dict[f"self.var_sub_weapon_ammo_{index}_qty"] = getattr(self, f"var_sub_weapon_ammo_{index}_qty").get()
+            except tk.TclError:
+                entry_dict[f"self.var_sub_weapon_ammo_{index}_qty"] = 0
+            entry_dict[f"self.label_hidden_sub_weapon_{index}_dp"] = getattr(self, f"label_hidden_sub_weapon_{index}_dp").cget("text")
+
+            # 🎯 ADD THIS CRITICAL LINE TO SAVE EXTRA MAGS:
+            mag_attr = f"var_sub_weapon_extra_mags_{index}_qty"
+            if hasattr(self, mag_attr) and getattr(self, mag_attr) is not None:
+                try:
+                    entry_dict[f"self.{mag_attr}"] = getattr(self, mag_attr).get()
+                except (tk.TclError, ValueError):
+                    entry_dict[f"self.{mag_attr}"] = 0
+            else:
+                entry_dict[f"self.{mag_attr}"] = 0
+
+        #entry_dict["self.selected_weapon_alt_1"] = self.selected_weapon_alt_1.get()
+        #entry_dict["self.var_sub_weapon_1_qty"] = self.var_sub_weapon_1_qty.get()
+        
+        # Verify the sub-weapon canvas object wrapper has drawn before extracting text values
+        #if self.selected_sub_weapon_1_canvas is not None:
+        #    if hasattr(self.selected_sub_weapon_1_canvas, "get"):
+        #        entry_dict["self.selected_sub_weapon_1_canvas"] = self.selected_sub_weapon_1_canvas.get()
+        #    else:
+        #        entry_dict["self.selected_sub_weapon_1_canvas"] = str(self.selected_sub_weapon_1_canvas)
+        #else:
+        #    entry_dict["self.selected_sub_weapon_1_canvas"] = "None"
+            
+        # Target the explicit facing layout variable tracker assigned on Page 1
+        #entry_dict["self.weapon_armor_facing_1"] = self.weapon_armor_facing_1.get()
+        
+        # Save static text stats for formatting parity checks
+        #entry_dict["self.label_sub_weapon_1_tohit"] = self.label_sub_weapon_1_tohit.cget("text")
+        #entry_dict["self.label_sub_weapon_1_damage"] = self.label_sub_weapon_1_damage.cget("text")
+        #entry_dict["self.var_sub_weapon_ammo_1_qty"] = self.var_sub_weapon_ammo_1_qty.get()
+        #entry_dict["self.label_hidden_sub_weapon_1_dp"] = self.label_hidden_sub_weapon_1_dp.cget("text")
                 
         # --- ACCESSORIES (1 to 30) ---
         for i in range(1, 31):
-            attr_name = f"selected_accessories_{i}"
-            if hasattr(self, attr_name) and getattr(self, attr_name):
-                entry_dict[f"self.{attr_name}"] = getattr(self, attr_name).get()
+            # FIX: Corrected variable lookup syntax, and targeting both names AND our updated unified quantity integer variables
+            for suffix in ["", "_qty"]:
+                attr_name = f"selected_accessories_{i}" if suffix == "" else f"var_accessories_{i}_qty"
+                if hasattr(self, attr_name) and getattr(self, attr_name):
+                    entry_dict[f"self.{attr_name}"] = getattr(self, attr_name).get()
 
         # --- COMPONENT ARMOR (1 to 5) ---
         for i in range(1, 6):
@@ -1345,7 +1410,6 @@ class Python_Designer():
 
         # --- ROCKET BOOSTERS (1 to 5) ---
         for i in range(1, 6):
-            # Handles quantity entries and facing choices
             qty_attr = f"var_rocket_booster_pounds_qty_{i}"
             face_attr = f"selected_rocket_booster_facing_{i}"
             if hasattr(self, qty_attr) and getattr(self, qty_attr):
@@ -1773,6 +1837,7 @@ class Python_Designer():
 
         self.label_hidden_front_tire_hc     = tk.Label(canvas_type, text="0", anchor="w")
         self.label_hidden_rear_tire_hc      = tk.Label(canvas_type, text="0", anchor="w")
+
         self.label_hidden_accessories_hc_1  = tk.Label(canvas_type, text="0", anchor="w")
         self.label_hidden_accessories_hc_2  = tk.Label(canvas_type, text="0", anchor="w")
         self.label_hidden_accessories_hc_3  = tk.Label(canvas_type, text="0", anchor="w")
@@ -1813,46 +1878,73 @@ class Python_Designer():
 
     def on_changed_entry_outer_armor_allocation_qty(self, *args):
         try:
-            outer_armor_qty: int                      = int(self.var_outer_armor_qty.get())
-        except ValueError:
-            outer_armor_qty = 0
+            armor_qty:                      int = int(val) if (val := str(self.var_outer_armor_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            armor_qty = 0
         try:
-            outer_front_armor_allocation_qty: int     = int(str(self.var_outer_front_armor_allocation_qty.get()))
-        except ValueError:
-            outer_front_armor_allocation_qty = 0
+            front_armor_allocation_qty:     int = int(val) if (val := str(self.var_outer_front_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            front_armor_allocation_qty = 0
         try:
-            outer_back_armor_allocation_qty: int      = int(self.var_outer_back_armor_allocation_qty.get())
-        except ValueError:
-            outer_back_armor_allocation_qty = 0
+            back_armor_allocation_qty:      int = int(val) if (val := str(self.var_outer_back_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            back_armor_allocation_qty = 0
         try:
-            outer_left_armor_allocation_qty: int      = int(self.var_outer_left_armor_allocation_qty.get())
-        except ValueError:
-            outer_left_armor_allocation_qty = 0
+            left_armor_allocation_qty:      int = int(val) if (val := str(self.var_outer_left_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            left_armor_allocation_qty = 0
         try:
-            outer_right_armor_allocation_qty: int     = int(self.var_outer_right_armor_allocation_qty.get())
-        except ValueError:
-            outer_right_armor_allocation_qty = 0
+            right_armor_allocation_qty:     int = int(val) if (val := str(self.var_outer_right_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            right_armor_allocation_qty = 0
         try:
-            outer_top_armor_allocation_qty: int       = int(self.var_outer_top_armor_allocation_qty.get())
-        except ValueError:
-            outer_top_armor_allocation_qty = 0
+            top_armor_allocation_qty:       int = int(val) if (val := str(self.var_outer_top_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            top_armor_allocation_qty = 0
         try:
-            outer_underbody_armor_allocation_qty: int = int(self.var_outer_underbody_armor_allocation_qty.get())
-        except ValueError:
-            outer_underbody_armor_allocation_qty = 0
-        outer_unassigned_armor_qty: int = outer_armor_qty - outer_front_armor_allocation_qty - outer_back_armor_allocation_qty - outer_left_armor_allocation_qty - outer_right_armor_allocation_qty - outer_top_armor_allocation_qty - outer_underbody_armor_allocation_qty
-        self.label_outer_unassigned_armor_qty.configure(text=str(outer_unassigned_armor_qty))
+            underbody_armor_allocation_qty: int = int(val) if (val := str(self.var_outer_underbody_armor_allocation_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            underbody_armor_allocation_qty = 0
+        try:
+            unassigned_armor_qty:           int = armor_qty - front_armor_allocation_qty - back_armor_allocation_qty - left_armor_allocation_qty - right_armor_allocation_qty - top_armor_allocation_qty - underbody_armor_allocation_qty
+        except tk.TclError:
+            unassigned_armor_qty = 0
+        self.label_outer_unassigned_armor_qty.configure(text=str(unassigned_armor_qty))
 
     def on_changed_entry_inner_armor_allocation_qty(self, *args):
-        inner_armor_qty: int                      = int(str(self.var_inner_armor_qty.get()))
-        inner_front_armor_allocation_qty: int     = int(str(self.var_inner_front_armor_allocation_qty.get()))
-        inner_back_armor_allocation_qty: int      = int(str(self.var_inner_back_armor_allocation_qty.get()))
-        inner_left_armor_allocation_qty: int      = int(str(self.var_inner_left_armor_allocation_qty.get()))
-        inner_right_armor_allocation_qty: int     = int(str(self.var_inner_right_armor_allocation_qty.get()))
-        inner_top_armor_allocation_qty: int       = int(str(self.var_inner_top_armor_allocation_qty.get()))
-        inner_underbody_armor_allocation_qty: int = int(str(self.var_inner_underbody_armor_allocation_qty.get()))
-        inner_unassigned_armor_qty: int = inner_armor_qty - inner_front_armor_allocation_qty - inner_back_armor_allocation_qty - inner_left_armor_allocation_qty - inner_right_armor_allocation_qty - inner_top_armor_allocation_qty - inner_underbody_armor_allocation_qty
-        self.label_inner_unassigned_armor_qty.configure(text=str(inner_unassigned_armor_qty))
+        try:
+            armor_qty:                      int = int(val) if (val := str(self.var_inner_armor_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            armor_qty = 0
+        try:
+            front_armor_allocation_qty:     int = int(val) if (val := str(self.var_inner_front_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            front_armor_allocation_qty = 0
+        try:
+            back_armor_allocation_qty:      int = int(val) if (val := str(self.var_inner_back_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            back_armor_allocation_qty = 0
+        try:
+            left_armor_allocation_qty:      int = int(val) if (val := str(self.var_inner_left_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            left_armor_allocation_qty = 0
+        try:
+            right_armor_allocation_qty:     int = int(val) if (val := str(self.var_inner_right_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            right_armor_allocation_qty = 0
+        try:
+            top_armor_allocation_qty:       int = int(val) if (val := str(self.var_inner_top_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            top_armor_allocation_qty = 0
+        try:
+            underbody_armor_allocation_qty: int = int(val) if (val := str(self.var_inner_underbody_armor_allocation_qty.get())).strip().isdigit() else 0
+        except tk.TclError:
+            underbody_armor_allocation_qty = 0
+        try:
+            unassigned_armor_qty:           int = armor_qty - front_armor_allocation_qty - back_armor_allocation_qty - left_armor_allocation_qty - right_armor_allocation_qty - top_armor_allocation_qty - underbody_armor_allocation_qty
+        except tk.TclError:
+            unassigned_armor_qty = 0
+        self.label_inner_unassigned_armor_qty.configure(text=str(unassigned_armor_qty))
 
     def add_buttons_canvas(self, canvas_type):
         """ Add buttons for the user to select up and down values"""
@@ -2434,12 +2526,11 @@ class Python_Designer():
                 return #exit now
         #If we're here, there's no modification selected, but check to see if we're sloped
         sloped = self.var_sloped_armor.get()
-        if sloped == 1:
-            body_spaces: int = self.label_body_spaces.cget("text")
-            total_spaces = self.var_sloped_armor.get() * 0.1
-            modification_spaces: int = math.ceil(total_spaces * body_spaces)
-            self.label_modificiation_space.configure(text=str(modification_spaces))
-            self.recalculate()
+        body_spaces: int = self.label_body_spaces.cget("text")
+        total_spaces = self.var_sloped_armor.get() * 0.1
+        modification_spaces: int = math.ceil(total_spaces * body_spaces)
+        self.label_modificiation_space.configure(text=str(modification_spaces))
+        self.recalculate()
 
     def on_select_chassis(self, *args):
         selected_value = self.selected_chassis.get()
@@ -2593,7 +2684,10 @@ class Python_Designer():
         body_armor_weight:  float = float(self.label_hidden_body_armor_weight.cget("text")) #this could be a decimal
         outer_armor_cost:   float = float(self.label_hidden_outer_armor_cost.cget("text"))
         outer_armor_weight: float = float(self.label_hidden_outer_armor_weight.cget("text"))
-        outer_armor_qty = self.var_outer_armor_qty.get()
+        try:
+            outer_armor_qty: int = int(val) if (val := str(self.var_outer_armor_qty.get()).strip()).isdigit() else 0
+        except tk.TclError:
+            outer_armor_qty = 0
         self.var_outer_armor_qty.set(value=outer_armor_qty)
         total_armor_cost = outer_armor_cost * outer_armor_qty * body_armor_cost
         self.label_outer_armor_cost.configure(text=self.float_to_str(total_armor_cost))
@@ -2606,7 +2700,10 @@ class Python_Designer():
         body_armor_weight:  float = float(self.label_hidden_body_armor_weight.cget("text")) #this could be a decimal
         inner_armor_cost:   float = float(self.label_hidden_inner_armor_cost.cget("text"))
         inner_armor_weight: float = float(self.label_hidden_inner_armor_weight.cget("text"))
-        inner_armor_qty = self.var_inner_armor_qty.get()
+        try:
+            inner_armor_qty = self.var_inner_armor_qty.get()
+        except tk.TclError:
+            inner_armor_qty = 0
         self.var_inner_armor_qty.set(value=inner_armor_qty)
         total_armor_cost = inner_armor_cost * inner_armor_qty * body_armor_cost
         printed_armor_cost: str = self.float_to_str(total_armor_cost)
@@ -2836,14 +2933,20 @@ class Python_Designer():
         # This single loop processes all 10 weapon rows automatically
         weapons_data = []
         
-        for i in range(1, 11):
+        for i in range(1, self.weapon_rows_count + 1):
+            mag_qty_attr = f"var_sub_weapon_extra_mags_{i}_qty"
+            mag_count = 0
+            if hasattr(self, mag_qty_attr) and getattr(self, mag_qty_attr) is not None:
+                try: mag_count = int(getattr(self, mag_qty_attr).get())
+                except (ValueError, tk.TclError): mag_count = 0
+
             wpn_stats = {
                 "cost":        self._safe_parse_label(f"label_sub_weapon_{i}_cost", int),
                 "weight":      self._safe_parse_label(f"label_sub_weapon_{i}_weight", int),
                 "space":       self._safe_parse_label(f"label_sub_weapon_{i}_space", float),
                 "ammo_cost":   self._safe_parse_label(f"label_sub_weapon_{i}_ammo_cost", float),
-                "ammo_weight": self._safe_parse_label(f"label_sub_weapon_{i}_ammo_weight", float)
-            }
+                "ammo_weight": self._safe_parse_label(f"label_sub_weapon_{i}_ammo_weight", float),
+            } #mag cost and weight is already include in the ammo cost and weight, don't include it here as well
             weapons_data.append(wpn_stats)
 
         active_links_cost = 0
@@ -2866,7 +2969,6 @@ class Python_Designer():
             if total_items_linked >= 2:
                 active_links_cost += 50
 
-
         active_bt_cost = 0
         for i in range(self.bt_rows_count):
             total_items_triggered = 0
@@ -2884,7 +2986,6 @@ class Python_Designer():
             # A bumper trigger is active and charged $50 if it triggers 1 or more total units
             if total_items_triggered >= 1:
                 active_bt_cost += 50
-
 
         # This single loop processes all 30 accessory slots automatically
         accessories_data = []
@@ -4286,8 +4387,7 @@ class Python_Designer():
         selected_value = getattr(self, var_name).get()
 
         for entry in active_list:
-            drop_down_name: str = entry.get("Drop-Down Name")
-            if selected_value == drop_down_name:
+            if selected_value == entry.get("Drop-Down Name"):
                 # Forcefully inject statistics into both hidden and visible fields
                 self.add_to_sub_weapon_row_unified(row_number, entry)
                 break
@@ -4345,11 +4445,38 @@ class Python_Designer():
                 getattr(self, lbl_attr).configure(text=str(value))
 
         # 2. Handle Quantity Multipliers for Ammunition
+        # 2. Handle Quantity Multipliers for Ammunition with Robust Tkinter Guards
+        # 2. SEPARATE WEAPON QTY FROM AMMO QTY
         qty_var_name = f"var_sub_weapon_{row_number}_qty"
+        ammo_var_name = f"var_sub_weapon_ammo_{row_number}_qty"
+        mags_var_name = f"var_sub_weapon_extra_mags_{row_number}_qty"
+        
         current_qty = 1
-        if hasattr(self, qty_var_name) and getattr(self, qty_var_name):
-            try: current_qty = int(getattr(self, qty_var_name).get())
-            except ValueError: current_qty = 1
+        current_ammo_qty = 0 # Independent tracking variable
+        current_mags_qty = 0 # Independent Extra Magazines Tracking Variable
+
+        # Safe extraction for Weapon Count
+        if hasattr(self, qty_var_name) and getattr(self, qty_var_name) is not None:
+            try:
+                raw_qty_val = getattr(self, qty_var_name).get()
+                current_qty = int(raw_qty_val) if str(raw_qty_val).strip() != "" else 0
+            except (ValueError, tk.TclError):
+                current_qty = 0
+
+        # Safe extraction for actual Ammunition Count
+        if hasattr(self, ammo_var_name) and getattr(self, ammo_var_name) is not None:
+            try:
+                raw_ammo_val = getattr(self, ammo_var_name).get()
+                current_ammo_qty = int(raw_ammo_val) if str(raw_ammo_val).strip() != "" else 0
+            except (ValueError, tk.TclError):
+                current_ammo_qty = 0
+
+        # Safe extraction for Extra Magazines Count
+        if hasattr(self, mags_var_name) and getattr(self, mags_var_name) is not None:
+            try:
+                raw_mags_val = getattr(self, mags_var_name).get()
+                current_mags_qty = int(raw_mags_val) if str(raw_mags_val).strip() != "" else 0
+            except (ValueError, tk.TclError): current_mags_qty = 0
 
         try:
             numeric_shot_cost = float(weapon_shot_cost)
@@ -4364,13 +4491,51 @@ class Python_Designer():
             numeric_weight = 0.0
             numeric_space = 0.0
 
-        calculated_ammo_cost = numeric_shot_cost * current_qty
-        calculated_ammo_weight = numeric_shot_weight * current_qty
+        # 🎯 THE STATIC EXTRA MAGS FIX: Compute flat $50 and 15 lbs per magazine
+        calculated_mag_cost = 50.0 * current_mags_qty
+        calculated_mag_weight = 15.0 * current_mags_qty
+
+        # 🎯 THE CRITICAL FIX: Multiply ammo metrics against current_ammo_qty, NOT current_qty!
+        calculated_ammo_cost = numeric_shot_cost * current_ammo_qty + calculated_mag_cost
+        calculated_ammo_weight = numeric_shot_weight * current_ammo_qty + calculated_mag_weight
         
-        # Calculate row totals based on active weapon count
+        # Calculate weapon totals separately
         total_row_cost = numeric_cost * current_qty
         total_row_weight = numeric_weight * current_qty
-        total_row_space = numeric_space * current_qty
+        total_row_space = numeric_space * current_qty + current_mags_qty
+
+        #qty_var_name = f"var_sub_weapon_{row_number}_qty"
+        #current_qty = 1
+        
+        #if hasattr(self, qty_var_name) and getattr(self, qty_var_name) is not None:
+        #    try:
+        #        # Safely pull the string first to evaluate blank states
+        #        raw_qty_val = getattr(self, qty_var_name).get()
+        #        current_qty = int(raw_qty_val) if str(raw_qty_val).strip() != "" else 0
+        #    except (ValueError, tk.TclError):
+        #        # Safely defaults to 0 if the entry field is wiped blank or has non-numeric text
+        #        current_qty = 0
+
+        #try:
+        #    numeric_shot_cost = float(weapon_shot_cost)
+        #    numeric_shot_weight = float(weapon_shot_weight)
+        #    numeric_cost = float(weapon_cost)
+        #    numeric_weight = float(weapon_weight)
+        #    numeric_space = float(weapon_space)
+        #except ValueError:
+        #    numeric_shot_cost = 0.0
+        #    numeric_shot_weight = 0.0
+        #    numeric_cost = 0.0
+        #    numeric_weight = 0.0
+        #    numeric_space = 0.0
+
+        #calculated_ammo_cost = numeric_shot_cost * current_qty
+        #calculated_ammo_weight = numeric_shot_weight * current_qty
+        
+        # Calculate row totals based on active weapon count
+        #total_row_cost = numeric_cost * current_qty
+        #total_row_weight = numeric_weight * current_qty
+        #total_row_space = numeric_space * current_qty
 
         # 3. FIXED EXPLICIT VISIBLE SCREEN UPDATES:
         # Directly updates the text of your active screen layout grid elements
@@ -4455,11 +4620,22 @@ class Python_Designer():
         setattr(self, f"entry_sub_weapon_{row_number}_qty", qty_entry)
         qty_entry.grid(column=self.grid_col_qty, row=target_grid_row, sticky="w")
         
-        update_qty_method = f"on_update_sub_weapon_{row_number}_qty"
+        #update_qty_method = f"on_update_sub_weapon_{row_number}_qty"
+        #var_qty.trace_add(
+        #    "write", 
+        #    lambda *args, m=update_qty_method: getattr(self, m)() if hasattr(self, m) else None
+        #)
+        # Target your single, centralized method name
+        qty_unified_method = "on_update_sub_weapon_qty_unified"
+        
         var_qty.trace_add(
             "write", 
-            lambda *args, m=update_qty_method: getattr(self, m)() if hasattr(self, m) else None
+            lambda *args, m=qty_unified_method, r=row_number: (
+                getattr(self, m)(row_number=r) 
+                if hasattr(self, m) else None
+            )
         )
+
 
         # 5. Initialize and map Ammunition Quantity controls with unified trace listeners
         var_ammo = tk.IntVar(value=0)
@@ -4469,26 +4645,59 @@ class Python_Designer():
         setattr(self, f"entry_sub_weapon_ammo_{row_number}_qty", ammo_entry)
         ammo_entry.grid(column=self.grid_right_qty, row=target_grid_row, sticky="w")
         
-        update_ammo_method = f"on_update_sub_weapon_ammo_{row_number}_qty"
+        #update_ammo_method = f"on_update_sub_weapon_ammo_{row_number}_qty"
+        #var_ammo.trace_add(
+        #    "write", 
+        #    lambda *args, m=update_ammo_method: getattr(self, m)() if hasattr(self, m) else None
+        #)
+
+        # Target your single, centralized method name
+        ammo_unified_method = "on_update_sub_weapon_ammo_qty_unified"
+        
         var_ammo.trace_add(
             "write", 
-            lambda *args, m=update_ammo_method: getattr(self, m)() if hasattr(self, m) else None
+            lambda *args, m=ammo_unified_method, r=row_number: (
+                getattr(self, m)(row_number=r) 
+                if hasattr(self, m) else None
+            )
         )
+
 
         # 6. FIXED WORD SEQUENCE: Maps the text string patterns to match your pre-existing method names exactly
         buttons_config = [
-            (f"button_sub_weapon_{row_number}_qty_up", up_arrow, self.grid_left_up_button, f"on_button_sub_weapon_{row_number}_qty_up"),
-            (f"button_sub_weapon_{row_number}_qty_down", down_arrow, self.grid_left_down_button, f"on_button_sub_weapon_{row_number}_qty_down"),
-            (f"button_sub_weapon_ammo_{row_number}_qty_up", up_arrow, self.grid_right_up_button, f"on_button_sub_weapon_{row_number}_ammo_qty_up"),
-            (f"button_sub_weapon_ammo_{row_number}_qty_down", down_arrow, self.grid_right_down_button, f"on_button_sub_weapon_{row_number}_ammo_qty_down")
+        #    (f"btn_sub_weapon_{row_number}_qty_up", "▲", 3, "on_button_sub_weapon_qty_unified"),
+        #    (f"btn_sub_weapon_{row_number}_qty_down", "▼", 4, "on_button_sub_weapon_qty_unified")
+            (f"button_sub_weapon_{row_number}_qty_up", up_arrow, self.grid_left_up_button, "on_button_sub_weapon_qty_unified"),
+            (f"button_sub_weapon_{row_number}_qty_down", down_arrow, self.grid_left_down_button, "on_button_sub_weapon_qty_unified"),
+            (f"button_sub_weapon_ammo_{row_number}_qty_up", up_arrow, self.grid_right_up_button, "on_button_ammo_qty_unified"),
+            (f"button_sub_weapon_ammo_{row_number}_qty_down", down_arrow, self.grid_right_down_button, "on_button_ammo_qty_unified")
         ]
-
+        ## Ensure your configuration array targets the single, unified handler name
+        #buttons_config = [
+        #    (f"btn_sub_weapon_{row_number}_qty_up", "▲", 3, "on_button_sub_weapon_qty_unified"),
+        #    (f"btn_sub_weapon_{row_number}_qty_down", "▼", 4, "on_button_sub_weapon_qty_unified")
+        #]
+        #for attr_name, btn_text, col_index, click_method in buttons_config:
+        #    btn_obj = tk.Button(
+        #        canvas_type, 
+        #        text=btn_text, 
+        #        command=lambda m=click_method: getattr(self, m)() if hasattr(self, m) else None
+        #    )
+        #    setattr(self, attr_name, btn_obj)
+        #    btn_obj.grid(column=col_index, row=target_grid_row, sticky="w")
         for attr_name, btn_text, col_index, click_method in buttons_config:
+            # Determine click direction based on the arrow symbol
+            action_direction = "up" if up_arrow in btn_text else "down"
+
             btn_obj = tk.Button(
                 canvas_type, 
                 text=btn_text, 
-                command=lambda m=click_method: getattr(self, m)() if hasattr(self, m) else None
-            )
+                # Capture variables at creation time using default arguments
+                command=lambda m=click_method, r=row_number, d=action_direction: (
+                    getattr(self, m)(row_number=r, direction=d) 
+                    if hasattr(self, m) else None
+                )
+            ) 
             setattr(self, attr_name, btn_obj)
             btn_obj.grid(column=col_index, row=target_grid_row, sticky="w")
 
@@ -4501,29 +4710,95 @@ class Python_Designer():
         setattr(self, f"entry_sub_weapon_extra_mags_{row_number}_qty", mags_entry)
         mags_entry.grid(column=self.grid_col_extra_mag_entry, row=target_grid_row, sticky="w")
         
-        update_mags_method = f"on_update_sub_weapon_extra_mags_{row_number}_qty"
+        #update_mags_method = f"on_update_sub_weapon_extra_mags_{row_number}_qty"
+        #var_mags.trace_add(
+        #    "write", 
+        #    lambda *args, m=update_mags_method: getattr(self, m)() if hasattr(self, m) else None
+        #)
+        # Target your single, centralized method name
+        mags_unified_method = "on_update_extra_mags_qty_unified"
+        
         var_mags.trace_add(
             "write", 
-            lambda *args, m=update_mags_method: getattr(self, m)() if hasattr(self, m) else None
+            lambda *args, m=mags_unified_method, r=row_number: (
+                getattr(self, m)(row_number=r) 
+                if hasattr(self, m) else None
+            )
         )
 
-        mag_up_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_up"
+        #mag_up_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_up"
+        #btn_mag_up = tk.Button(
+        #    canvas_type, 
+        #    text=up_arrow, 
+        #    command=lambda m=mag_up_method: getattr(self, m)() if hasattr(self, m) else None
+        #)
+        #setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_up", btn_mag_up)
+        #btn_mag_up.grid(column=self.grid_col_extra_mag_qty_up, row=target_grid_row, sticky="w")
+
+        # Target your single, centralized method name
+        mag_unified_method = "on_button_extra_mags_unified"
+        
         btn_mag_up = tk.Button(
             canvas_type, 
             text=up_arrow, 
-            command=lambda m=mag_up_method: getattr(self, m)() if hasattr(self, m) else None
+            command=lambda m=mag_unified_method, r=row_number: (
+                getattr(self, m)(row_number=r, direction="up") 
+                if hasattr(self, m) else None
+            )
         )
         setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_up", btn_mag_up)
         btn_mag_up.grid(column=self.grid_col_extra_mag_qty_up, row=target_grid_row, sticky="w")
 
-        mag_down_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_down"
+        #mag_down_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_down"
+        #btn_mag_down = tk.Button(
+        #    canvas_type, 
+        #    text=down_arrow, 
+        #    command=lambda m=mag_down_method: getattr(self, m)() if hasattr(self, m) else None
+        #)
+        #setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_down", btn_mag_down)
+        #btn_mag_down.grid(column=self.grid_col_extra_mag_qty_down, row=target_grid_row, sticky="w")
+
+        # Target your single, centralized method name
+        mag_unified_method = "on_button_extra_mags_unified"
+        
         btn_mag_down = tk.Button(
             canvas_type, 
             text=down_arrow, 
-            command=lambda m=mag_down_method: getattr(self, m)() if hasattr(self, m) else None
+            command=lambda m=mag_unified_method, r=row_number: (
+                getattr(self, m)(row_number=r, direction="down") 
+                if hasattr(self, m) else None
+            )
         )
         setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_down", btn_mag_down)
         btn_mag_down.grid(column=self.grid_col_extra_mag_qty_down, row=target_grid_row, sticky="w")
+
+
+        #self.weapon_armor_facing_1 = tk.StringVar()
+        #self.weapon_armor_facing_1.set("Facing")
+        #options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
+        ## Create the dropdown widget
+        #self.weapon_facing_dropdown_1 = ttk.OptionMenu(canvas_type, self.weapon_armor_facing_1, "Facing", *options) #filled elsewhere
+        #self.weapon_facing_dropdown_1.grid(column=self.grid_col_test_track, row=self.grid_row_sub_weapon_alt_1, sticky="w")
+
+        # Loop dynamically through all active weapon rows (1 to N)
+        for row_idx in range(1, self.weapon_rows_count + 1):
+            
+            # 1. Fetch the correct grid row layout coordinate for this index
+            grid_row_attr = f"grid_row_sub_weapon_alt_{row_idx}"
+            target_grid_row = getattr(self, grid_row_attr) if hasattr(self, grid_row_attr) else row_idx
+            
+            # 2. Call your helper function to build and grid the UI components
+            facing_var, facing_dropdown = self.add_weapon_facing_dropdown(
+                canvas_type = canvas_type,
+                column_val  = self.grid_col_test_track,
+                row_val     = target_grid_row
+            )
+            
+            # 3. Securely register the returned objects back to your class context
+            setattr(self, f"weapon_armor_facing_{row_idx}", facing_var)
+            setattr(self, f"weapon_facing_dropdown_{row_idx}", facing_dropdown)
+
+
 
     def add_dropdown_weapon_alt_unified(self, row_number: int, canvas_type):
         """
@@ -4587,10 +4862,7 @@ class Python_Designer():
                 if hasattr(self, attr_name) and getattr(self, attr_name) is not None:
                     getattr(self, attr_name).set(default_val)
                     
-            facing_attr = f"weapon_armor_facing_{row_number}"
-            if hasattr(self, facing_attr) and getattr(self, facing_attr) is not None:
-                getattr(self, facing_attr).set("Facing")
-            return
+        facing_attr = f"weapon_armor_facing_{row_number}" #this doesn't exist yet
 
         # 3. INITIALIZATION PASS: Instantiate a safe, row-isolated text tracking variable
         new_str_var = tk.StringVar(value="Weapon")
@@ -4606,68 +4878,97 @@ class Python_Designer():
         new_dropdown = ttk.OptionMenu(canvas_type, new_str_var, "Weapon", *options)
         setattr(self, dropdown_widget_attr, new_dropdown)
         new_dropdown.grid(column=self.grid_col_item, row=target_grid_row, sticky="w")
+        option_list = [dropdown_entry["Drop-Down Name"] for dropdown_entry in dropdown_list]
         
-        # 6. EVENT INTERCEPTION: Capture trace writes and forward parameters safely to our unified engine
+        # 6. EVENT INTERCEPTION: Capture trace writes with isolated variable states
         new_str_var.trace_add(
             "write", 
-            lambda *trace_args: self.on_select_sub_weapon_unified(row_number, dropdown_list, *trace_args)
+            lambda *trace_args, r=row_number, d=dropdown_list: (
+                self.on_select_sub_weapon_unified(row_number=r, dropdown_list=d)
+            )
         )
 
-    def on_select_weapon_alt_unified_canvas(self, row_number: int, canvas_type, *args):
+    def on_select_weapon_alt_unified_canvas(self, row_number, canvas_type=None, *args):
         """
         A single, centralized handler that processes top-level weapon category changes (1-10),
         compiles matching rulesets based on the 12 precise categories, and builds secondary weapon menus.
         """
-        # 1. Block automated background events if a file loading thread is currently active
-        if getattr(self, "is_loading", False) and "load" not in args:
+        # 1. RIGID SAFETY GUARD: Terminate immediately if a file record is actively loading
+        if getattr(self, "is_loading", False):
             return
 
-        # 2. Dynamically fetch the selected top-level category text string
+        # 2. TKINTER BIND COMPATIBILITY LAYER: Handle implicit event object routing
+        if not isinstance(row_number, int):
+            # If bound via .bind(), the first argument passed to the function is the Event object
+            event = row_number
+            try:
+                # Fallback: recover the canvas container from the widget parent context
+                if canvas_type is None or not isinstance(canvas_type, (tk.Frame, tk.Canvas)):
+                    canvas_type = event.widget.master
+                
+                # Recover the specific integer row number from a custom property or the widget name
+                # (Adjust the following line to match how you track row identities in your UI code)
+                row_number = int(re.search(r'\d+', str(event.widget)).group())
+            except (AttributeError, ValueError, IndexError):
+                return # Terminate execution safely if context cannot be reliably determined
+
+        # 3. If canvas_type wasn't supplied or passed correctly, fall back to second_frame
+        if canvas_type is None:
+            canvas_type = getattr(self, "second_frame", None)
+
+        # 4. Dynamically fetch the selected top-level category text string
         var_name = f"selected_weapon_alt_{row_number}"
         if not hasattr(self, var_name):
             return
         raw_category = getattr(self, var_name).get()
         
-        if not raw_category or raw_category in ["Weapon", "Choose Category", ""]:
-            self.add_dropdown_sub_weapon_unified(row_number=row_number, canvas_type=canvas_type, dropdown_list=None)
+        selected_category = str(raw_category).strip().upper()
+
+        # 5. Execute secure external data matrix lookup
+        try:
+            compiled_list = self.get_weapon_sub_list(category=selected_category)
+        except Exception:
+            compiled_list = [] # Fallback container if database lookup keys disconnect
+
+        # 6. Hand off execution cleanly to your unified sub-weapon dropdown builder function
+        self.add_dropdown_sub_weapon_unified(
+            row_number    = row_number,
+            canvas_type   = canvas_type,
+            dropdown_list = compiled_list
+        )
+
+    def update_weapon_row_statistics_forced(self, row_number: int):
+        """
+        Forces a weapon lookup and label update for a single row during file loads,
+        bypassing background execution flags and canvas rebuild loops.
+        """
+        var_name = f"selected_weapon_alt_{row_number}"
+        if not hasattr(self, var_name):
             return
             
-        selected_category = str(raw_category).strip().upper()
-        compiled_list = None
+        selected_category = str(getattr(self, var_name).get()).strip().upper()
+        
+        # 1. Fetch data arrays directly 
+        try:
+            compiled_list = self.get_weapon_sub_list(category=selected_category)
+        except Exception:
+            compiled_list = []
 
-        # 3. STREAMLINED MATCHING SYSTEM: Check exactly for your 12 defined categories
-        # and pull their respective rules arrays using your exact list attribute names.
-        if selected_category == "SMALL BORE WEAPONS":
-            compiled_list = getattr(self, "weapons_small_bore_list", None)
-        elif selected_category == "LARGE BORE WEAPONS":
-            compiled_list = getattr(self, "weapons_large_bore_list", None)
-        elif selected_category == "GRENADE LAUNCHERS":
-            compiled_list = getattr(self, "weapons_grenade_launchers_list", None)
-        elif selected_category == "GRENADE AMMO":
-            compiled_list = getattr(self, "weapons_grenade_ammo_list", None)
-        elif selected_category == "ROCKETS":
-            compiled_list = getattr(self, "weapons_rockets_list", None)
-        elif selected_category == "ENERGY WEAPONS":
-            compiled_list = getattr(self, "weapons_energy_list", None)
-        elif selected_category == "FLAMETHROWERS":
-            compiled_list = getattr(self, "weapons_flamethrower_list", None)
-        elif selected_category == "DROPPED GASSES":
-            compiled_list = getattr(self, "weapons_dropped_gas_list", None)
-        elif selected_category == "DROPPED LIQUIDS":
-            compiled_list = getattr(self, "weapons_dropped_liquid_list", None)
-        elif selected_category == "DROPPED SOLIDS":
-            compiled_list = getattr(self, "weapons_dropped_solid_list", None)
-        elif selected_category == "MINEDROPPERS":
-            compiled_list = getattr(self, "weapons_minedroppers_list", None)
-        elif selected_category == "DISCHARGERS":
-            compiled_list = getattr(self, "weapons_dischargers_list", None)
+        # 2. Directly trigger your database mapping logic or row refresh routine
+        selected_category: str = getattr(self, f"selected_weapon_alt_{row_number}").get()
+        dropdown_list = self.get_weapon_sub_list(category=selected_category)
+        var_name = f"selected_sub_weapon_{row_number}_canvas"
+        if not hasattr(self, var_name):
+            return
+        selected_value = getattr(self, var_name).get()
 
-        # 4. Hand off execution cleanly to your unified sub-weapon dropdown builder function
-        self.add_dropdown_sub_weapon_unified(
-            row_number=row_number, 
-            canvas_type=canvas_type, 
-            dropdown_list=compiled_list
-        )
+        for entry in dropdown_list:
+            if selected_value == entry.get("Drop-Down Name"):
+                # Forcefully inject statistics into both hidden and visible fields
+                self.add_to_sub_weapon_row_unified(row_number, entry)
+                break
+
+            self.add_to_sub_weapon_row_unified(row_number, entry=entry)
 
     def add_dropdown_sub_weapon_unified(self, row_number: int, canvas_type, dropdown_list: list = None):
         """
@@ -4699,36 +5000,232 @@ class Python_Designer():
                 if hasattr(self, attr_name) and getattr(self, attr_name) is not None:
                     getattr(self, attr_name).set(default_val)
                     
-            facing_attr = f"weapon_armor_facing_{row_number}"
-            if hasattr(self, facing_attr) and getattr(self, facing_attr) is not None:
-                getattr(self, facing_attr).set("Facing")
-            return
-
         # 3. INITIALIZATION PASS: Instantiate a safe, row-isolated text tracking variable
         new_str_var = tk.StringVar(value="Weapon")
         setattr(self, selected_var_attr, new_str_var)
         
-        # 4. DATA COMPILATION: Query your master rules listings to gather matching sub-weapons
-        options = self.get_weapon_options_sub_list(input_list=dropdown_list)
-        if not options:
-            options = ["Choose Weapon"]
+        # Create a new StringVar instance dynamically for each row
+        string_var = tk.StringVar()
+        string_var.set("Weapon")
+            
+        # Assign the StringVar object to the dynamically constructed attribute name
+        setattr(self, f"selected_sub_weapon_{row_number}_canvas", string_var)        
+        #self.selected_sub_weapon_1_canvas = tk.StringVar()
+        #self.selected_sub_weapon_1_canvas.set("Weapon")
+        # Create the dropdown widget
+
+        option_list = [dropdown_entry["Drop-Down Name"] for dropdown_entry in dropdown_list]
+
+        # Capture the current index in a default argument for the lambda function
+        dropdown = ttk.OptionMenu(canvas_type, getattr(self, f"selected_sub_weapon_{row_number}_canvas"), 
+                "Weapon", *option_list, command=lambda selected_value, idx=row_number: self.on_select_sub_weapon_unified(idx, dropdown_list))
+            
+        # Store the dropdown widget object dynamically
+        setattr(self, f"selected_sub_weapon_dropdown_{row_number}", dropdown)
+            
+        # Grid the newly created dropdown widget using the row tracker positional offset
+        dropdown.grid(column=self.grid_col_item, row=getattr(self, f"grid_row_sub_weapon_alt_{row_number}"), sticky="w")
+
+
+        #self.selected_sub_weapon_dropdown_1 = ttk.OptionMenu(canvas_type, self.selected_sub_weapon_1_canvas, "Weapon", *option_list, command=lambda selected_value: self.on_select_sub_weapon_unified(row_number, dropdown_list)) #filled elsewhere
+        #self.selected_sub_weapon_dropdown_1.grid(column=self.grid_col_item, row=self.grid_row_sub_weapon_alt_1, sticky="w")
+
+        #new_str_var.trace_add(
+        #    "write", 
+        #    lambda *trace_args, rn=row_number, dl=dropdown_list: self.on_select_sub_weapon_unified(rn, dl, *trace_args)
+        #)
+
+    def on_button_sub_weapon_qty_unified(self, row_number: int, direction: str):
+        """
+        Handles up/down arrow button clicks for weapon quantities across all rows.
+        """
+        var_name = f"var_sub_weapon_{row_number}_qty"
+        if not hasattr(self, var_name):
+            return
+            
+        var_obj = getattr(self, var_name)
+        try:
+            current_val = int(var_obj.get())
+        except (ValueError, tk.TclError):
+            current_val = 0
+            
+        new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+        var_obj.set(new_val)
+
+    def on_button_extra_mags_unified(self, row_number: int, direction: str):
+        """
+        Handles up/down arrow button clicks for extra magazine counts across all rows.
+        """
+        var_name = f"var_sub_weapon_extra_mags_{row_number}_qty"
+        if not hasattr(self, var_name):
+            return
+            
+        var_obj = getattr(self, var_name)
+        try:
+            current_val = int(var_obj.get())
+        except (ValueError, tk.TclError):
+            current_val = 0
+            
+        new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+        var_obj.set(new_val)
+
+    def on_update_sub_weapon_qty_unified(self, row_number: int):
+        """
+        Centralized trace tracker that fires whenever a quantity drops or increments.
+        Safely rebuilds weapon data configurations using raw structural fallbacks.
+        """
+        if getattr(self, "is_loading", False):
+            return
+
+        # 1. Recover selection
+        selected_var_attr = f"selected_sub_weapon_{row_number}_canvas"
+        if not hasattr(self, selected_var_attr) or getattr(self, selected_var_attr) is None:
+            print(f"[DIAGNOSTIC] Step 1 Failed: {selected_var_attr} missing or None")
+            return
+        selected_value = getattr(self, selected_var_attr).get()
         
-        # 5. GRID PLACEMENT: Calculate row index coordinates and instantiate the new OptionMenu widget
-        row_grid_attr = f"grid_row_sub_weapon_alt_{row_number}"
-        target_grid_row = getattr(self, row_grid_attr) if hasattr(self, row_grid_attr) else row_number
+        # --- ADD THESE TEMPORARY DIAGNOSTIC LINES HERE ---
+        print(f"[DIAGNOSTIC] Step 1 Success! Row {row_number} Selected Weapon String is: '{selected_value}'")
         
-        new_dropdown = ttk.OptionMenu(canvas_type, new_str_var, "Weapon", *options)
-        setattr(self, dropdown_widget_attr, new_dropdown)
-        new_dropdown.grid(column=self.grid_col_item, row=target_grid_row, sticky="w")
+        # Check if hidden labels exist to provide fallback data
+        hidden_cost_attr = f"label_hidden_sub_weapon_{row_number}_cost"
+        if hasattr(self, hidden_cost_attr):
+            raw_text_cost = getattr(self, hidden_cost_attr).cget("text")
+            print(f"[DIAGNOSTIC] Hidden Label Check: '{hidden_cost_attr}' exists. Stored Base Cost text is: '{raw_text_cost}'")
+        else:
+            print(f"[DIAGNOSTIC] Hidden Label Check Failed: '{hidden_cost_attr}' does not exist on self.")
+        # -------------------------------------------------
+
+
+        # 1. Recover the active dynamic choice selection text string
+        #selected_var_attr = f"selected_sub_weapon_{row_number}_canvas"
+        #if not hasattr(self, selected_var_attr) or getattr(self, selected_var_attr) is None:
+        #    return
+        #selected_value = getattr(self, selected_var_attr).get()
+
+        # 2. Extract weapon database profiles using hidden layout labels as fallback properties
+        entry = None
         
-        # 6. EVENT INTERCEPTION: Capture trace writes and forward parameters safely via localized lambda bounds
-        # Notice that we bind 'dropdown_list' tightly into the lambda environment to completely isolate it!
-        new_str_var.trace_add(
-            "write", 
-            lambda *trace_args, rn=row_number, dl=dropdown_list: self.on_select_sub_weapon_unified(rn, dl, *trace_args)
-        )
+        # Strategy A: Use the text string name to check active category databases
+        if hasattr(self, "get_weapon_sub_list"):
+            var_cat_name = f"selected_weapon_alt_{row_number}"
+            if hasattr(self, var_cat_name):
+                cat = str(getattr(self, var_cat_name).get()).strip().upper()
+                db_list = self.get_weapon_sub_list(category=cat)
+                for item in db_list:
+                    if item.get("Drop-Down Name") == selected_value:
+                        entry = item
+                        break
+
+        # Strategy B: Reconstruct standard parameters directly from legacy backup storage labels
+        if entry is None:
+            entry = {
+                "Drop-Down Name": selected_value,
+                "Weapon Name": getattr(self, f"label_hidden_sub_weapon_{row_number}_name").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_name") else "",
+                "Ammo Type": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_type").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_type") else "",
+                "Abbv": getattr(self, f"label_hidden_sub_weapon_{row_number}_abbv").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_abbv") else "",
+                "Effect": getattr(self, f"label_hidden_sub_weapon_{row_number}_effect").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_effect") else "",
+                "To-Hit": getattr(self, f"label_hidden_sub_weapon_{row_number}_to_hit").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_to_hit") else "7",
+                "Dam": getattr(self, f"label_hidden_sub_weapon_{row_number}_damage").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_damage") else "",
+                "DP": getattr(self, f"label_hidden_sub_weapon_{row_number}_dp").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_dp") else "0",
+                "Cost": getattr(self, f"label_hidden_sub_weapon_{row_number}_cost").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_cost") else "0",
+                "Weight": getattr(self, f"label_hidden_sub_weapon_{row_number}_weight").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_weight") else "0",
+                "Space": getattr(self, f"label_hidden_sub_weapon_{row_number}_space").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_space") else "0",
+                "Shots": getattr(self, f"label_hidden_sub_weapon_{row_number}_shots").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_shots") else "0",
+                "Shot Cost": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_cost").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_cost") else "0",
+                "Shot Weight": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_weight").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_weight") else "0",
+            }
+
+        # 3. Fire the calculations block using recovered data matrices
+        if entry and entry.get("Drop-Down Name") != "Weapon":
+            self.add_to_sub_weapon_row_unified(row_number, entry)
+
+        # 4. Trigger structural system recalculationspass
+        if hasattr(self, "recalculate"):
+            self.recalculate()
+
+    def on_button_ammo_qty_unified(self, row_number: int, direction: str):
+        """
+        Handles up/down arrow button clicks for ammunition quantities across all rows.
+        Forces instant math recalculations for costs and weights.
+        """
+        var_name = f"var_sub_weapon_ammo_{row_number}_qty"
+        if not hasattr(self, var_name):
+            return
+            
+        var_obj = getattr(self, var_name)
+        try:
+            # Safely fetch the current text value
+            raw_val = var_obj.get()
+            current_val = int(raw_val) if str(raw_val).strip() != "" else 0
+        except (ValueError, tk.TclError):
+            current_val = 0
+            
+        # Calculate the new value safely (never drop below 0)
+        new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+        var_obj.set(new_val) 
+
+        # FORCE RECALCULATION: Explicitly trigger the calculation pipeline
+        if hasattr(self, "on_update_sub_weapon_qty_unified"):
+            self.on_update_sub_weapon_qty_unified(row_number=row_number)
+        elif hasattr(self, "recalculate"):
+            self.recalculate()
+
+    #def on_button_ammo_qty_unified(self, row_number: int, direction: str):
+    #    """
+    #    Handles up/down arrow button clicks for ammunition quantities across all rows.
+    #    """
+    #    var_name = f"var_sub_weapon_ammo_{row_number}_qty"
+    #    if not hasattr(self, var_name):
+    #        return
+    #        
+    #    var_obj = getattr(self, var_name)
+    #    try:
+    #        current_val = int(var_obj.get())
+    #    except (ValueError, tk.TclError):
+    #        current_val = 0
+    #        
+    #    new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+    #    var_obj.set(new_val) # This updates the variable, which triggers the calculation trace
+
+
+    def on_update_extra_mags_qty_unified(self, row_number: int):
+        """
+        Passes extra magazine trace writes straight through to our main calculation method.
+        """
+        self.on_update_sub_weapon_qty_unified(row_number)
+
+    def get_weapon_sub_list(self, category: str) -> list:
+        output_list: list = []
+        if category == "SMALL BORE WEAPONS":
+            output_list = getattr(self, "weapons_small_bore_list", None)
+        elif category == "LARGE BORE WEAPONS":
+            output_list = getattr(self, "weapons_large_bore_list", None)
+        elif category == "GRENADE LAUNCHERS":
+            output_list = getattr(self, "weapons_grenade_launchers_list", None)
+        elif category == "GRENADE AMMO":
+            output_list = getattr(self, "weapons_grenade_ammo_list", None)
+        elif category == "ROCKETS":
+            output_list = getattr(self, "weapons_rockets_list", None)
+        elif category == "ENERGY WEAPONS":
+            output_list = getattr(self, "weapons_energy_list", None)
+        elif category == "FLAMETHROWERS":
+            output_list = getattr(self, "weapons_flamethrower_list", None)
+        elif category == "DROPPED GASSES":
+            output_list = getattr(self, "weapons_dropped_gas_list", None)
+        elif category == "DROPPED LIQUIDS":
+            output_list = getattr(self, "weapons_dropped_liquid_list", None)
+        elif category == "DROPPED SOLIDS":
+            output_list = getattr(self, "weapons_dropped_solid_list", None)
+        elif category == "MINEDROPPERS":
+            output_list = getattr(self, "weapons_minedroppers_list", None)
+        elif category == "DISCHARGERS":
+            output_list = getattr(self, "weapons_dischargers_list", None)
+        return output_list
 
     def get_weapon_options_sub_list(self, input_list: list):
+        if input_list is None:
+            return None
         options: list = []
         for entry in input_list:
             weapon_name: str = entry.get("Drop-Down Name")
@@ -5545,11 +6042,11 @@ class Python_Designer():
         and facing direction dropdown menus for all 10 weapon rows using tight loops.
         """
         # 1. Loop-initialize all 10 primary weapon category dropdown slots
-        for row_idx in range(1, 11):
+        for row_idx in range(1, self.weapon_rows_count + 1):
             self.add_dropdown_weapon_alt_unified(row_idx, canvas_type=canvas_type)
 
         # 2. Loop-initialize all 10 armor facing direction dropdown slots
-        for row_idx in range(1, 11):
+        for row_idx in range(1, self.weapon_rows_count + 1):
             # Dynamically fetch the correct grid row tracking coordinate for this slot
             row_attr_name = f"grid_row_sub_weapon_alt_{row_idx}"
             target_grid_row = getattr(self, row_attr_name) if hasattr(self, row_attr_name) else row_idx
@@ -5575,999 +6072,6 @@ class Python_Designer():
         dropdown.grid(column=column_val, row=row_val, sticky="w")
         return facing, dropdown
 
-    def on_select_weapon_alt_1_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_1.get()
-        row_number: int = self.grid_row_sub_weapon_alt_1
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_1_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_1_qty_up(self, *args):
-        sub_weapon_1_qty = self.var_sub_weapon_1_qty.get()
-        sub_weapon_1_qty = sub_weapon_1_qty + 1
-        self.var_sub_weapon_1_qty.set(value=sub_weapon_1_qty)
-
-    def on_button_sub_weapon_1_qty_down(self, *args):
-        sub_weapon_1_qty = self.var_sub_weapon_1_qty.get()
-        sub_weapon_1_qty = max(sub_weapon_1_qty - 1, 0)
-        self.var_sub_weapon_1_qty.set(value=sub_weapon_1_qty)
-
-    def on_button_sub_weapon_1_ammo_qty_up(self, *args):
-        sub_weapon_1_ammo_qty = self.var_sub_weapon_ammo_1_qty.get()
-        sub_weapon_1_ammo_qty = sub_weapon_1_ammo_qty + 1
-        self.var_sub_weapon_ammo_1_qty.set(value=sub_weapon_1_ammo_qty)
-
-    def on_button_sub_weapon_1_ammo_qty_down(self, *args):
-        sub_weapon_1_ammo_qty = self.var_sub_weapon_ammo_1_qty.get()
-        sub_weapon_1_ammo_qty = max(sub_weapon_1_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_1_qty.set(value=sub_weapon_1_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_1_qty_up(self, *args):
-        sub_weapon_extra_mags_1_qty = self.var_sub_weapon_extra_mags_1_qty.get()
-        sub_weapon_extra_mags_1_qty = sub_weapon_extra_mags_1_qty + 1
-        self.var_sub_weapon_extra_mags_1_qty.set(value=sub_weapon_extra_mags_1_qty)
-
-    def on_button_sub_weapon_extra_mags_1_qty_down(self, *args):
-        sub_weapon_extra_mags_1_qty = self.var_sub_weapon_extra_mags_1_qty.get()
-        sub_weapon_extra_mags_1_qty = max(sub_weapon_extra_mags_1_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_1_qty.set(value=sub_weapon_extra_mags_1_qty)
-
-    def on_update_sub_weapon_1_qty(self, *args):
-        sub_weapon_1_qty = self.var_sub_weapon_1_qty.get()
-        sub_weapon_1_cost   = int(self.label_hidden_sub_weapon_1_cost.cget("text"))
-        sub_weapon_1_weight = int(self.label_hidden_sub_weapon_1_weight.cget("text"))
-        sub_weapon_1_space  = float(self.label_hidden_sub_weapon_1_space.cget("text"))
-        self.label_sub_weapon_1_cost.configure(text=self.float_to_str(sub_weapon_1_cost * sub_weapon_1_qty))
-        self.label_sub_weapon_1_weight.configure(text=self.float_to_str(sub_weapon_1_weight * sub_weapon_1_qty))
-        self.label_sub_weapon_1_space.configure(text=self.float_to_str(sub_weapon_1_space * sub_weapon_1_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_1_qty(self, *args):
-        sub_weapon_1_ammo_qty = self.var_sub_weapon_ammo_1_qty.get()
-        sub_weapon_1_ammo_cost   = float(self.label_hidden_sub_weapon_1_ammo_cost.cget("text"))
-        sub_weapon_1_ammo_weight = float(self.label_hidden_sub_weapon_1_ammo_weight.cget("text"))
-        self.label_sub_weapon_1_ammo_cost.configure(text=str(sub_weapon_1_ammo_cost * sub_weapon_1_ammo_qty))
-        self.label_sub_weapon_1_ammo_weight.configure(text=str(sub_weapon_1_ammo_weight * sub_weapon_1_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_1_qty(self, *args):
-        sub_weapon_extra_mags_1_qty = self.var_sub_weapon_extra_mags_1_qty.get()
-        sub_weapon_1_qty    = self.var_sub_weapon_1_qty.get()
-        sub_weapon_1_cost   = int(self.label_hidden_sub_weapon_1_cost.cget("text"))
-        sub_weapon_1_weight = int(self.label_hidden_sub_weapon_1_weight.cget("text"))
-        sub_weapon_1_space  = float(self.label_hidden_sub_weapon_1_space.cget("text"))
-        sub_weapon_1_cost   = sub_weapon_1_cost   * sub_weapon_1_qty + (50 * sub_weapon_extra_mags_1_qty)
-        sub_weapon_1_weight = sub_weapon_1_weight * sub_weapon_1_qty + (15 * sub_weapon_extra_mags_1_qty)
-        sub_weapon_1_space  = sub_weapon_1_space  * sub_weapon_1_qty + sub_weapon_extra_mags_1_qty
-        self.label_sub_weapon_1_cost.configure(text=self.float_to_str(sub_weapon_1_cost))
-        self.label_sub_weapon_1_weight.configure(text=self.float_to_str(sub_weapon_1_weight))
-        self.label_sub_weapon_1_space.configure(text=self.float_to_str(sub_weapon_1_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 2 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_2_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_2.get()
-        row_number: int = self.grid_row_sub_weapon_alt_2
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_2_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def add_to_sub_weapon_row_2(self, entry: dict):
-        drop_down_name:       str = entry.get("Drop-Down Name")
-        weapon_name:          str = entry.get("Weapon Name") # 'Weapon Name'  # 'Drop-Down Name'
-        weapon_ammo_type:     str = entry.get("Ammo Type") # 'Ammo Type'
-
-        self.label_sub_weapon_2_damage.configure(text=str(weapon_damage))
-        self.on_update_sub_weapon_2_qty()
-
-    def on_button_sub_weapon_2_qty_up(self, *args):
-        sub_weapon_2_qty = self.var_sub_weapon_2_qty.get()
-        sub_weapon_2_qty = sub_weapon_2_qty + 1
-        self.var_sub_weapon_2_qty.set(value=sub_weapon_2_qty)
-
-    def on_button_sub_weapon_2_qty_down(self, *args):
-        sub_weapon_2_qty = self.var_sub_weapon_2_qty.get()
-        sub_weapon_2_qty = max(sub_weapon_2_qty - 1, 0)
-        self.var_sub_weapon_2_qty.set(value=sub_weapon_2_qty)
-
-    def on_button_sub_weapon_2_ammo_qty_up(self, *args):
-        sub_weapon_2_ammo_qty = self.var_sub_weapon_ammo_2_qty.get()
-        sub_weapon_2_ammo_qty = sub_weapon_2_ammo_qty + 1
-        self.var_sub_weapon_ammo_2_qty.set(value=sub_weapon_2_ammo_qty)
-
-    def on_button_sub_weapon_2_ammo_qty_down(self, *args):
-        sub_weapon_2_ammo_qty = self.var_sub_weapon_ammo_2_qty.get()
-        sub_weapon_2_ammo_qty = max(sub_weapon_2_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_2_qty.set(value=sub_weapon_2_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_2_qty_up(self, *args):
-        sub_weapon_extra_mags_2_qty = self.var_sub_weapon_extra_mags_2_qty.get()
-        sub_weapon_extra_mags_2_qty = sub_weapon_extra_mags_2_qty + 1
-        self.var_sub_weapon_extra_mags_2_qty.set(value=sub_weapon_extra_mags_2_qty)
-
-    def on_button_sub_weapon_extra_mags_2_qty_down(self, *args):
-        sub_weapon_extra_mags_2_qty = self.var_sub_weapon_extra_mags_2_qty.get()
-        sub_weapon_extra_mags_2_qty = max(sub_weapon_extra_mags_2_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_2_qty.set(value=sub_weapon_extra_mags_2_qty)
-
-    def on_update_sub_weapon_2_qty(self, *args):
-        sub_weapon_2_qty = self.var_sub_weapon_2_qty.get()
-        sub_weapon_2_cost   = int(self.label_hidden_sub_weapon_2_cost.cget("text"))
-        sub_weapon_2_weight = int(self.label_hidden_sub_weapon_2_weight.cget("text"))
-        sub_weapon_2_space  = float(self.label_hidden_sub_weapon_2_space.cget("text"))
-        self.label_sub_weapon_2_cost.configure(text=self.float_to_str(sub_weapon_2_cost * sub_weapon_2_qty))
-        self.label_sub_weapon_2_weight.configure(text=self.float_to_str(sub_weapon_2_weight * sub_weapon_2_qty))
-        self.label_sub_weapon_2_space.configure(text=self.float_to_str(sub_weapon_2_space * sub_weapon_2_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_2_qty(self, *args):
-        sub_weapon_2_ammo_qty = self.var_sub_weapon_ammo_2_qty.get()
-        sub_weapon_2_ammo_cost   = float(self.label_hidden_sub_weapon_2_ammo_cost.cget("text"))
-        sub_weapon_2_ammo_weight = float(self.label_hidden_sub_weapon_2_ammo_weight.cget("text"))
-        self.label_sub_weapon_2_ammo_cost.configure(text=str(sub_weapon_2_ammo_cost * sub_weapon_2_ammo_qty))
-        self.label_sub_weapon_2_ammo_weight.configure(text=str(sub_weapon_2_ammo_weight * sub_weapon_2_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_2_qty(self, *args):
-        sub_weapon_extra_mags_2_qty = self.var_sub_weapon_extra_mags_2_qty.get()
-        sub_weapon_2_qty    = self.var_sub_weapon_2_qty.get()
-        sub_weapon_2_cost   = int(self.label_hidden_sub_weapon_2_cost.cget("text"))
-        sub_weapon_2_weight = int(self.label_hidden_sub_weapon_2_weight.cget("text"))
-        sub_weapon_2_space  = float(self.label_hidden_sub_weapon_2_space.cget("text"))
-        sub_weapon_2_cost   = sub_weapon_2_cost   * sub_weapon_2_qty + (50 * sub_weapon_extra_mags_2_qty)
-        sub_weapon_2_weight = sub_weapon_2_weight * sub_weapon_2_qty + (15 * sub_weapon_extra_mags_2_qty)
-        sub_weapon_2_space  = sub_weapon_2_space  * sub_weapon_2_qty + sub_weapon_extra_mags_2_qty
-        self.label_sub_weapon_2_cost.configure(text=self.float_to_str(sub_weapon_2_cost))
-        self.label_sub_weapon_2_weight.configure(text=self.float_to_str(sub_weapon_2_weight))
-        self.label_sub_weapon_2_space.configure(text=self.float_to_str(sub_weapon_2_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 3 processing here                                       #
-    ######################################################################
-
-
-    def on_select_weapon_alt_3_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_3.get()
-        row_number: int = self.grid_row_sub_weapon_alt_3
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_3_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_3_qty_up(self, *args):
-        sub_weapon_3_qty = self.var_sub_weapon_3_qty.get()
-        sub_weapon_3_qty = sub_weapon_3_qty + 1
-        self.var_sub_weapon_3_qty.set(value=sub_weapon_3_qty)
-
-    def on_button_sub_weapon_3_qty_down(self, *args):
-        sub_weapon_3_qty = self.var_sub_weapon_3_qty.get()
-        sub_weapon_3_qty = max(sub_weapon_3_qty - 1, 0)
-        self.var_sub_weapon_3_qty.set(value=sub_weapon_3_qty)
-
-    def on_button_sub_weapon_3_ammo_qty_up(self, *args):
-        sub_weapon_3_ammo_qty = self.var_sub_weapon_ammo_3_qty.get()
-        sub_weapon_3_ammo_qty = sub_weapon_3_ammo_qty + 1
-        self.var_sub_weapon_ammo_3_qty.set(value=sub_weapon_3_ammo_qty)
-
-    def on_button_sub_weapon_3_ammo_qty_down(self, *args):
-        sub_weapon_3_ammo_qty = self.var_sub_weapon_ammo_3_qty.get()
-        sub_weapon_3_ammo_qty = max(sub_weapon_3_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_3_qty.set(value=sub_weapon_3_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_3_qty_up(self, *args):
-        sub_weapon_extra_mags_3_qty = self.var_sub_weapon_extra_mags_3_qty.get()
-        sub_weapon_extra_mags_3_qty = sub_weapon_extra_mags_3_qty + 1
-        self.var_sub_weapon_extra_mags_3_qty.set(value=sub_weapon_extra_mags_3_qty)
-
-    def on_button_sub_weapon_extra_mags_3_qty_down(self, *args):
-        sub_weapon_extra_mags_3_qty = self.var_sub_weapon_extra_mags_3_qty.get()
-        sub_weapon_extra_mags_3_qty = max(sub_weapon_extra_mags_3_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_3_qty.set(value=sub_weapon_extra_mags_3_qty)
-
-    def on_update_sub_weapon_3_qty(self, *args):
-        sub_weapon_3_qty = self.var_sub_weapon_3_qty.get()
-        sub_weapon_3_cost   = int(self.label_hidden_sub_weapon_3_cost.cget("text"))
-        sub_weapon_3_weight = int(self.label_hidden_sub_weapon_3_weight.cget("text"))
-        sub_weapon_3_space  = float(self.label_hidden_sub_weapon_3_space.cget("text"))
-        self.label_sub_weapon_3_cost.configure(text=self.float_to_str(sub_weapon_3_cost * sub_weapon_3_qty))
-        self.label_sub_weapon_3_weight.configure(text=self.float_to_str(sub_weapon_3_weight * sub_weapon_3_qty))
-        self.label_sub_weapon_3_space.configure(text=self.float_to_str(sub_weapon_3_space * sub_weapon_3_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_3_qty(self, *args):
-        sub_weapon_3_ammo_qty = self.var_sub_weapon_ammo_3_qty.get()
-        sub_weapon_3_ammo_cost   = float(self.label_hidden_sub_weapon_3_ammo_cost.cget("text"))
-        sub_weapon_3_ammo_weight = float(self.label_hidden_sub_weapon_3_ammo_weight.cget("text"))
-        self.label_sub_weapon_3_ammo_cost.configure(text=str(sub_weapon_3_ammo_cost * sub_weapon_3_ammo_qty))
-        self.label_sub_weapon_3_ammo_weight.configure(text=str(sub_weapon_3_ammo_weight * sub_weapon_3_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_3_qty(self, *args):
-        sub_weapon_extra_mags_3_qty = self.var_sub_weapon_extra_mags_3_qty.get()
-        sub_weapon_3_qty    = self.var_sub_weapon_3_qty.get()
-        sub_weapon_3_cost   = int(self.label_hidden_sub_weapon_3_cost.cget("text"))
-        sub_weapon_3_weight = int(self.label_hidden_sub_weapon_3_weight.cget("text"))
-        sub_weapon_3_space  = float(self.label_hidden_sub_weapon_3_space.cget("text"))
-        sub_weapon_3_cost   = sub_weapon_3_cost   * sub_weapon_3_qty + (50 * sub_weapon_extra_mags_3_qty)
-        sub_weapon_3_weight = sub_weapon_3_weight * sub_weapon_3_qty + (15 * sub_weapon_extra_mags_3_qty)
-        sub_weapon_3_space  = sub_weapon_3_space  * sub_weapon_3_qty + sub_weapon_extra_mags_3_qty
-        self.label_sub_weapon_3_cost.configure(text=self.float_to_str(sub_weapon_3_cost))
-        self.label_sub_weapon_3_weight.configure(text=self.float_to_str(sub_weapon_3_weight))
-        self.label_sub_weapon_3_space.configure(text=self.float_to_str(sub_weapon_3_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 4 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_4_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_4.get()
-        row_number: int = self.grid_row_sub_weapon_alt_4
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_4_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_4_qty_up(self, *args):
-        sub_weapon_4_qty = self.var_sub_weapon_4_qty.get()
-        sub_weapon_4_qty = sub_weapon_4_qty + 1
-        self.var_sub_weapon_4_qty.set(value=sub_weapon_4_qty)
-
-    def on_button_sub_weapon_4_qty_down(self, *args):
-        sub_weapon_4_qty = self.var_sub_weapon_4_qty.get()
-        sub_weapon_4_qty = max(sub_weapon_4_qty - 1, 0)
-        self.var_sub_weapon_4_qty.set(value=sub_weapon_4_qty)
-
-    def on_button_sub_weapon_4_ammo_qty_up(self, *args):
-        sub_weapon_4_ammo_qty = self.var_sub_weapon_ammo_4_qty.get()
-        sub_weapon_4_ammo_qty = sub_weapon_4_ammo_qty + 1
-        self.var_sub_weapon_ammo_4_qty.set(value=sub_weapon_4_ammo_qty)
-
-    def on_button_sub_weapon_4_ammo_qty_down(self, *args):
-        sub_weapon_4_ammo_qty = self.var_sub_weapon_ammo_4_qty.get()
-        sub_weapon_4_ammo_qty = max(sub_weapon_4_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_4_qty.set(value=sub_weapon_4_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_4_qty_up(self, *args):
-        sub_weapon_extra_mags_4_qty = self.var_sub_weapon_extra_mags_4_qty.get()
-        sub_weapon_extra_mags_4_qty = sub_weapon_extra_mags_4_qty + 1
-        self.var_sub_weapon_extra_mags_4_qty.set(value=sub_weapon_extra_mags_4_qty)
-
-    def on_button_sub_weapon_extra_mags_4_qty_down(self, *args):
-        sub_weapon_extra_mags_4_qty = self.var_sub_weapon_extra_mags_4_qty.get()
-        sub_weapon_extra_mags_4_qty = max(sub_weapon_extra_mags_4_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_4_qty.set(value=sub_weapon_extra_mags_4_qty)
-
-    def on_update_sub_weapon_4_qty(self, *args):
-        sub_weapon_4_qty = self.var_sub_weapon_4_qty.get()
-        sub_weapon_4_cost   = int(self.label_hidden_sub_weapon_4_cost.cget("text"))
-        sub_weapon_4_weight = int(self.label_hidden_sub_weapon_4_weight.cget("text"))
-        sub_weapon_4_space  = float(self.label_hidden_sub_weapon_4_space.cget("text"))
-        self.label_sub_weapon_4_cost.configure(text=self.float_to_str(sub_weapon_4_cost * sub_weapon_4_qty))
-        self.label_sub_weapon_4_weight.configure(text=self.float_to_str(sub_weapon_4_weight * sub_weapon_4_qty))
-        self.label_sub_weapon_4_space.configure(text=self.float_to_str(sub_weapon_4_space * sub_weapon_4_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_4_qty(self, *args):
-        sub_weapon_4_ammo_qty = self.var_sub_weapon_ammo_4_qty.get()
-        sub_weapon_4_ammo_cost   = float(self.label_hidden_sub_weapon_4_ammo_cost.cget("text"))
-        sub_weapon_4_ammo_weight = float(self.label_hidden_sub_weapon_4_ammo_weight.cget("text"))
-        self.label_sub_weapon_4_ammo_cost.configure(text=str(sub_weapon_4_ammo_cost * sub_weapon_4_ammo_qty))
-        self.label_sub_weapon_4_ammo_weight.configure(text=str(sub_weapon_4_ammo_weight * sub_weapon_4_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_4_qty(self, *args):
-        sub_weapon_extra_mags_4_qty = self.var_sub_weapon_extra_mags_4_qty.get()
-        sub_weapon_4_qty    = self.var_sub_weapon_4_qty.get()
-        sub_weapon_4_cost   = int(self.label_hidden_sub_weapon_4_cost.cget("text"))
-        sub_weapon_4_weight = int(self.label_hidden_sub_weapon_4_weight.cget("text"))
-        sub_weapon_4_space  = float(self.label_hidden_sub_weapon_4_space.cget("text"))
-        sub_weapon_4_cost   = sub_weapon_4_cost   * sub_weapon_4_qty + (50 * sub_weapon_extra_mags_4_qty)
-        sub_weapon_4_weight = sub_weapon_4_weight * sub_weapon_4_qty + (15 * sub_weapon_extra_mags_4_qty)
-        sub_weapon_4_space  = sub_weapon_4_space  * sub_weapon_4_qty + sub_weapon_extra_mags_4_qty
-        self.label_sub_weapon_4_cost.configure(text=self.float_to_str(sub_weapon_4_cost))
-        self.label_sub_weapon_4_weight.configure(text=self.float_to_str(sub_weapon_4_weight))
-        self.label_sub_weapon_4_space.configure(text=self.float_to_str(sub_weapon_4_space))
-        self.recalculate()
-    ######################################################################
-    # Weapon Row 5 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_5_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_5.get()
-        row_number: int = self.grid_row_sub_weapon_alt_5
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_5_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_5_qty_up(self, *args):
-        sub_weapon_5_qty = self.var_sub_weapon_5_qty.get()
-        sub_weapon_5_qty = sub_weapon_5_qty + 1
-        self.var_sub_weapon_5_qty.set(value=sub_weapon_5_qty)
-
-    def on_button_sub_weapon_5_qty_down(self, *args):
-        sub_weapon_5_qty = self.var_sub_weapon_5_qty.get()
-        sub_weapon_5_qty = max(sub_weapon_5_qty - 1, 0)
-        self.var_sub_weapon_5_qty.set(value=sub_weapon_5_qty)
-
-    def on_button_sub_weapon_5_ammo_qty_up(self, *args):
-        sub_weapon_5_ammo_qty = self.var_sub_weapon_ammo_5_qty.get()
-        sub_weapon_5_ammo_qty = sub_weapon_5_ammo_qty + 1
-        self.var_sub_weapon_ammo_5_qty.set(value=sub_weapon_5_ammo_qty)
-
-    def on_button_sub_weapon_5_ammo_qty_down(self, *args):
-        sub_weapon_5_ammo_qty = self.var_sub_weapon_ammo_5_qty.get()
-        sub_weapon_5_ammo_qty = max(sub_weapon_5_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_5_qty.set(value=sub_weapon_5_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_5_qty_up(self, *args):
-        sub_weapon_extra_mags_5_qty = self.var_sub_weapon_extra_mags_5_qty.get()
-        sub_weapon_extra_mags_5_qty = sub_weapon_extra_mags_5_qty + 1
-        self.var_sub_weapon_extra_mags_5_qty.set(value=sub_weapon_extra_mags_5_qty)
-
-    def on_button_sub_weapon_extra_mags_5_qty_down(self, *args):
-        sub_weapon_extra_mags_5_qty = self.var_sub_weapon_extra_mags_5_qty.get()
-        sub_weapon_extra_mags_5_qty = max(sub_weapon_extra_mags_5_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_5_qty.set(value=sub_weapon_extra_mags_5_qty)
-
-    def on_update_sub_weapon_5_qty(self, *args):
-        sub_weapon_5_qty = self.var_sub_weapon_5_qty.get()
-        sub_weapon_5_cost   = int(self.label_hidden_sub_weapon_5_cost.cget("text"))
-        sub_weapon_5_weight = int(self.label_hidden_sub_weapon_5_weight.cget("text"))
-        sub_weapon_5_space  = float(self.label_hidden_sub_weapon_5_space.cget("text"))
-        self.label_sub_weapon_5_cost.configure(text=self.float_to_str(sub_weapon_5_cost * sub_weapon_5_qty))
-        self.label_sub_weapon_5_weight.configure(text=self.float_to_str(sub_weapon_5_weight * sub_weapon_5_qty))
-        self.label_sub_weapon_5_space.configure(text=self.float_to_str(sub_weapon_5_space * sub_weapon_5_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_5_qty(self, *args):
-        sub_weapon_5_ammo_qty = self.var_sub_weapon_ammo_5_qty.get()
-        sub_weapon_5_ammo_cost   = float(self.label_hidden_sub_weapon_5_ammo_cost.cget("text"))
-        sub_weapon_5_ammo_weight = float(self.label_hidden_sub_weapon_5_ammo_weight.cget("text"))
-        self.label_sub_weapon_5_ammo_cost.configure(text=str(sub_weapon_5_ammo_cost * sub_weapon_5_ammo_qty))
-        self.label_sub_weapon_5_ammo_weight.configure(text=str(sub_weapon_5_ammo_weight * sub_weapon_5_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_5_qty(self, *args):
-        sub_weapon_extra_mags_5_qty = self.var_sub_weapon_extra_mags_5_qty.get()
-        sub_weapon_5_qty    = self.var_sub_weapon_5_qty.get()
-        sub_weapon_5_cost   = int(self.label_hidden_sub_weapon_5_cost.cget("text"))
-        sub_weapon_5_weight = int(self.label_hidden_sub_weapon_5_weight.cget("text"))
-        sub_weapon_5_space  = float(self.label_hidden_sub_weapon_5_space.cget("text"))
-        sub_weapon_5_cost   = sub_weapon_5_cost   * sub_weapon_5_qty + (50 * sub_weapon_extra_mags_5_qty)
-        sub_weapon_5_weight = sub_weapon_5_weight * sub_weapon_5_qty + (15 * sub_weapon_extra_mags_5_qty)
-        sub_weapon_5_space  = sub_weapon_5_space  * sub_weapon_5_qty + sub_weapon_extra_mags_5_qty
-        self.label_sub_weapon_5_cost.configure(text=self.float_to_str(sub_weapon_5_cost))
-        self.label_sub_weapon_5_weight.configure(text=self.float_to_str(sub_weapon_5_weight))
-        self.label_sub_weapon_5_space.configure(text=self.float_to_str(sub_weapon_5_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 6 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_6_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_6.get()
-        row_number: int = self.grid_row_sub_weapon_alt_6
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_6_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_6_qty_up(self, *args):
-        sub_weapon_6_qty = self.var_sub_weapon_6_qty.get()
-        sub_weapon_6_qty = sub_weapon_6_qty + 1
-        self.var_sub_weapon_6_qty.set(value=sub_weapon_6_qty)
-
-    def on_button_sub_weapon_6_qty_down(self, *args):
-        sub_weapon_6_qty = self.var_sub_weapon_6_qty.get()
-        sub_weapon_6_qty = max(sub_weapon_6_qty - 1, 0)
-        self.var_sub_weapon_6_qty.set(value=sub_weapon_6_qty)
-
-    def on_button_sub_weapon_6_ammo_qty_up(self, *args):
-        sub_weapon_6_ammo_qty = self.var_sub_weapon_ammo_6_qty.get()
-        sub_weapon_6_ammo_qty = sub_weapon_6_ammo_qty + 1
-        self.var_sub_weapon_ammo_6_qty.set(value=sub_weapon_6_ammo_qty)
-
-    def on_button_sub_weapon_6_ammo_qty_down(self, *args):
-        sub_weapon_6_ammo_qty = self.var_sub_weapon_ammo_6_qty.get()
-        sub_weapon_6_ammo_qty = max(sub_weapon_6_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_6_qty.set(value=sub_weapon_6_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_6_qty_up(self, *args):
-        sub_weapon_extra_mags_6_qty = self.var_sub_weapon_extra_mags_6_qty.get()
-        sub_weapon_extra_mags_6_qty = sub_weapon_extra_mags_6_qty + 1
-        self.var_sub_weapon_extra_mags_6_qty.set(value=sub_weapon_extra_mags_6_qty)
-
-    def on_button_sub_weapon_extra_mags_6_qty_down(self, *args):
-        sub_weapon_extra_mags_6_qty = self.var_sub_weapon_extra_mags_6_qty.get()
-        sub_weapon_extra_mags_6_qty = max(sub_weapon_extra_mags_6_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_6_qty.set(value=sub_weapon_extra_mags_6_qty)
-
-    def on_update_sub_weapon_6_qty(self, *args):
-        sub_weapon_6_qty = self.var_sub_weapon_6_qty.get()
-        sub_weapon_6_cost   = int(self.label_hidden_sub_weapon_6_cost.cget("text"))
-        sub_weapon_6_weight = int(self.label_hidden_sub_weapon_6_weight.cget("text"))
-        sub_weapon_6_space  = float(self.label_hidden_sub_weapon_6_space.cget("text"))
-        self.label_sub_weapon_6_cost.configure(text=self.float_to_str(sub_weapon_6_cost * sub_weapon_6_qty))
-        self.label_sub_weapon_6_weight.configure(text=self.float_to_str(sub_weapon_6_weight * sub_weapon_6_qty))
-        self.label_sub_weapon_6_space.configure(text=self.float_to_str(sub_weapon_6_space * sub_weapon_6_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_6_qty(self, *args):
-        sub_weapon_6_ammo_qty = self.var_sub_weapon_ammo_6_qty.get()
-        sub_weapon_6_ammo_cost   = float(self.label_hidden_sub_weapon_6_ammo_cost.cget("text"))
-        sub_weapon_6_ammo_weight = float(self.label_hidden_sub_weapon_6_ammo_weight.cget("text"))
-        self.label_sub_weapon_6_ammo_cost.configure(text=str(sub_weapon_6_ammo_cost * sub_weapon_6_ammo_qty))
-        self.label_sub_weapon_6_ammo_weight.configure(text=str(sub_weapon_6_ammo_weight * sub_weapon_6_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_6_qty(self, *args):
-        sub_weapon_extra_mags_6_qty = self.var_sub_weapon_extra_mags_6_qty.get()
-        sub_weapon_6_qty    = self.var_sub_weapon_6_qty.get()
-        sub_weapon_6_cost   = int(self.label_hidden_sub_weapon_6_cost.cget("text"))
-        sub_weapon_6_weight = int(self.label_hidden_sub_weapon_6_weight.cget("text"))
-        sub_weapon_6_space  = float(self.label_hidden_sub_weapon_6_space.cget("text"))
-        sub_weapon_6_cost   = sub_weapon_6_cost   * sub_weapon_6_qty + (50 * sub_weapon_extra_mags_6_qty)
-        sub_weapon_6_weight = sub_weapon_6_weight * sub_weapon_6_qty + (15 * sub_weapon_extra_mags_6_qty)
-        sub_weapon_6_space  = sub_weapon_6_space  * sub_weapon_6_qty + sub_weapon_extra_mags_6_qty
-        self.label_sub_weapon_6_cost.configure(text=self.float_to_str(sub_weapon_6_cost))
-        self.label_sub_weapon_6_weight.configure(text=self.float_to_str(sub_weapon_6_weight))
-        self.label_sub_weapon_6_space.configure(text=self.float_to_str(sub_weapon_6_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 7 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_7_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_7.get()
-        row_number: int = self.grid_row_sub_weapon_alt_7
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_7_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_7_qty_up(self, *args):
-        sub_weapon_7_qty = self.var_sub_weapon_7_qty.get()
-        sub_weapon_7_qty = sub_weapon_7_qty + 1
-        self.var_sub_weapon_7_qty.set(value=sub_weapon_7_qty)
-
-    def on_button_sub_weapon_7_qty_down(self, *args):
-        sub_weapon_7_qty = self.var_sub_weapon_7_qty.get()
-        sub_weapon_7_qty = max(sub_weapon_7_qty - 1, 0)
-        self.var_sub_weapon_7_qty.set(value=sub_weapon_7_qty)
-
-    def on_button_sub_weapon_7_ammo_qty_up(self, *args):
-        sub_weapon_7_ammo_qty = self.var_sub_weapon_ammo_7_qty.get()
-        sub_weapon_7_ammo_qty = sub_weapon_7_ammo_qty + 1
-        self.var_sub_weapon_ammo_7_qty.set(value=sub_weapon_7_ammo_qty)
-
-    def on_button_sub_weapon_7_ammo_qty_down(self, *args):
-        sub_weapon_7_ammo_qty = self.var_sub_weapon_ammo_7_qty.get()
-        sub_weapon_7_ammo_qty = max(sub_weapon_7_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_7_qty.set(value=sub_weapon_7_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_7_qty_up(self, *args):
-        sub_weapon_extra_mags_7_qty = self.var_sub_weapon_extra_mags_7_qty.get()
-        sub_weapon_extra_mags_7_qty = sub_weapon_extra_mags_7_qty + 1
-        self.var_sub_weapon_extra_mags_7_qty.set(value=sub_weapon_extra_mags_7_qty)
-
-    def on_button_sub_weapon_extra_mags_7_qty_down(self, *args):
-        sub_weapon_extra_mags_7_qty = self.var_sub_weapon_extra_mags_7_qty.get()
-        sub_weapon_extra_mags_7_qty = max(sub_weapon_extra_mags_7_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_7_qty.set(value=sub_weapon_extra_mags_7_qty)
-
-    def on_update_sub_weapon_7_qty(self, *args):
-        sub_weapon_7_qty = self.var_sub_weapon_7_qty.get()
-        sub_weapon_7_cost   = int(self.label_hidden_sub_weapon_7_cost.cget("text"))
-        sub_weapon_7_weight = int(self.label_hidden_sub_weapon_7_weight.cget("text"))
-        sub_weapon_7_space  = float(self.label_hidden_sub_weapon_7_space.cget("text"))
-        self.label_sub_weapon_7_cost.configure(text=self.float_to_str(sub_weapon_7_cost * sub_weapon_7_qty))
-        self.label_sub_weapon_7_weight.configure(text=self.float_to_str(sub_weapon_7_weight * sub_weapon_7_qty))
-        self.label_sub_weapon_7_space.configure(text=self.float_to_str(sub_weapon_7_space * sub_weapon_7_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_7_qty(self, *args):
-        sub_weapon_7_ammo_qty = self.var_sub_weapon_ammo_7_qty.get()
-        sub_weapon_7_ammo_cost   = float(self.label_hidden_sub_weapon_7_ammo_cost.cget("text"))
-        sub_weapon_7_ammo_weight = float(self.label_hidden_sub_weapon_7_ammo_weight.cget("text"))
-        self.label_sub_weapon_7_ammo_cost.configure(text=str(sub_weapon_7_ammo_cost * sub_weapon_7_ammo_qty))
-        self.label_sub_weapon_7_ammo_weight.configure(text=str(sub_weapon_7_ammo_weight * sub_weapon_7_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_7_qty(self, *args):
-        sub_weapon_extra_mags_7_qty = self.var_sub_weapon_extra_mags_7_qty.get()
-        sub_weapon_7_qty    = self.var_sub_weapon_7_qty.get()
-        sub_weapon_7_cost   = int(self.label_hidden_sub_weapon_7_cost.cget("text"))
-        sub_weapon_7_weight = int(self.label_hidden_sub_weapon_7_weight.cget("text"))
-        sub_weapon_7_space  = float(self.label_hidden_sub_weapon_7_space.cget("text"))
-        sub_weapon_7_cost   = sub_weapon_7_cost   * sub_weapon_7_qty + (50 * sub_weapon_extra_mags_7_qty)
-        sub_weapon_7_weight = sub_weapon_7_weight * sub_weapon_7_qty + (15 * sub_weapon_extra_mags_7_qty)
-        sub_weapon_7_space  = sub_weapon_7_space  * sub_weapon_7_qty + sub_weapon_extra_mags_7_qty
-        self.label_sub_weapon_7_cost.configure(text=self.float_to_str(sub_weapon_7_cost))
-        self.label_sub_weapon_7_weight.configure(text=self.float_to_str(sub_weapon_7_weight))
-        self.label_sub_weapon_7_space.configure(text=self.float_to_str(sub_weapon_7_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 8 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_8_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_8.get()
-        row_number: int = self.grid_row_sub_weapon_alt_8
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_8_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_8_qty_up(self, *args):
-        sub_weapon_8_qty = self.var_sub_weapon_8_qty.get()
-        sub_weapon_8_qty = sub_weapon_8_qty + 1
-        self.var_sub_weapon_8_qty.set(value=sub_weapon_8_qty)
-
-    def on_button_sub_weapon_8_qty_down(self, *args):
-        sub_weapon_8_qty = self.var_sub_weapon_8_qty.get()
-        sub_weapon_8_qty = max(sub_weapon_8_qty - 1, 0)
-        self.var_sub_weapon_8_qty.set(value=sub_weapon_8_qty)
-
-    def on_button_sub_weapon_8_ammo_qty_up(self, *args):
-        sub_weapon_8_ammo_qty = self.var_sub_weapon_ammo_8_qty.get()
-        sub_weapon_8_ammo_qty = sub_weapon_8_ammo_qty + 1
-        self.var_sub_weapon_ammo_8_qty.set(value=sub_weapon_8_ammo_qty)
-
-    def on_button_sub_weapon_8_ammo_qty_down(self, *args):
-        sub_weapon_8_ammo_qty = self.var_sub_weapon_ammo_8_qty.get()
-        sub_weapon_8_ammo_qty = max(sub_weapon_8_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_8_qty.set(value=sub_weapon_8_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_8_qty_up(self, *args):
-        sub_weapon_extra_mags_8_qty = self.var_sub_weapon_extra_mags_8_qty.get()
-        sub_weapon_extra_mags_8_qty = sub_weapon_extra_mags_8_qty + 1
-        self.var_sub_weapon_extra_mags_8_qty.set(value=sub_weapon_extra_mags_8_qty)
-
-    def on_button_sub_weapon_extra_mags_8_qty_down(self, *args):
-        sub_weapon_extra_mags_8_qty = self.var_sub_weapon_extra_mags_8_qty.get()
-        sub_weapon_extra_mags_8_qty = max(sub_weapon_extra_mags_8_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_8_qty.set(value=sub_weapon_extra_mags_8_qty)
-
-    def on_update_sub_weapon_8_qty(self, *args):
-        sub_weapon_8_qty = self.var_sub_weapon_8_qty.get()
-        sub_weapon_8_cost   = int(self.label_hidden_sub_weapon_8_cost.cget("text"))
-        sub_weapon_8_weight = int(self.label_hidden_sub_weapon_8_weight.cget("text"))
-        sub_weapon_8_space  = float(self.label_hidden_sub_weapon_8_space.cget("text"))
-        self.label_sub_weapon_8_cost.configure(text=self.float_to_str(sub_weapon_8_cost * sub_weapon_8_qty))
-        self.label_sub_weapon_8_weight.configure(text=self.float_to_str(sub_weapon_8_weight * sub_weapon_8_qty))
-        self.label_sub_weapon_8_space.configure(text=self.float_to_str(sub_weapon_8_space * sub_weapon_8_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_8_qty(self, *args):
-        sub_weapon_8_ammo_qty = self.var_sub_weapon_ammo_8_qty.get()
-        sub_weapon_8_ammo_cost   = float(self.label_hidden_sub_weapon_8_ammo_cost.cget("text"))
-        sub_weapon_8_ammo_weight = float(self.label_hidden_sub_weapon_8_ammo_weight.cget("text"))
-        self.label_sub_weapon_8_ammo_cost.configure(text=str(sub_weapon_8_ammo_cost * sub_weapon_8_ammo_qty))
-        self.label_sub_weapon_8_ammo_weight.configure(text=str(sub_weapon_8_ammo_weight * sub_weapon_8_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_8_qty(self, *args):
-        sub_weapon_extra_mags_8_qty = self.var_sub_weapon_extra_mags_8_qty.get()
-        sub_weapon_8_qty    = self.var_sub_weapon_8_qty.get()
-        sub_weapon_8_cost   = int(self.label_hidden_sub_weapon_8_cost.cget("text"))
-        sub_weapon_8_weight = int(self.label_hidden_sub_weapon_8_weight.cget("text"))
-        sub_weapon_8_space  = float(self.label_hidden_sub_weapon_8_space.cget("text"))
-        sub_weapon_8_cost   = sub_weapon_8_cost   * sub_weapon_8_qty + (50 * sub_weapon_extra_mags_8_qty)
-        sub_weapon_8_weight = sub_weapon_8_weight * sub_weapon_8_qty + (15 * sub_weapon_extra_mags_8_qty)
-        sub_weapon_8_space  = sub_weapon_8_space  * sub_weapon_8_qty + sub_weapon_extra_mags_8_qty
-        self.label_sub_weapon_8_cost.configure(text=self.float_to_str(sub_weapon_8_cost))
-        self.label_sub_weapon_8_weight.configure(text=self.float_to_str(sub_weapon_8_weight))
-        self.label_sub_weapon_8_space.configure(text=self.float_to_str(sub_weapon_8_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 9 processing here                                       #
-    ######################################################################
-
-    def on_select_weapon_alt_9_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_9.get()
-        row_number: int = self.grid_row_sub_weapon_alt_9
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_9_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_9_qty_up(self, *args):
-        sub_weapon_9_qty = self.var_sub_weapon_9_qty.get()
-        sub_weapon_9_qty = sub_weapon_9_qty + 1
-        self.var_sub_weapon_9_qty.set(value=sub_weapon_9_qty)
-
-    def on_button_sub_weapon_9_qty_down(self, *args):
-        sub_weapon_9_qty = self.var_sub_weapon_9_qty.get()
-        sub_weapon_9_qty = max(sub_weapon_9_qty - 1, 0)
-        self.var_sub_weapon_9_qty.set(value=sub_weapon_9_qty)
-
-    def on_button_sub_weapon_9_ammo_qty_up(self, *args):
-        sub_weapon_9_ammo_qty = self.var_sub_weapon_ammo_9_qty.get()
-        sub_weapon_9_ammo_qty = sub_weapon_9_ammo_qty + 1
-        self.var_sub_weapon_ammo_9_qty.set(value=sub_weapon_9_ammo_qty)
-
-    def on_button_sub_weapon_9_ammo_qty_down(self, *args):
-        sub_weapon_9_ammo_qty = self.var_sub_weapon_ammo_9_qty.get()
-        sub_weapon_9_ammo_qty = max(sub_weapon_9_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_9_qty.set(value=sub_weapon_9_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_9_qty_up(self, *args):
-        sub_weapon_extra_mags_9_qty = self.var_sub_weapon_extra_mags_9_qty.get()
-        sub_weapon_extra_mags_9_qty = sub_weapon_extra_mags_9_qty + 1
-        self.var_sub_weapon_extra_mags_9_qty.set(value=sub_weapon_extra_mags_9_qty)
-
-    def on_button_sub_weapon_extra_mags_9_qty_down(self, *args):
-        sub_weapon_extra_mags_9_qty = self.var_sub_weapon_extra_mags_9_qty.get()
-        sub_weapon_extra_mags_9_qty = max(sub_weapon_extra_mags_9_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_9_qty.set(value=sub_weapon_extra_mags_9_qty)
-
-    def on_update_sub_weapon_9_qty(self, *args):
-        sub_weapon_9_qty = self.var_sub_weapon_9_qty.get()
-        sub_weapon_9_cost   = int(self.label_hidden_sub_weapon_9_cost.cget("text"))
-        sub_weapon_9_weight = int(self.label_hidden_sub_weapon_9_weight.cget("text"))
-        sub_weapon_9_space  = float(self.label_hidden_sub_weapon_9_space.cget("text"))
-        self.label_sub_weapon_9_cost.configure(text=self.float_to_str(sub_weapon_9_cost * sub_weapon_9_qty))
-        self.label_sub_weapon_9_weight.configure(text=self.float_to_str(sub_weapon_9_weight * sub_weapon_9_qty))
-        self.label_sub_weapon_9_space.configure(text=self.float_to_str(sub_weapon_9_space * sub_weapon_9_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_9_qty(self, *args):
-        sub_weapon_9_ammo_qty = self.var_sub_weapon_ammo_9_qty.get()
-        sub_weapon_9_ammo_cost   = float(self.label_hidden_sub_weapon_9_ammo_cost.cget("text"))
-        sub_weapon_9_ammo_weight = float(self.label_hidden_sub_weapon_9_ammo_weight.cget("text"))
-        self.label_sub_weapon_9_ammo_cost.configure(text=str(sub_weapon_9_ammo_cost * sub_weapon_9_ammo_qty))
-        self.label_sub_weapon_9_ammo_weight.configure(text=str(sub_weapon_9_ammo_weight * sub_weapon_9_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_9_qty(self, *args):
-        sub_weapon_extra_mags_9_qty = self.var_sub_weapon_extra_mags_9_qty.get()
-        sub_weapon_9_qty    = self.var_sub_weapon_9_qty.get()
-        sub_weapon_9_cost   = int(self.label_hidden_sub_weapon_9_cost.cget("text"))
-        sub_weapon_9_weight = int(self.label_hidden_sub_weapon_9_weight.cget("text"))
-        sub_weapon_9_space  = float(self.label_hidden_sub_weapon_9_space.cget("text"))
-        sub_weapon_9_cost   = sub_weapon_9_cost   * sub_weapon_9_qty + (50 * sub_weapon_extra_mags_9_qty)
-        sub_weapon_9_weight = sub_weapon_9_weight * sub_weapon_9_qty + (15 * sub_weapon_extra_mags_9_qty)
-        sub_weapon_9_space  = sub_weapon_9_space  * sub_weapon_9_qty + sub_weapon_extra_mags_9_qty
-        self.label_sub_weapon_9_cost.configure(text=self.float_to_str(sub_weapon_9_cost))
-        self.label_sub_weapon_9_weight.configure(text=self.float_to_str(sub_weapon_9_weight))
-        self.label_sub_weapon_9_space.configure(text=self.float_to_str(sub_weapon_9_space))
-        self.recalculate()
-
-    ######################################################################
-    # Weapon Row 10 processing here                                      #
-    ######################################################################
-
-    def on_select_weapon_alt_10_canvas(self, *args):
-        selected_value = self.selected_weapon_alt_10.get()
-        row_number: int = self.grid_row_sub_weapon_alt_10
-        dropdown_list = None
-        match selected_value:
-            case "SMALL BORE WEAPONS":
-                dropdown_list = self.weapons_small_bore_list
-            case "LARGE BORE WEAPONS":
-                dropdown_list = self.weapons_large_bore_list
-            case "GRENADE LAUNCHERS":
-                dropdown_list = self.weapons_grenade_launchers_list
-            case "GRENADE AMMO":
-                dropdown_list = self.weapons_grenade_ammo_list
-            case "ROCKETS":
-                dropdown_list = self.weapons_rockets_list
-            case "ENERGY WEAPONS":
-                dropdown_list = self.weapons_energy_list
-            case "FLAMETHROWERS":
-                dropdown_list = self.weapons_flamethrower_list
-            case "DROPPED GASSES":
-                dropdown_list = self.weapons_dropped_gas_list
-            case "DROPPED LIQUIDS":
-                dropdown_list = self.weapons_dropped_liquid_list
-            case "DROPPED SOLIDS":
-                dropdown_list = self.weapons_dropped_solid_list
-            case "MINEDROPPERS":
-                dropdown_list = self.weapons_minedroppers_list
-            case "DISCHARGERS":
-                dropdown_list = self.weapons_dischargers_list
-            case "Weapon":
-                dropdown_list = None
-        self.add_dropdown_sub_weapon_10_canvas(row_number = row_number, dropdown_list = dropdown_list)
-
-    def on_button_sub_weapon_10_qty_up(self, *args):
-        sub_weapon_10_qty = self.var_sub_weapon_10_qty.get()
-        sub_weapon_10_qty = sub_weapon_10_qty + 1
-        self.var_sub_weapon_10_qty.set(value=sub_weapon_10_qty)
-
-    def on_button_sub_weapon_10_qty_down(self, *args):
-        sub_weapon_10_qty = self.var_sub_weapon_10_qty.get()
-        sub_weapon_10_qty = max(sub_weapon_10_qty - 1, 0)
-        self.var_sub_weapon_10_qty.set(value=sub_weapon_10_qty)
-
-    def on_button_sub_weapon_10_ammo_qty_up(self, *args):
-        sub_weapon_10_ammo_qty = self.var_sub_weapon_ammo_10_qty.get()
-        sub_weapon_10_ammo_qty = sub_weapon_10_ammo_qty + 1
-        self.var_sub_weapon_ammo_10_qty.set(value=sub_weapon_10_ammo_qty)
-
-    def on_button_sub_weapon_10_ammo_qty_down(self, *args):
-        sub_weapon_10_ammo_qty = self.var_sub_weapon_ammo_10_qty.get()
-        sub_weapon_10_ammo_qty = max(sub_weapon_10_ammo_qty - 1, 0)
-        self.var_sub_weapon_ammo_10_qty.set(value=sub_weapon_10_ammo_qty)
-
-    def on_button_sub_weapon_extra_mags_10_qty_up(self, *args):
-        sub_weapon_extra_mags_10_qty = self.var_sub_weapon_extra_mags_10_qty.get()
-        sub_weapon_extra_mags_10_qty = sub_weapon_extra_mags_10_qty + 1
-        self.var_sub_weapon_extra_mags_10_qty.set(value=sub_weapon_extra_mags_10_qty)
-
-    def on_button_sub_weapon_extra_mags_10_qty_down(self, *args):
-        sub_weapon_extra_mags_10_qty = self.var_sub_weapon_extra_mags_10_qty.get()
-        sub_weapon_extra_mags_10_qty = max(sub_weapon_extra_mags_10_qty - 1, 0)
-        self.var_sub_weapon_extra_mags_10_qty.set(value=sub_weapon_extra_mags_10_qty)
-
-    def on_update_sub_weapon_10_qty(self, *args):
-        sub_weapon_10_qty = self.var_sub_weapon_10_qty.get()
-        sub_weapon_10_cost   = int(self.label_hidden_sub_weapon_10_cost.cget("text"))
-        sub_weapon_10_weight = int(self.label_hidden_sub_weapon_10_weight.cget("text"))
-        sub_weapon_10_space  = float(self.label_hidden_sub_weapon_10_space.cget("text"))
-        self.label_sub_weapon_10_cost.configure(text=self.float_to_str(sub_weapon_10_cost * sub_weapon_10_qty))
-        self.label_sub_weapon_10_weight.configure(text=self.float_to_str(sub_weapon_10_weight * sub_weapon_10_qty))
-        self.label_sub_weapon_10_space.configure(text=self.float_to_str(sub_weapon_10_space * sub_weapon_10_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_ammo_10_qty(self, *args):
-        sub_weapon_10_ammo_qty = self.var_sub_weapon_ammo_10_qty.get()
-        sub_weapon_10_ammo_cost   = float(self.label_hidden_sub_weapon_10_ammo_cost.cget("text"))
-        sub_weapon_10_ammo_weight = float(self.label_hidden_sub_weapon_10_ammo_weight.cget("text"))
-        self.label_sub_weapon_10_ammo_cost.configure(text=str(sub_weapon_10_ammo_cost * sub_weapon_10_ammo_qty))
-        self.label_sub_weapon_10_ammo_weight.configure(text=str(sub_weapon_10_ammo_weight * sub_weapon_10_ammo_qty))
-        self.recalculate()
-
-    def on_update_sub_weapon_extra_mags_10_qty(self, *args):
-        sub_weapon_extra_mags_10_qty = self.var_sub_weapon_extra_mags_10_qty.get()
-        sub_weapon_10_qty    = self.var_sub_weapon_10_qty.get()
-        sub_weapon_10_cost   = int(self.label_hidden_sub_weapon_10_cost.cget("text"))
-        sub_weapon_10_weight = int(self.label_hidden_sub_weapon_10_weight.cget("text"))
-        sub_weapon_10_space  = float(self.label_hidden_sub_weapon_10_space.cget("text"))
-        sub_weapon_10_cost   = sub_weapon_10_cost   * sub_weapon_10_qty + (50 * sub_weapon_extra_mags_10_qty)
-        sub_weapon_10_weight = sub_weapon_10_weight * sub_weapon_10_qty + (15 * sub_weapon_extra_mags_10_qty)
-        sub_weapon_10_space  = sub_weapon_10_space  * sub_weapon_10_qty + sub_weapon_extra_mags_10_qty
-        self.label_sub_weapon_10_cost.configure(text=str(sub_weapon_10_cost))
-        self.label_sub_weapon_10_weight.configure(text=str(sub_weapon_10_weight))
-        self.label_sub_weapon_10_space.configure(text=str(sub_weapon_10_space))
-        self.recalculate()
 
     ######################################################################
     # Links Row 1 Processing here                                        #
@@ -6632,8 +6136,6 @@ class Python_Designer():
             facing_menu = ttk.OptionMenu(bt_master_frame, self.selected_bt_facing[i], "Facing", *facings)
             facing_menu.grid(row=current_frame_row, column=1, sticky="w", padx=(0, 10))
         
-
-
     ######################################################################
     # Accessories Row 1 processing here                                  #
     ######################################################################
@@ -13623,17 +13125,28 @@ class Python_Designer():
         #cargo_spaces = get_lbl_val("label_hidden_cargo_spaces")
         #modification_spaces = get_lbl_val("label_modificiation_space")
         #modification_cargo_spaces = get_lbl_val("label_hidden_modification_cargo_space")
-        body_spaces: int = int(self.label_body_spaces.cget("text"))
-        cargo_spaces: int = int(self.label_hidden_cargo_spaces.cget("text"))
-        modification_spaces: int = int(self.label_modificiation_space.cget("text"))
-        modification_cargo_spaces: int = int(self.label_hidden_modification_cargo_space.cget("text"))
-        
+        try:
+            body_spaces: int = int(self.label_body_spaces.cget("text"))
+        except tk.TclError:
+            body_spaces = 0
+        try:
+            cargo_spaces: int = int(self.label_hidden_cargo_spaces.cget("text"))
+        except tk.TclError:
+            cargo_spaces = 0
+        try:
+            modification_spaces: int = int(self.label_modificiation_space.cget("text"))
+        except tk.TclError:
+            modification_spaces = 0
+        try:
+            modification_cargo_spaces: int = int(self.label_hidden_modification_cargo_space.cget("text"))
+        except tk.TclError:
+            modification_cargo_spaces = 0
         # Calculate structural space thresholds cleanly using your 13 space metric baseline
         total_allowable_per_facing = int((body_spaces + cargo_spaces - modification_spaces - modification_cargo_spaces) / 3)
         facings_list: list = []
 
         # 2. SAFE PASS ONE: Dynamic processing for the 10 Weapon Row facings
-        for i in range(1, 11):
+        for i in range(1, self.weapon_rows_count + 1):
             facing_var_name = f"weapon_armor_facing_{i}"
             space_lbl_name = f"label_sub_weapon_{i}_space"
             
@@ -14028,7 +13541,7 @@ class Python_Designer():
         pdf.cell(w = self.width_weapon_dp,     h = self.row_height, ln=False, align='L', text="DP")
         pdf.cell(w = self.col_right_edge,      h = self.row_height, text="", ln=True, align='C') # Weapon Line Header
 
-        for weapon_index in range(1,11):
+        for weapon_index in range(1, self.weapon_rows_count + 1):
             qty_index     = f"weapon_{weapon_index}_qty"
             name_index    = f"weapon_{weapon_index}_name"
             facing_index  = f"weapon_{weapon_index}_facing"
@@ -14328,7 +13841,7 @@ class Python_Designer():
                     engine_list.append(("CA", ca_dp))
                 elif ca_facing == "Gas Tank":
                     tank_list.append(("CA", ca_dp))
-        for weapon_index in range (1,11):
+        for weapon_index in range (1, self.weapon_rows_count + 1):
             qty_index    = f"weapon_{weapon_index}_qty"
             qty_str = input_dict.get(qty_index, "0")
             if qty_str == "":
@@ -14856,7 +14369,7 @@ class Python_Designer():
 
         # Weapons section of WalkAround
         local_weapon_list: list = []
-        for weapon_index in range (1,11):
+        for weapon_index in range (1, self.weapon_rows_count + 1):
             type_index:   str = str(f'weapon_type_{weapon_index}')
             facing_index: str = str(f'weapon_{weapon_index}_facing')
             qty_index:    str = str(f'weapon_{weapon_index}_qty')
@@ -14894,7 +14407,7 @@ class Python_Designer():
         actions = ["None"]
     
         # 1. Scan the 10 Weapon rows
-        for i in range(1, 11):
+        for i in range(1, self.weapon_rows_count + 1):
             # Fallback tracking for common Tkinter naming variations in your file
             wpn_name_attr = f"selected_sub_weapon_{i}_canvas"
             if not hasattr(self, wpn_name_attr):
@@ -14913,16 +14426,33 @@ class Python_Designer():
                 name = getattr(self, wpn_name_attr).get()
 
                 # Fetch facing cleanly
+                #self.weapon_armor_facing_1
                 facing = "Facing"
                 if hasattr(self, wpn_facing_attr) and getattr(self, wpn_facing_attr):
-                    facing = getattr(self, wpn_facing_attr).get()
+                    try:
+                        facing = getattr(self, wpn_facing_attr).get()
+                    except AttributeError: #This might be a string and not a TKinter value
+                        facing = str(getattr(self, wpn_facing_attr, "Facing"))
 
                 # Fetch quantity cleanly (default to 1 if not found or blank)
                 qty = "1"
-                if hasattr(self, wpn_qty_attr) and getattr(self, wpn_qty_attr):
-                    qty_val = getattr(self, wpn_qty_attr).get()
-                    if qty_val and str(qty_val).strip() not in ["", "0"]:
-                        qty = str(qty_val).strip()
+                #if hasattr(self, wpn_qty_attr) and getattr(self, wpn_qty_attr):
+                #    qty_val = getattr(self, wpn_qty_attr).get()
+                #    if qty_val and str(qty_val).strip() not in ["", "0"]:
+                #        qty = str(qty_val).strip()
+                # 1. Retrieve the variable object safely
+                var_obj = getattr(self, wpn_qty_attr, None)
+                qty_val = 0 # Default to zero if the object is missing or blank
+    
+                if var_obj is not None:
+                    try:
+                        # 2. Extract raw text first to watch for blank field resets
+                        raw_text = var_obj.get()
+                        if str(raw_text).strip() != "":
+                            qty_val = int(raw_text)
+                    except (ValueError, tk.TclError):
+                        # 3. Prevent crashing if the field is empty or contains non-numeric symbols
+                        qty_val = 0
                 
                 if name and name not in ["Weapon", "", "None", "Choose Weapon"]:
                     # UPDATED: Includes the quantity format marker in the string description
@@ -15089,17 +14619,36 @@ class Python_Designer():
         btn_save = tk.Button(popup, text="Apply Bumper Trigger", command=save_and_close, bg="lightgreen")
         btn_save.pack(fill="x", padx=10, pady=(0, 10))
 
-    def _safe_parse_label(self, label_attr_name: str, return_type=float) -> float:
-        """Safely extracts and converts a Tkinter label's text value."""
+    def _safe_parse_label(self, label_attr_name: str, return_type=float):
+        """Safely extracts and converts a Tkinter label's text value, handling decimal strings."""
         if hasattr(self, label_attr_name):
             txt = getattr(self, label_attr_name).cget("text").strip()
             if txt == "":
                 return 0.0 if return_type is float else 0
             try:
-                return return_type(txt)
+                # First convert to float to handle strings containing decimal points like '4000.0'
+                float_val = float(txt)
+                return return_type(float_val)
             except ValueError:
                 return 0.0 if return_type is float else 0
         return 0.0 if return_type is float else 0
+
+    def _on_mouse_wheel_unified(self, event):
+        """
+        A single, cross-platform callback that processes mouse wheel movements
+        and scrolls the master canvas vertically.
+        """
+        # 1. Windows and macOS pass the scroll distance via event.delta
+        if event.delta:
+            # Shift the canvas view based on rotation direction
+            self.my_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            
+        # 2. Linux passes scroll inputs via discrete event buttons (Button 4/5)
+        else:
+            if event.num == 4: # Scroll Up
+                self.my_canvas.yview_scroll(-1, "units")
+            elif event.num == 5: # Scroll Down
+                self.my_canvas.yview_scroll(1, "units")
 
 if __name__ == '__main__':
     print("Launching Python_Designer")
