@@ -38,15 +38,76 @@ class Python_Designer():
     """Python_Designer class"""
     def __init__(self):
         """ Initial class, establish TKinter usage, labels, dropdowns and buttons"""
-        self.datestamp: str = "07_20_2026"
+        self.datestamp: str = "08_04_2026"
 
-        self.weapon_rows_count             =  2
-        self.link_rows_count               = 10
-        self.bt_rows_count                 = 10
-        self.accessory_rows_count          = 30
-        self.component_armor_rows_count    =  5
-        self.rocket_booster_rows_count     =  5
-        self.personal_equipment_rows_count = 10
+        self.weapon_dropdown_objects = []
+        self.weapon_qty_entry_objects = []
+        self.weapon_qty_up_button_objects = []
+        self.weapon_qty_down_button_objects = []
+        
+        # This is where your delete button list tracker belongs:
+        self.weapon_delete_button_objects = []
+        self.weapon_dropdown_string_vars = []
+        self.weapon_qty_string_vars = []
+        self.weapon_ammo_qty_string_vars = []
+        self.weapon_extra_mag_qty_string_vars = []
+        self.weapon_mount_dropdown_string_vars = []
+        self.weapon_ammo_qty_entry_objects = []
+        self.weapon_ammo_qty_up_button_objects = []
+        self.weapon_ammo_qty_down_button_objects = []
+        self.weapon_extra_mag_qty_entry_objects = []
+        self.weapon_extra_mag_qty_up_button_objects = []
+        self.weapon_extra_mag_qty_down_button_objects = []
+        self.weapon_mount_dropdown_objects = []
+        self.weapon_link_up_button_objects = []
+        self.weapon_link_down_button_objects = []
+        self.weapon_cost_label_objects = []
+        self.weapon_weight_label_objects = []
+        self.weapon_spaces_label_objects = []
+        self.weapon_dp_label_objects = []
+        self.weapon_to_hit_label_objects = []
+        self.weapon_damage_label_objects = []
+        self.weapon_delete_button_objects = []
+        self.sub_weapon_dropdown_objects = []
+        self.sub_weapon_dropdown_string_vars = []
+
+        self.accessory_dropdown_string_vars = []
+        self.accessory_qty_string_vars = []
+
+
+        self.weapon_rows_count             = 0#10
+        self.link_rows_count               = 0#10
+        self.bt_rows_count                 = 0#10
+        self.accessory_rows_count          = 0#30
+        self.component_armor_rows_count    = 0# 5
+        self.rocket_booster_rows_count     = 0# 5
+        self.personal_equipment_rows_count = 0#10
+
+        #forced column widths
+        self.grid_col_item_forced_width                 = 250
+        self.grid_col_qty_forced_width                  = 0
+        self.grid_left_up_button_forced_width           = 0
+        self.grid_left_down_button_forced_width         = 0
+        self.grid_right_qty_forced_width                = 0
+        self.grid_right_up_button_forced_width          = 0
+        self.grid_right_down_button_forced_width        = 0
+        self.grid_col_weapon_ammo_entry_forced_width    = 0
+        self.grid_col_weapon_ammo_qty_up_forced_width   = 0
+        self.grid_col_weapon_ammo_qty_down_forced_width = 0
+        self.grid_col_extra_mag_entry_forced_width      = 0
+        self.grid_col_extra_mag_qty_up_forced_width     = 0
+        self.grid_col_extra_mag_qty_down_forced_width   = 0
+        self.grid_col_cost_forced_width                 = 0
+        self.grid_col_weight_forced_width               = 0
+        self.grid_col_spaces_forced_width               = 0
+        self.grid_col_dp_forced_width                   = 0
+        self.grid_col_max_weight_forced_width           = 0
+        self.grid_col_power_factors_forced_width        = 0
+        self.grid_col_base_mpg_forced_width             = 0
+        self.grid_col_test_track_forced_width           = 0
+        self.grid_col_test_track_numbers_forced_width   = 0
+        self.grid_col_last_column_forced_width          = 0
+
 
         self.set_columns()
         self.root = tk.Tk()
@@ -104,75 +165,137 @@ class Python_Designer():
         self.my_canvas.bind_all("<Button-4>", self._on_mouse_wheel_unified)
         self.my_canvas.bind_all("<Button-5>", self._on_mouse_wheel_unified)
 
+        # Create the weapons framework partition
+        self.weapon_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
+        self.weapon_container_frame.grid(row=114, column=0, columnspan=30, sticky="nsew")
+
+        # Create the standalone Accessories framework partition row
+        self.accessory_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
+        self.accessory_container_frame.grid(row=116, column=0, columnspan=30, sticky="nsew")
+
+
+        # Build column index lists to pass configurations cleanly
+        column_indices = [
+            (self.grid_col_item,                 self.grid_col_item_forced_width),
+            (self.grid_col_qty,                  self.grid_col_qty_forced_width),
+            (self.grid_left_up_button,           self.grid_left_up_button_forced_width),
+            (self.grid_left_down_button,         self.grid_left_down_button_forced_width),
+            (self.grid_right_qty,                self.grid_right_qty_forced_width),
+            (self.grid_right_up_button,          self.grid_right_up_button_forced_width),
+            (self.grid_right_down_button,        self.grid_right_down_button_forced_width),
+            (self.grid_col_weapon_ammo_entry,    self.grid_col_weapon_ammo_entry_forced_width),
+            (self.grid_col_weapon_ammo_qty_up,   self.grid_col_weapon_ammo_qty_up_forced_width),
+            (self.grid_col_weapon_ammo_qty_down, self.grid_col_weapon_ammo_qty_down_forced_width),
+            (self.grid_col_extra_mag_entry,      self.grid_col_extra_mag_entry_forced_width),
+            (self.grid_col_extra_mag_qty_up,     self.grid_col_extra_mag_qty_up_forced_width),
+            (self.grid_col_extra_mag_qty_down,   self.grid_col_extra_mag_qty_down_forced_width),
+            (self.grid_col_cost,                 self.grid_col_cost_forced_width),
+            (self.grid_col_weight,               self.grid_col_weight_forced_width),
+            (self.grid_col_spaces,               self.grid_col_spaces_forced_width),
+            (self.grid_col_dp,                   self.grid_col_dp_forced_width),
+            (self.grid_col_max_weight,           self.grid_col_max_weight_forced_width),
+            (self.grid_col_power_factors,        self.grid_col_power_factors_forced_width),
+            (self.grid_col_base_mpg,             self.grid_col_base_mpg_forced_width),
+            (self.grid_col_test_track,           self.grid_col_test_track_forced_width),
+            (self.grid_col_test_track_numbers,   self.grid_col_test_track_numbers_forced_width),
+            (self.grid_col_last_column,          self.grid_col_last_column_forced_width)
+        ]
+
+        # Apply minsize configurations globally
+        for idx, width in column_indices:
+            self.second_frame.columnconfigure(index=idx, minsize=width)
+            self.weapon_container_frame.columnconfigure(index=idx, minsize=width)
+        # PLACE THE BUTTON: Give it a high columnspan so it skips the wide first column boundaries!
+        self.add_weapon_btn = tk.Button(
+            self.weapon_container_frame, 
+            text="➕ Add Weapon Row", 
+            command=self.add_new_weapon_row_tactical,
+            bg="#e1f5fe"
+        )
+        # We set columnspan=5 and move it to column 1 to completely avoid the 300-pixel zone
+        self.add_weapon_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
+
+        # Build the layout placement action button matching application styling choices
+        self.add_accessory_btn = tk.Button(
+            self.accessory_container_frame,
+            text="➕ Add Accessory Row",
+            command=self.add_new_accessory_row,
+            bg="#e1f5fe"  # Subtle brownish-grey theme distinct from weapons block
+        )
+
+        self.add_accessory_btn.grid(row=0, column=0, columnspan=1, sticky="w", padx=5, pady=5)
+
+        # Start tracking count at 0 instead of drawing all 30 at startup
+        self.accessory_rows_count = 0  
+
         self.add_labels_canvas(canvas_type=self.second_frame)
         self.add_dropdowns_canvas(canvas_type=self.second_frame)
         self.add_buttons_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_weapon_header(canvas_type=self.second_frame)
 
         #######################WEAPONS SECTION########################
         #This is required before any weapon row actions can occur
-        for index in range(1, self.weapon_rows_count + 1):
-            weapon_options_list: list = self.get_weapon_options_alt()
-            self.add_labels_buttons_weapon_row_unified(row_number=index, canvas_type=self.second_frame)
-            self.add_dropdown_weapon_alt_unified(row_number=index, canvas_type=self.second_frame)        
+        #for index in range(1, self.weapon_rows_count + 1):
+        #    weapon_options_list: list = self.get_weapon_options_alt()
+        #    self.add_labels_buttons_weapon_row_unified(row_number=index, canvas_type=self.weapon_container_frame)
+        #    self.add_dropdown_weapon_alt_unified(row_number=index, canvas_type=self.weapon_container_frame)        
         #######################WEAPONS SECTION########################
 
 
         # Add this inside __init__() to replace the previous dropdown variables
-        self.link_dropdown_sources = [None] * self.link_rows_count
-        self.link_dropdown_targets = [None] * self.link_rows_count
-        self.link_selections = [[] for _ in range(self.link_rows_count)]  # Holds lists of chosen actions
-        self.link_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.link_rows_count)]
-        self.link_entry_fields = [None] * self.link_rows_count
+        #self.link_dropdown_sources = [None] * self.link_rows_count
+        #self.link_dropdown_targets = [None] * self.link_rows_count
+        #self.link_selections = [[] for _ in range(self.link_rows_count)]  # Holds lists of chosen actions
+        #self.link_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.link_rows_count)]
+        #self.link_entry_fields = [None] * self.link_rows_count
 
         # Add this inside __init__() near your Link row variables
-        self.bt_rows_count = 10
-        self.bt_selections = [[] for _ in range(self.bt_rows_count)]  # Holds lists of chosen actions for Bumper Triggers
-        self.bt_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.bt_rows_count)]
-        self.bt_entry_fields = [None] * self.bt_rows_count
+        #self.bt_rows_count = 10
+        #self.bt_selections = [[] for _ in range(self.bt_rows_count)]  # Holds lists of chosen actions for Bumper Triggers
+        #self.bt_entry_vars = [tk.StringVar(value="No items linked") for _ in range(self.bt_rows_count)]
+        #self.bt_entry_fields = [None] * self.bt_rows_count
 
         # Added facing tracking variables for each bumper trigger row
-        self.selected_bt_facing = [tk.StringVar(value="Front") for _ in range(self.bt_rows_count)]
-        self.add_labels_buttons_link_rows(canvas_type=self.second_frame)
-        self.add_labels_buttons_bumper_trigger_rows(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_1_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_2_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_3_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_4_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_5_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_6_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_7_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_8_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_9_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_10_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_11_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_12_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_13_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_14_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_15_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_16_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_17_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_18_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_19_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_20_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_21_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_22_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_23_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_24_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_25_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_26_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_27_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_28_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_29_canvas(canvas_type=self.second_frame)
-        self.add_labels_buttons_accessories_30_canvas(canvas_type=self.second_frame)
+        #self.selected_bt_facing = [tk.StringVar(value="Front") for _ in range(self.bt_rows_count)]
+        #self.add_labels_buttons_link_rows(canvas_type=self.second_frame)
+        #self.add_labels_buttons_bumper_trigger_rows(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_1_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_2_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_3_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_4_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_5_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_6_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_7_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_8_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_9_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_10_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_11_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_12_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_13_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_14_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_15_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_16_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_17_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_18_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_19_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_20_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_21_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_22_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_23_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_24_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_25_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_26_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_27_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_28_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_29_canvas(canvas_type=self.second_frame)
+        #self.add_labels_buttons_accessories_30_canvas(canvas_type=self.second_frame)
         #self.add_dropdown_weapons(canvas_type=self.second_frame)
-        self.add_component_armor_rows(canvas_type=self.second_frame)
-        self.get_component_armor_facing_dictionaries()
-        self.add_dropdown_component_armor_canvas(canvas_type=self.second_frame)
-        self.get_rocket_booster_facing_dictionaries()
-        self.add_row_rocket_boosters(canvas_type=self.second_frame)
-        self.load_accessories_processing_list()
-        self.add_labels_buttons_personal_equipment(canvas_type=self.second_frame)
+        #self.add_component_armor_rows(canvas_type=self.second_frame)
+        #self.get_component_armor_facing_dictionaries()
+        #self.add_dropdown_component_armor_canvas(canvas_type=self.second_frame)
+        #self.get_rocket_booster_facing_dictionaries()
+        #self.add_row_rocket_boosters(canvas_type=self.second_frame)
+        #self.load_accessories_processing_list()
+        #self.add_labels_buttons_personal_equipment(canvas_type=self.second_frame)
         self.canvas_type = self.second_frame
         self.hide_electric_engine_options()
         self.hide_gas_engine_options()
@@ -203,6 +326,7 @@ class Python_Designer():
         help_menu.add_command(label="About", command=self.menu_help_about)
 
     def menu_file_new(self, *args):
+        # 1. Reset all your core vehicle configuration values safely
         self.selected_body.set('Body')
         self.selected_modifications.set('No Mods')
         self.selected_chassis.set('Chassis')
@@ -239,332 +363,104 @@ class Python_Designer():
         self.selected_outer_armor.set('Outer Armor')
         self.selected_inner_armor.set('Inner Armor')
 
-        for index in range(1, self.weapon_rows_count + 1):
-            # Set Tkinter string/variable values
-            getattr(self, f"selected_weapon_alt_{index}").set('Weapon')
-            getattr(self, f"weapon_armor_facing_{index}").set('Facing')
-            getattr(self, f"var_sub_weapon_{index}_qty").set(0)
-            getattr(self, f"var_sub_weapon_ammo_{index}_qty").set(0)
-            getattr(self, f"var_sub_weapon_extra_mags_{index}_qty").set(0)
-    
-            # Safely clear Tkinter canvas grid placement
-            canvas_attr = getattr(self, f"sub_weapon_dropdown_{index}_canvas", None)
-            if canvas_attr is not None:
-                canvas_attr.grid_forget()
-        
-            # Reset canvas reference
-            setattr(self, f"selected_sub_weapon_{index}_canvas", None)
-    
-            # Configure Tkinter label text values
-            getattr(self, f"label_sub_weapon_{index}_cost").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_weight").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_space").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_shots").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_ammo_cost").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_ammo_weight").configure(text="0")
-            getattr(self, f"label_sub_weapon_{index}_tohit").configure(text="")
-            getattr(self, f"label_sub_weapon_{index}_damage").configure(text="")
+        # 2. Reset the text tracking parameters across all 30 Accessory rows
+        for i in range(1, 31):
+            getattr(self, f"selected_accessories_{i}").set('Accessory')
+            getattr(self, f"var_accessories_{i}_qty").set(0)
 
+        # 3. Reset the component armor values back to pristine baselines
+        for i in range(1, 6):
+            getattr(self, f"selected_component_armor_{i}").set('Component armor')
+            getattr(self, f"selected_component_armor_facing_{i}").set('Facing')
+            getattr(self, f"var_component_armor_spaces_qty_{i}").set(0)
+            getattr(self, f"var_component_armor_count_qty_{i}").set(0)
 
-        #self.selected_weapon_alt_1.set('Weapon')
-        #if self.sub_weapon_dropdown_1_canvas is not None:
-        #    self.sub_weapon_dropdown_1_canvas.grid_forget()
-        #self.selected_sub_weapon_1_canvas = None
-        #self.var_sub_weapon_1_qty.set(0)
-        #self.var_sub_weapon_ammo_1_qty.set(0)
-        #self.var_sub_weapon_extra_mags_1_qty.set(0)
-        #self.label_sub_weapon_1_cost.configure(text="0")
-        #self.label_sub_weapon_1_weight.configure(text="0")
-        #self.label_sub_weapon_1_space.configure(text="0")
-        #self.label_sub_weapon_1_shots.configure(text="0")
-        #self.label_sub_weapon_1_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_1_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_1.set("Facing")
-        #self.label_sub_weapon_1_tohit.configure(text="")
-        #self.label_sub_weapon_1_damage.configure(text="")
+       # =====================================================================
+        # THE NEW ATOMIC RESET WEAPONS STEP
+        # =====================================================================
+        # 1. Completely destroy the weapon frame container and all widgets inside it!
+        if hasattr(self, 'weapon_container_frame') and self.weapon_container_frame is not None:
+            self.weapon_container_frame.grid_forget()
+            self.weapon_container_frame.destroy()
 
-        #self.selected_weapon_alt_2.set('Weapon')
-        #if self.sub_weapon_dropdown_2_canvas is not None:
-        #    self.sub_weapon_dropdown_2_canvas.grid_forget()
-        #self.selected_sub_weapon_2_canvas = None
-        #self.var_sub_weapon_2_qty.set(0)
-        #self.var_sub_weapon_ammo_2_qty.set(0)
-        #self.var_sub_weapon_extra_mags_2_qty.set(0)
-        #self.label_sub_weapon_2_cost.configure(text="0")
-        #self.label_sub_weapon_2_weight.configure(text="0")
-        #self.label_sub_weapon_2_space.configure(text="0")
-        #self.label_sub_weapon_2_shots.configure(text="0")
-        #self.label_sub_weapon_2_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_2_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_2.set("Facing")
-        #self.label_sub_weapon_2_tohit.configure(text="")
-        #self.label_sub_weapon_2_damage.configure(text="")
-        #self.selected_weapon_alt_3.set('Weapon')
-        #if self.sub_weapon_dropdown_3_canvas is not None:
-        #    self.sub_weapon_dropdown_3_canvas.grid_forget()
-        #self.selected_sub_weapon_3_canvas = None
-        #self.var_sub_weapon_3_qty.set(0)
-        #self.var_sub_weapon_ammo_3_qty.set(0)
-        #self.var_sub_weapon_extra_mags_3_qty.set(0)
-        #self.label_sub_weapon_3_cost.configure(text="0")
-        #self.label_sub_weapon_3_weight.configure(text="0")
-        #self.label_sub_weapon_3_space.configure(text="0")
-        #self.label_sub_weapon_3_shots.configure(text="0")
-        #self.label_sub_weapon_3_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_3_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_3.set("Facing")
-        #self.label_sub_weapon_3_tohit.configure(text="")
-        #self.label_sub_weapon_3_damage.configure(text="")
-        #self.selected_weapon_alt_4.set('Weapon')
-        #if self.sub_weapon_dropdown_4_canvas is not None:
-        #    self.sub_weapon_dropdown_4_canvas.grid_forget()
-        #self.selected_sub_weapon_4_canvas = None
-        #self.var_sub_weapon_4_qty.set(0)
-        #self.var_sub_weapon_ammo_4_qty.set(0)
-        #self.var_sub_weapon_extra_mags_4_qty.set(0)
-        #self.label_sub_weapon_4_cost.configure(text="0")
-        #self.label_sub_weapon_4_weight.configure(text="0")
-        #self.label_sub_weapon_4_space.configure(text="0")
-        #self.label_sub_weapon_4_shots.configure(text="0")
-        #self.label_sub_weapon_4_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_4_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_4.set("Facing")
-        #self.label_sub_weapon_4_tohit.configure(text="")
-        #self.label_sub_weapon_4_damage.configure(text="")
-        #self.selected_weapon_alt_5.set('Weapon')
-        #if self.sub_weapon_dropdown_5_canvas is not None:
-        #    self.sub_weapon_dropdown_5_canvas.grid_forget()
-        #self.selected_sub_weapon_5_canvas = None
-        #self.var_sub_weapon_5_qty.set(0)
-        #self.var_sub_weapon_ammo_5_qty.set(0)
-        #self.var_sub_weapon_extra_mags_5_qty.set(0)
-        #self.label_sub_weapon_5_cost.configure(text="0")
-        #self.label_sub_weapon_5_weight.configure(text="0")
-        #self.label_sub_weapon_5_space.configure(text="0")
-        #self.label_sub_weapon_5_shots.configure(text="0")
-        #self.label_sub_weapon_5_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_5_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_5.set("Facing")
-        #self.label_sub_weapon_5_tohit.configure(text="")
-        #self.label_sub_weapon_5_damage.configure(text="")
-        #self.selected_weapon_alt_6.set('Weapon')
-        #if self.sub_weapon_dropdown_6_canvas is not None:
-        #    self.sub_weapon_dropdown_6_canvas.grid_forget()
-        #self.selected_sub_weapon_6_canvas = None
-        #self.var_sub_weapon_6_qty.set(0)
-        #self.var_sub_weapon_ammo_6_qty.set(0)
-        #self.var_sub_weapon_extra_mags_6_qty.set(0)
-        #self.label_sub_weapon_6_cost.configure(text="0")
-        #self.label_sub_weapon_6_weight.configure(text="0")
-        #self.label_sub_weapon_6_space.configure(text="0")
-        #self.label_sub_weapon_6_shots.configure(text="0")
-        #self.label_sub_weapon_6_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_6_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_6.set("Facing")
-        #self.label_sub_weapon_6_tohit.configure(text="")
-        #self.label_sub_weapon_6_damage.configure(text="")
-        #self.selected_weapon_alt_7.set('Weapon')
-        #if self.sub_weapon_dropdown_7_canvas is not None:
-        #    self.sub_weapon_dropdown_7_canvas.grid_forget()
-        #self.selected_sub_weapon_7_canvas = None
-        #self.var_sub_weapon_7_qty.set(0)
-        #self.var_sub_weapon_ammo_7_qty.set(0)
-        #self.var_sub_weapon_extra_mags_7_qty.set(0)
-        #self.label_sub_weapon_7_cost.configure(text="0")
-        #self.label_sub_weapon_7_weight.configure(text="0")
-        #self.label_sub_weapon_7_space.configure(text="0")
-        #self.label_sub_weapon_7_shots.configure(text="0")
-        #self.label_sub_weapon_7_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_7_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_7.set("Facing")
-        #self.label_sub_weapon_7_tohit.configure(text="")
-        #self.label_sub_weapon_7_damage.configure(text="")
-        #self.selected_weapon_alt_8.set('Weapon')
-        #if self.sub_weapon_dropdown_8_canvas is not None:
-        #    self.sub_weapon_dropdown_8_canvas.grid_forget()
-        #self.selected_sub_weapon_8_canvas = None
-        #self.var_sub_weapon_8_qty.set(0)
-        #self.var_sub_weapon_ammo_8_qty.set(0)
-        #self.var_sub_weapon_extra_mags_8_qty.set(0)
-        #self.label_sub_weapon_8_cost.configure(text="0")
-        #self.label_sub_weapon_8_weight.configure(text="0")
-        #self.label_sub_weapon_8_space.configure(text="0")
-        #self.label_sub_weapon_8_shots.configure(text="0")
-        #self.label_sub_weapon_8_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_8_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_8.set("Facing")
-        #self.label_sub_weapon_8_tohit.configure(text="")
-        #self.label_sub_weapon_8_damage.configure(text="")
-        #self.selected_weapon_alt_9.set('Weapon')
-        #if self.sub_weapon_dropdown_9_canvas is not None:
-        #    self.sub_weapon_dropdown_9_canvas.grid_forget()
-        #self.selected_sub_weapon_9_canvas = None
-        #self.var_sub_weapon_9_qty.set(0)
-        #self.var_sub_weapon_ammo_9_qty.set(0)
-        #self.var_sub_weapon_extra_mags_9_qty.set(0)
-        #self.label_sub_weapon_9_cost.configure(text="0")
-        #self.label_sub_weapon_9_weight.configure(text="0")
-        #self.label_sub_weapon_9_space.configure(text="0")
-        #self.label_sub_weapon_9_shots.configure(text="0")
-        #self.label_sub_weapon_9_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_9_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_9.set("Facing")
-        #self.label_sub_weapon_9_tohit.configure(text="")
-        #self.label_sub_weapon_9_damage.configure(text="")
-        #self.selected_weapon_alt_10.set('Weapon')
-        #if self.sub_weapon_dropdown_10_canvas is not None:
-        #    self.sub_weapon_dropdown_10_canvas.grid_forget()
-        #self.selected_sub_weapon_10_canvas = None
-        #self.var_sub_weapon_10_qty.set(0)
-        #self.var_sub_weapon_ammo_10_qty.set(0)
-        #self.var_sub_weapon_extra_mags_10_qty.set(0)
-        #self.label_sub_weapon_10_cost.configure(text="0")
-        #self.label_sub_weapon_10_weight.configure(text="0")
-        #self.label_sub_weapon_10_space.configure(text="0")
-        #self.label_sub_weapon_10_shots.configure(text="0")
-        #self.label_sub_weapon_10_ammo_cost.configure(text="0")
-        #self.label_sub_weapon_10_ammo_weight.configure(text="0")
-        #self.weapon_armor_facing_10.set("Facing")
-        #self.label_sub_weapon_10_tohit.configure(text="")
-        #self.label_sub_weapon_10_damage.configure(text="")
+        # 2. Re-create a clean, empty canvas sub-frame in its place
+        self.weapon_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
+        self.weapon_container_frame.grid(row=112, column=0, columnspan=10, sticky="nsew", padx=5, pady=5)
+
+        # 3. Clean up the underlying data memory values
+        self.weapon_rows_count = 0  # Set weapon count back to zero!
+
+        # 4. Draw the standalone "Add Weapon Row" trigger button onto the fresh frame
+        self.add_weapon_btn = tk.Button(
+            self.weapon_container_frame, 
+            text="➕ Add Weapon Row", 
+            command=self.add_new_weapon_row_tactical,
+            bg="#e1f5fe"
+        )
+
+        # 4. IRONCLAD WEAPON COLUMN PURGE (Hunts down dynamic stacked dropdowns)
+        # This scans every child widget inside self.second_frame that is sitting 
+        # in Column 0 from Row 112 onwards (the weapons section layout zone).
+        # It maps them to find the true originals, and destroys the dynamic duplicates!
+        #all_column_zero_menus = []
+        #for child in self.second_frame.winfo_children():
+        #    try:
+        #        widget_class = child.winfo_class()
+        #        if widget_class in ['Menubutton', 'TMenubutton', 'Combobox']:
+        #            grid_info = child.grid_info()
+        #            col = grid_info.get("column", -1)
+        #            row = grid_info.get("row", -1)
+        #            
+        #            if row >= 112 and col == 0:
+        #                all_column_zero_menus.append((row, child))
+        #    except Exception:
+        #        pass
+
+        # Sort widgets vertically by their row position to safely separate originals from duplicates
+        #all_column_zero_menus.sort(key=lambda x: x[0])
+
+        # Track how many primary category dropdowns we expect to keep
+        #processed_primary_rows = {}
         
-        self.selected_accessories_1.set('Accessory')
-        self.var_accessories_1_qty.set(0)
-        self.selected_accessories_2.set('Accessory')
-        self.var_accessories_2_qty.set(0)
-        self.selected_accessories_3.set('Accessory')
-        self.var_accessories_3_qty.set(0)
-        self.selected_accessories_4.set('Accessory')
-        self.var_accessories_4_qty.set(0)
-        self.selected_accessories_5.set('Accessory')
-        self.var_accessories_5_qty.set(0)
-        self.selected_accessories_6.set('Accessory')
-        self.var_accessories_6_qty.set(0)
-        self.selected_accessories_7.set('Accessory')
-        self.var_accessories_7_qty.set(0)
-        self.selected_accessories_8.set('Accessory')
-        self.var_accessories_8_qty.set(0)
-        self.selected_accessories_9.set('Accessory')
-        self.var_accessories_9_qty.set(0)
-        self.selected_accessories_10.set('Accessory')
-        self.var_accessories_10_qty.set(0)
-        self.selected_accessories_11.set('Accessory')
-        self.var_accessories_11_qty.set(0)
-        self.selected_accessories_12.set('Accessory')
-        self.var_accessories_12_qty.set(0)
-        self.selected_accessories_13.set('Accessory')
-        self.var_accessories_13_qty.set(0)
-        self.selected_accessories_14.set('Accessory')
-        self.var_accessories_14_qty.set(0)
-        self.selected_accessories_15.set('Accessory')
-        self.var_accessories_15_qty.set(0)
-        self.selected_accessories_16.set('Accessory')
-        self.var_accessories_16_qty.set(0)
-        self.selected_accessories_17.set('Accessory')
-        self.var_accessories_17_qty.set(0)
-        self.selected_accessories_18.set('Accessory')
-        self.var_accessories_18_qty.set(0)
-        self.selected_accessories_19.set('Accessory')
-        self.var_accessories_19_qty.set(0)
-        self.selected_accessories_20.set('Accessory')
-        self.var_accessories_20_qty.set(0)
-        self.selected_accessories_21.set('Accessory')
-        self.var_accessories_21_qty.set(0)
-        self.selected_accessories_22.set('Accessory')
-        self.var_accessories_22_qty.set(0)
-        self.selected_accessories_23.set('Accessory')
-        self.var_accessories_23_qty.set(0)
-        self.selected_accessories_24.set('Accessory')
-        self.var_accessories_24_qty.set(0)
-        self.selected_accessories_25.set('Accessory')
-        self.var_accessories_25_qty.set(0)
-        self.selected_accessories_26.set('Accessory')
-        self.var_accessories_26_qty.set(0)
-        self.selected_accessories_27.set('Accessory')
-        self.var_accessories_27_qty.set(0)
-        self.selected_accessories_28.set('Accessory')
-        self.var_accessories_28_qty.set(0)
-        self.selected_accessories_29.set('Accessory')
-        self.var_accessories_29_qty.set(0)
-        self.selected_accessories_30.set('Accessory')
-        self.var_accessories_30_qty.set(0)
-        
-        self.selected_component_armor_1.set('Component armor')
-        self.selected_component_armor_facing_1.set('Facing')
-        self.var_component_armor_spaces_qty_1.set(0)
-        self.var_component_armor_count_qty_1.set(0)
-        self.selected_component_armor_2.set('Component armor')
-        self.selected_component_armor_facing_2.set('Facing')
-        self.var_component_armor_spaces_qty_2.set(0)
-        self.var_component_armor_count_qty_2.set(0)
-        self.selected_component_armor_3.set('Component armor')
-        self.selected_component_armor_facing_3.set('Facing')
-        self.var_component_armor_spaces_qty_3.set(0)
-        self.var_component_armor_count_qty_3.set(0)
-        self.selected_component_armor_4.set('Component armor')
-        self.selected_component_armor_facing_4.set('Facing')
-        self.var_component_armor_spaces_qty_4.set(0)
-        self.var_component_armor_count_qty_4.set(0)
-        self.selected_component_armor_5.set('Component armor')
-        self.selected_component_armor_facing_5.set('Facing')
-        self.var_component_armor_spaces_qty_5.set(0)
-        self.var_component_armor_count_qty_5.set(0)
-        
-        self.var_rocket_booster_pounds_qty_1.set(0)
-        self.selected_rocket_booster_facing_1.set('Facing')
-        self.var_rocket_booster_pounds_qty_2.set(0)
-        self.selected_rocket_booster_facing_2.set('Facing')
-        self.var_rocket_booster_pounds_qty_3.set(0)
-        self.selected_rocket_booster_facing_3.set('Facing')
-        self.var_rocket_booster_pounds_qty_4.set(0)
-        self.selected_rocket_booster_facing_4.set('Facing')
-        self.var_rocket_booster_pounds_qty_5.set(0)
-        self.selected_rocket_booster_facing_5.set('Facing')
-        
-        self.selected_personal_equipment_1.set('Personal Equipment')
-        self.var_personal_equipment_1_qty.set(0)
-        self.selected_personal_equipment_2.set('Personal Equipment')
-        self.var_personal_equipment_2_qty.set(0)
-        self.selected_personal_equipment_3.set('Personal Equipment')
-        self.var_personal_equipment_3_qty.set(0)
-        self.selected_personal_equipment_4.set('Personal Equipment')
-        self.var_personal_equipment_4_qty.set(0)
-        self.selected_personal_equipment_5.set('Personal Equipment')
-        self.var_personal_equipment_5_qty.set(0)
-        self.selected_personal_equipment_6.set('Personal Equipment')
-        self.var_personal_equipment_6_qty.set(0)
-        self.selected_personal_equipment_7.set('Personal Equipment')
-        self.var_personal_equipment_7_qty.set(0)
-        self.selected_personal_equipment_8.set('Personal Equipment')
-        self.var_personal_equipment_8_qty.set(0)
-        self.selected_personal_equipment_9.set('Personal Equipment')
-        self.var_personal_equipment_9_qty.set(0)
-        self.selected_personal_equipment_10.set('Personal Equipment')
-        self.var_personal_equipment_10_qty.set(0)
-        
-        self.var_six_wheel_chassis.set(0)
-        self.var_sloped_armor.set(0)
-        self.label_total_cost.configure(text="0")
-        self.label_total_weight.configure(text="0")
-        self.label_total_space.configure(text="0")
-        self.label_final_engine_mpg.configure(text="0")
-        self.label_total_power_factors.configure(text="0")
-        self.label_top_speed.configure(text="0")
-        self.label_max_weight_top_speed.configure(text="0")
-        self.label_accel.configure(text="0")
-        self.label_max_accel.configure(text="0")
-        self.var_outer_front_armor_allocation_qty.set(0)
-        self.var_outer_back_armor_allocation_qty.set(0)
-        self.var_outer_left_armor_allocation_qty.set(0)
-        self.var_outer_top_armor_allocation_qty.set(0)
-        self.var_outer_underbody_armor_allocation_qty.set(0)
-        self.var_inner_front_armor_allocation_qty.set(0)
-        self.var_inner_back_armor_allocation_qty.set(0)
-        self.var_inner_left_armor_allocation_qty.set(0)
-        self.var_inner_right_armor_allocation_qty.set(0)
-        self.var_inner_top_armor_allocation_qty.set(0)
-        self.var_inner_underbody_armor_allocation_qty.set(0)
-        self.current_file_path = ""
+        #for row, widget in all_column_zero_menus:
+        #    # The first dropdown found on a unique row number is your original category selection box.
+        #    # Any subsequent dropdown on that exact same row is a dynamic sub-weapon box!
+        #    if row not in processed_primary_rows:
+        #        processed_primary_rows[row] = widget
+        #    else:
+        #        try:
+        #            widget.grid_forget() # Un-map placement path
+        #            widget.destroy()     # Delete the ghost sub-dropdown from memory entirely
+        #        except Exception:
+        #            pass
+
+        # 5. Clear variable tracking attributes and restore baseline data column labels
+        #for index in range(1, self.weapon_rows_count + 1):
+        #    getattr(self, f"selected_weapon_alt_{index}").set('Weapon')
+        #    getattr(self, f"weapon_armor_facing_{index}").set('Facing')
+        #    getattr(self, f"var_sub_weapon_{index}_qty").set(0)
+        #    getattr(self, f"var_sub_weapon_ammo_{index}_qty").set(0)
+        #    getattr(self, f"var_sub_weapon_extra_mags_{index}_qty").set(0)
+
+            # Nullify secondary canvas reference markers completely to clear layout memory
+        #    for var_suffix in ["", "_canvas"]:
+        #        setattr(self, f"selected_sub_weapon_{index}{var_suffix}", None)
+        #        setattr(self, f"sub_weapon_dropdown_{index}{var_suffix}", None)
+
+            # Force statistic string labels back to pure zero baseline footprints
+        #    getattr(self, f"label_sub_weapon_{index}_cost").configure(text="0")
+        #    getattr(self, f"label_sub_weapon_{index}_weight").configure(text="0")
+        ##    getattr(self, f"label_sub_weapon_{index}_space").configure(text="0")
+        #    getattr(self, f"label_sub_weapon_{index}_shots").configure(text="0")
+        #    getattr(self, f"label_sub_weapon_{index}_ammo_cost").configure(text="0")
+        #    getattr(self, f"label_sub_weapon_{index}_ammo_weight").configure(text="0")
+        #    getattr(self, f"label_sub_weapon_{index}_tohit").configure(text="")
+        #    getattr(self, f"label_sub_weapon_{index}_damage").configure(text="")
+
+        # 6. Synchronize screen layout bounds tracking pass
+        self.root.update_idletasks()
+        self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
+        self.recalculate()
 
     def menu_file_open(self, *args):
         self.current_file_path = filedialog.askopenfilename()  # Open file selection dialog
@@ -1125,14 +1021,14 @@ class Python_Designer():
         self.is_loading = True
 
         for index in range(1, self.weapon_rows_count + 1):
-            self.add_labels_buttons_weapon_row_unified(row_number = index, canvas_type=self.second_frame)
+            self.add_labels_buttons_weapon_row_unified(row_number = index, canvas_type=self.weapon_container_frame)
 
             # Update values for existing Tkinter variables using .set()
             getattr(self, f"selected_weapon_alt_{index}").set(dict_list[f"self.selected_weapon_alt_{index}"])
             selected_category: str = getattr(self, f"selected_weapon_alt_{index}").get()
             dropdown_list = self.get_weapon_sub_list(category=selected_category)
 
-            self.add_dropdown_sub_weapon_unified(row_number = index, canvas_type=self.second_frame, dropdown_list=dropdown_list)
+            self.add_dropdown_sub_weapon_unified(row_number = index, canvas_type=self.weapon_container_frame, dropdown_list=dropdown_list)
 
             #This canvas (aka self.selected_sub_weapon_1_canvas needs to exist first before a .set can be called on it
             getattr(self, f"selected_sub_weapon_{index}_canvas").set(dict_list[f"self.selected_sub_weapon_{index}_canvas"])
@@ -1207,8 +1103,8 @@ class Python_Designer():
             mag_attr = f"var_sub_weapon_extra_mags_{index}_qty"
             if hasattr(self, mag_attr) and getattr(self, mag_attr) is not None:
                 # Forcefully kick-run the calculations engine for this row
-                if hasattr(self, "on_update_sub_weapon_qty_unified"):
-                    self.on_update_sub_weapon_qty_unified(row_number=index)
+                if hasattr(self, "on_select_sub_weapon_unified"):
+                    self.on_select_sub_weapon_unified(row_number=index)
 
         # --- RESTORE ACCESSORIES (1 to 30) ---
         for i in range(1, 31):
@@ -1467,55 +1363,55 @@ class Python_Designer():
         self.label_final_engine_mpg    = tk.Label(canvas_type, text="0", anchor="w")
         self.label_final_engine_mpg.grid(row=self.grid_row_form_header, column=self.grid_col_base_mpg, sticky="w")
 
-        tk.Label(canvas_type, text="Item",                                 anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_form_header,               sticky="w")
-        tk.Label(canvas_type, text="Qty",                                  anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_form_header,               sticky="w")
-        tk.Label(canvas_type, text="Cost",                                 anchor="w").grid(column=self.grid_col_cost,                 row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Weight",                               anchor="w").grid(column=self.grid_col_weight,               row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Spaces",                               anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_form_total,                sticky="w", columnspan=2)
-        tk.Label(canvas_type, text="DP",                                   anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Max Weight: ",                         anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Power Factors",                        anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Base MPG",                             anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Range",                                anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_body_modification,         sticky="w")
-        tk.Label(canvas_type, text="Test Track",                           anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_form_total,                sticky="w")
-        tk.Label(canvas_type, text="Top Speed",                            anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_form_header,               sticky="w")
-        tk.Label(canvas_type, text="Acceleration",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_body,                      sticky="w")
-        tk.Label(canvas_type, text="HC",                                   anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_body_modification,         sticky="w")
-        tk.Label(canvas_type, text="Fully Loaded",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_chassis,                   sticky="w")
-        tk.Label(canvas_type, text="Top Speed",                            anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_suspension,                sticky="w")
-        tk.Label(canvas_type, text="Acceleration",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine,                    sticky="w")
-        tk.Label(canvas_type, text="HC",                                   anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine_mods_header,        sticky="w")
-        tk.Label(canvas_type, text="Crew",                                 anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
-        tk.Label(canvas_type, text="Crew: Driver/Gunners   :  Passengers", anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
-        tk.Label(canvas_type, text="Accessories",                          anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_accessories_header,        sticky="w")
-        tk.Label(canvas_type, text="Notes",                                anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_accessories_header,        sticky="w")
-        tk.Label(canvas_type, text="Component Armor",                      anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_component_header,          sticky="w")
-        tk.Label(canvas_type, text="Spaces",                               anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_component_header,          sticky="w", columnspan=3)
-        tk.Label(canvas_type, text="Pts",                                  anchor="w").grid(column=self.grid_right_qty,                row=self.grid_row_component_header,          sticky="w")
-        tk.Label(canvas_type, text="Armor Location",                       anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_component_header,          sticky="w")
-        tk.Label(canvas_type, text="Rocker Boosters",                      anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_rocket_booster_header,     sticky="w")
-        tk.Label(canvas_type, text="Lbs",                                  anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_rocket_booster_header,     sticky="w")
-        tk.Label(canvas_type, text="Facing",                               anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_rocket_booster_header,     sticky="w")
-        tk.Label(canvas_type, text="Thrust MPH",                           anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_rocket_booster_header,     sticky="w")
-        tk.Label(canvas_type, text="Unassigned:",                          anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Front:",                               anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Back:",                                anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Left:",                                anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Right:",                               anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Top:",                                 anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Underbody:",                           anchor="w").grid(column=self.grid_col_test_track_numbers,   row=self.grid_row_armor_header,               sticky="w")
-        tk.Label(canvas_type, text="Personal Equipment",                   anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Qty",                                  anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Cost",                                 anchor="w").grid(column=self.grid_col_cost,                 row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Weight",                               anchor="w").grid(column=self.grid_col_weight,               row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="GE",                                   anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="To-Hit",                               anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Damage",                               anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Shots",                                anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="CPS",                                  anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="WPS",                                  anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Notes",                                anchor="w").grid(column=self.grid_col_test_track_numbers,   row=self.grid_row_personal_equipment_header, sticky="w")
-        tk.Label(canvas_type, text="Design Validity",                      anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_red_alert,                 sticky="w")
+        tk.Label(canvas_type, text="Design Validity",                   anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_red_alert,                 sticky="w")
+        tk.Label(canvas_type, text="Item",                              anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_form_header,               sticky="w")
+        tk.Label(canvas_type, text="Qty",                               anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_form_header,               sticky="w")
+        tk.Label(canvas_type, text="Cost",                              anchor="w").grid(column=self.grid_col_cost,                 row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Weight",                            anchor="w").grid(column=self.grid_col_weight,               row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Spaces",                            anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_form_total,                sticky="w", columnspan=2)
+        tk.Label(canvas_type, text="DP",                                anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Max Weight: ",                      anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Power Factors",                     anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Base MPG",                          anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Range",                             anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_body_modification,         sticky="w")
+        tk.Label(canvas_type, text="Test Track",                        anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_form_total,                sticky="w")
+        tk.Label(canvas_type, text="Top Speed",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_form_header,               sticky="w")
+        tk.Label(canvas_type, text="Acceleration",                      anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_body,                      sticky="w")
+        tk.Label(canvas_type, text="HC",                                anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_body_modification,         sticky="w")
+        tk.Label(canvas_type, text="Fully Loaded",                      anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_chassis,                   sticky="w")
+        tk.Label(canvas_type, text="Top Speed",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_suspension,                sticky="w")
+        tk.Label(canvas_type, text="Acceleration",                      anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine,                    sticky="w")
+        tk.Label(canvas_type, text="HC",                                anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine_mods_header,        sticky="w")
+        tk.Label(canvas_type, text="Crew",                              anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
+        tk.Label(canvas_type, text="Crew: Driver/Gunners : Passengers", anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
+        #tk.Label(canvas_type, text="Accessories",                       anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_accessories_header,        sticky="w")
+        #tk.Label(canvas_type, text="Notes",                             anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_accessories_header,        sticky="w")
+        #tk.Label(canvas_type, text="Component Armor",                   anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_component_header,          sticky="w")
+        #tk.Label(canvas_type, text="Spaces",                            anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_component_header,          sticky="w", columnspan=3)
+        #tk.Label(canvas_type, text="Pts",                               anchor="w").grid(column=self.grid_right_qty,                row=self.grid_row_component_header,          sticky="w")
+        #tk.Label(canvas_type, text="Armor Location",                    anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_component_header,          sticky="w")
+        #tk.Label(canvas_type, text="Rocker Boosters",                   anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_rocket_booster_header,     sticky="w")
+        #tk.Label(canvas_type, text="Lbs",                               anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_rocket_booster_header,     sticky="w")
+        #tk.Label(canvas_type, text="Facing",                            anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_rocket_booster_header,     sticky="w")
+        #tk.Label(canvas_type, text="Thrust MPH",                        anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_rocket_booster_header,     sticky="w")
+        tk.Label(canvas_type, text="Unassigned:",                       anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Front:",                            anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Back:",                             anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Left:",                             anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Right:",                            anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Top:",                              anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_armor_header,               sticky="w")
+        tk.Label(canvas_type, text="Underbody:",                        anchor="w").grid(column=self.grid_col_test_track_numbers,   row=self.grid_row_armor_header,               sticky="w")
+        #tk.Label(canvas_type, text="Personal Equipment",                anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Qty",                               anchor="w").grid(column=self.grid_col_qty,                  row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Cost",                              anchor="w").grid(column=self.grid_col_cost,                 row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Weight",                            anchor="w").grid(column=self.grid_col_weight,               row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="GE",                                anchor="w").grid(column=self.grid_col_spaces,               row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="To-Hit",                            anchor="w").grid(column=self.grid_col_dp,                   row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Damage",                            anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Shots",                             anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="CPS",                               anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="WPS",                               anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_personal_equipment_header, sticky="w")
+        #tk.Label(canvas_type, text="Notes",                             anchor="w").grid(column=self.grid_col_test_track_numbers,   row=self.grid_row_personal_equipment_header, sticky="w")
 
         self.label_body_selected = tk.Label(canvas_type, text="0", anchor="w")
         self.label_body_cost = tk.Label(canvas_type, text="0", anchor="w")
@@ -1980,155 +1876,155 @@ class Python_Designer():
         self.button_inner_armor_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_inner_armor_qty_down)
         self.button_inner_armor_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_inner_armor, sticky="w")
 
-        self.button_accessories_1_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_1_qty_up)
-        self.button_accessories_1_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_1, sticky="w")
-        self.button_accessories_1_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_1_qty_down)
-        self.button_accessories_1_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_1, sticky="w")
+        #self.button_accessories_1_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_1_qty_up)
+        #self.button_accessories_1_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_1, sticky="w")
+        #self.button_accessories_1_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_1_qty_down)
+        #self.button_accessories_1_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_1, sticky="w")
 
-        self.button_accessories_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_2_qty_up)
-        self.button_accessories_2_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_2, sticky="w")
-        self.button_accessories_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_2_qty_down)
-        self.button_accessories_2_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_2, sticky="w")
+        #self.button_accessories_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_2_qty_up)
+        #self.button_accessories_2_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_2, sticky="w")
+        #self.button_accessories_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_2_qty_down)
+        #self.button_accessories_2_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_2, sticky="w")
 
-        self.button_accessories_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_3_qty_up)
-        self.button_accessories_3_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_3, sticky="w")
-        self.button_accessories_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_3_qty_down)
-        self.button_accessories_3_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_3, sticky="w")
+        #self.button_accessories_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_3_qty_up)
+        #self.button_accessories_3_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_3, sticky="w")
+        #self.button_accessories_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_3_qty_down)
+        #self.button_accessories_3_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_3, sticky="w")
 
-        self.button_accessories_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_4_qty_up)
-        self.button_accessories_4_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_4, sticky="w")
-        self.button_accessories_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_4_qty_down)
-        self.button_accessories_4_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_4, sticky="w")
+        #self.button_accessories_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_4_qty_up)
+        #self.button_accessories_4_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_4, sticky="w")
+        #self.button_accessories_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_4_qty_down)
+        #self.button_accessories_4_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_4, sticky="w")
 
-        self.button_accessories_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_5_qty_up)
-        self.button_accessories_5_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_5, sticky="w")
-        self.button_accessories_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_5_qty_down)
-        self.button_accessories_5_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_5, sticky="w")
+        #self.button_accessories_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_5_qty_up)
+        #self.button_accessories_5_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_5, sticky="w")
+        #self.button_accessories_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_5_qty_down)
+        #self.button_accessories_5_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_5, sticky="w")
 
-        self.button_accessories_6_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_6_qty_up)
-        self.button_accessories_6_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_6, sticky="w")
-        self.button_accessories_6_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_6_qty_down)
-        self.button_accessories_6_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_6, sticky="w")
+        #self.button_accessories_6_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_6_qty_up)
+        #self.button_accessories_6_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_6, sticky="w")
+        #self.button_accessories_6_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_6_qty_down)
+        #self.button_accessories_6_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_6, sticky="w")
 
-        self.button_accessories_7_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_7_qty_up)
-        self.button_accessories_7_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_7, sticky="w")
-        self.button_accessories_7_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_7_qty_down)
-        self.button_accessories_7_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_7, sticky="w")
+        #self.button_accessories_7_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_7_qty_up)
+        #self.button_accessories_7_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_7, sticky="w")
+        #self.button_accessories_7_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_7_qty_down)
+        #self.button_accessories_7_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_7, sticky="w")
 
-        self.button_accessories_8_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_8_qty_up)
-        self.button_accessories_8_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_8, sticky="w")
-        self.button_accessories_8_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_8_qty_down)
-        self.button_accessories_8_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_8, sticky="w")
+        #self.button_accessories_8_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_8_qty_up)
+        #self.button_accessories_8_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_8, sticky="w")
+        #self.button_accessories_8_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_8_qty_down)
+        #self.button_accessories_8_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_8, sticky="w")
 
-        self.button_accessories_9_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_9_qty_up)
-        self.button_accessories_9_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_9, sticky="w")
-        self.button_accessories_9_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_9_qty_down)
-        self.button_accessories_9_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_9, sticky="w")
+        #self.button_accessories_9_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_9_qty_up)
+        #self.button_accessories_9_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_9, sticky="w")
+        #self.button_accessories_9_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_9_qty_down)
+        #self.button_accessories_9_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_9, sticky="w")
 
-        self.button_accessories_10_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_10_qty_up)
-        self.button_accessories_10_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_10, sticky="w")
-        self.button_accessories_10_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_10_qty_down)
-        self.button_accessories_10_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_10, sticky="w")
+        #self.button_accessories_10_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_10_qty_up)
+        #self.button_accessories_10_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_10, sticky="w")
+        #self.button_accessories_10_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_10_qty_down)
+        #self.button_accessories_10_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_10, sticky="w")
 
-        self.button_accessories_11_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_11_qty_up)
-        self.button_accessories_11_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_11, sticky="w")
-        self.button_accessories_11_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_11_qty_down)
-        self.button_accessories_11_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_11, sticky="w")
+        #self.button_accessories_11_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_11_qty_up)
+        #self.button_accessories_11_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_11, sticky="w")
+        #self.button_accessories_11_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_11_qty_down)
+        #self.button_accessories_11_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_11, sticky="w")
 
-        self.button_accessories_12_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_12_qty_up)
-        self.button_accessories_12_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_12, sticky="w")
-        self.button_accessories_12_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_12_qty_down)
-        self.button_accessories_12_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_12, sticky="w")
+        #self.button_accessories_12_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_12_qty_up)
+        #self.button_accessories_12_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_12, sticky="w")
+        #self.button_accessories_12_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_12_qty_down)
+        #self.button_accessories_12_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_12, sticky="w")
 
-        self.button_accessories_13_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_13_qty_up)
-        self.button_accessories_13_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_13, sticky="w")
-        self.button_accessories_13_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_13_qty_down)
-        self.button_accessories_13_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_13, sticky="w")
+        #self.button_accessories_13_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_13_qty_up)
+        #self.button_accessories_13_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_13, sticky="w")
+        #self.button_accessories_13_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_13_qty_down)
+        #self.button_accessories_13_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_13, sticky="w")
 
-        self.button_accessories_14_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_14_qty_up)
-        self.button_accessories_14_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_14, sticky="w")
-        self.button_accessories_14_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_14_qty_down)
-        self.button_accessories_14_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_14, sticky="w")
+        #self.button_accessories_14_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_14_qty_up)
+        #self.button_accessories_14_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_14, sticky="w")
+        #self.button_accessories_14_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_14_qty_down)
+        #self.button_accessories_14_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_14, sticky="w")
 
-        self.button_accessories_15_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_15_qty_up)
-        self.button_accessories_15_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_15, sticky="w")
-        self.button_accessories_15_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_15_qty_down)
-        self.button_accessories_15_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_15, sticky="w")
+        #self.button_accessories_15_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_15_qty_up)
+        #self.button_accessories_15_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_15, sticky="w")
+        #self.button_accessories_15_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_15_qty_down)
+        #self.button_accessories_15_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_15, sticky="w")
 
-        self.button_accessories_16_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_16_qty_up)
-        self.button_accessories_16_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_16, sticky="w")
-        self.button_accessories_16_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_16_qty_down)
-        self.button_accessories_16_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_16, sticky="w")
+        #self.button_accessories_16_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_16_qty_up)
+        #self.button_accessories_16_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_16, sticky="w")
+        #self.button_accessories_16_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_16_qty_down)
+        #self.button_accessories_16_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_16, sticky="w")
 
-        self.button_accessories_17_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_17_qty_up)
-        self.button_accessories_17_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_17, sticky="w")
-        self.button_accessories_17_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_17_qty_down)
-        self.button_accessories_17_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_17, sticky="w")
+        #self.button_accessories_17_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_17_qty_up)
+        #self.button_accessories_17_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_17, sticky="w")
+        #self.button_accessories_17_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_17_qty_down)
+        #self.button_accessories_17_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_17, sticky="w")
 
-        self.button_accessories_18_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_18_qty_up)
-        self.button_accessories_18_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_18, sticky="w")
-        self.button_accessories_18_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_18_qty_down)
-        self.button_accessories_18_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_18, sticky="w")
+        #self.button_accessories_18_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_18_qty_up)
+        #self.button_accessories_18_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_18, sticky="w")
+        #self.button_accessories_18_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_18_qty_down)
+        #self.button_accessories_18_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_18, sticky="w")
 
-        self.button_accessories_19_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_19_qty_up)
-        self.button_accessories_19_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_19, sticky="w")
-        self.button_accessories_19_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_19_qty_down)
-        self.button_accessories_19_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_19, sticky="w")
+        #self.button_accessories_19_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_19_qty_up)
+        #self.button_accessories_19_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_19, sticky="w")
+        #self.button_accessories_19_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_19_qty_down)
+        #self.button_accessories_19_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_19, sticky="w")
 
-        self.button_accessories_20_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_20_qty_up)
-        self.button_accessories_20_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_20, sticky="w")
-        self.button_accessories_20_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_20_qty_down)
-        self.button_accessories_20_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_20, sticky="w")
+        #self.button_accessories_20_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_20_qty_up)
+        #self.button_accessories_20_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_20, sticky="w")
+        #self.button_accessories_20_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_20_qty_down)
+        #self.button_accessories_20_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_20, sticky="w")
 
-        self.button_accessories_21_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_21_qty_up)
-        self.button_accessories_21_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_21, sticky="w")
-        self.button_accessories_21_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_21_qty_down)
-        self.button_accessories_21_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_21, sticky="w")
+        #self.button_accessories_21_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_21_qty_up)
+        #self.button_accessories_21_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_21, sticky="w")
+        #self.button_accessories_21_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_21_qty_down)
+        #self.button_accessories_21_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_21, sticky="w")
 
-        self.button_accessories_22_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_22_qty_up)
-        self.button_accessories_22_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_22, sticky="w")
-        self.button_accessories_22_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_22_qty_down)
-        self.button_accessories_22_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_22, sticky="w")
+        #self.button_accessories_22_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_22_qty_up)
+        #self.button_accessories_22_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_22, sticky="w")
+        #self.button_accessories_22_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_22_qty_down)
+        #self.button_accessories_22_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_22, sticky="w")
 
-        self.button_accessories_23_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_23_qty_up)
-        self.button_accessories_23_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_23, sticky="w")
-        self.button_accessories_23_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_23_qty_down)
-        self.button_accessories_23_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_23, sticky="w")
+        #self.button_accessories_23_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_23_qty_up)
+        #self.button_accessories_23_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_23, sticky="w")
+        #self.button_accessories_23_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_23_qty_down)
+        #self.button_accessories_23_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_23, sticky="w")
 
-        self.button_accessories_24_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_24_qty_up)
-        self.button_accessories_24_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_24, sticky="w")
-        self.button_accessories_24_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_24_qty_down)
-        self.button_accessories_24_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_24, sticky="w")
+        #self.button_accessories_24_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_24_qty_up)
+        #self.button_accessories_24_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_24, sticky="w")
+        #self.button_accessories_24_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_24_qty_down)
+        #self.button_accessories_24_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_24, sticky="w")
 
-        self.button_accessories_25_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_25_qty_up)
-        self.button_accessories_25_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_25, sticky="w")
-        self.button_accessories_25_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_25_qty_down)
-        self.button_accessories_25_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_25, sticky="w")
+        #self.button_accessories_25_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_25_qty_up)
+        #self.button_accessories_25_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_25, sticky="w")
+        #self.button_accessories_25_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_25_qty_down)
+        #self.button_accessories_25_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_25, sticky="w")
 
-        self.button_accessories_26_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_26_qty_up)
-        self.button_accessories_26_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_26, sticky="w")
-        self.button_accessories_26_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_26_qty_down)
-        self.button_accessories_26_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_26, sticky="w")
+        #self.button_accessories_26_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_26_qty_up)
+        #self.button_accessories_26_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_26, sticky="w")
+        #self.button_accessories_26_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_26_qty_down)
+        #self.button_accessories_26_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_26, sticky="w")
 
-        self.button_accessories_27_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_27_qty_up)
-        self.button_accessories_27_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_27, sticky="w")
-        self.button_accessories_27_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_27_qty_down)
-        self.button_accessories_27_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_27, sticky="w")
+        #self.button_accessories_27_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_27_qty_up)
+        #self.button_accessories_27_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_27, sticky="w")
+        #self.button_accessories_27_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_27_qty_down)
+        #self.button_accessories_27_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_27, sticky="w")
 
-        self.button_accessories_28_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_28_qty_up)
-        self.button_accessories_28_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_28, sticky="w")
-        self.button_accessories_28_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_28_qty_down)
-        self.button_accessories_28_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_28, sticky="w")
+        #self.button_accessories_28_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_28_qty_up)
+        #self.button_accessories_28_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_28, sticky="w")
+        #self.button_accessories_28_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_28_qty_down)
+        #self.button_accessories_28_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_28, sticky="w")
 
-        self.button_accessories_29_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_29_qty_up)
-        self.button_accessories_29_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_29, sticky="w")
-        self.button_accessories_29_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_29_qty_down)
-        self.button_accessories_29_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_29, sticky="w")
+        #self.button_accessories_29_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_29_qty_up)
+        #self.button_accessories_29_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_29, sticky="w")
+        #self.button_accessories_29_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_29_qty_down)
+        #self.button_accessories_29_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_29, sticky="w")
 
-        self.button_accessories_30_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_30_qty_up)
-        self.button_accessories_30_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_30, sticky="w")
-        self.button_accessories_30_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_30_qty_down)
-        self.button_accessories_30_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_30, sticky="w")
+        #self.button_accessories_30_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_accessories_30_qty_up)
+        #self.button_accessories_30_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_accessories_30, sticky="w")
+        #self.button_accessories_30_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_accessories_30_qty_down)
+        #self.button_accessories_30_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_accessories_30, sticky="w")
 
     def set_columns(self):
         self.grid_row_red_alert          = 0
@@ -2153,101 +2049,101 @@ class Python_Designer():
         self.grid_row_sloped_armor       = self.grid_row_inner_armor + 1
         self.grid_row_weapon_alt_1       = self.grid_row_sloped_armor + 1
         self.grid_row_sub_weapon_alt_1   = self.grid_row_weapon_alt_1 + 1
-        self.grid_row_weapon_alt_2       = self.grid_row_sub_weapon_alt_1 + 1
-        self.grid_row_sub_weapon_alt_2   = self.grid_row_weapon_alt_2 + 1
-        self.grid_row_weapon_alt_3       = self.grid_row_sub_weapon_alt_2 + 1
-        self.grid_row_sub_weapon_alt_3   = self.grid_row_weapon_alt_3 + 1
-        self.grid_row_weapon_alt_4       = self.grid_row_sub_weapon_alt_3 + 1
-        self.grid_row_sub_weapon_alt_4   = self.grid_row_weapon_alt_4 + 1
-        self.grid_row_weapon_alt_5       = self.grid_row_sub_weapon_alt_4 + 1
-        self.grid_row_sub_weapon_alt_5   = self.grid_row_weapon_alt_5 + 1
-        self.grid_row_weapon_alt_6       = self.grid_row_sub_weapon_alt_5 + 1
-        self.grid_row_sub_weapon_alt_6   = self.grid_row_weapon_alt_6 + 1
-        self.grid_row_weapon_alt_7       = self.grid_row_sub_weapon_alt_6 + 1
-        self.grid_row_sub_weapon_alt_7   = self.grid_row_weapon_alt_7 + 1
-        self.grid_row_weapon_alt_8       = self.grid_row_sub_weapon_alt_7 + 1
-        self.grid_row_sub_weapon_alt_8   = self.grid_row_weapon_alt_8 + 1
-        self.grid_row_weapon_alt_9       = self.grid_row_sub_weapon_alt_8 + 1
-        self.grid_row_sub_weapon_alt_9   = self.grid_row_weapon_alt_9 + 1
-        self.grid_row_weapon_alt_10      = self.grid_row_sub_weapon_alt_9 + 1
-        self.grid_row_sub_weapon_alt_10  = self.grid_row_weapon_alt_10 + 1
-        self.grid_row_links_header       = self.grid_row_sub_weapon_alt_10 + 1
-        self.grid_row_link_1             = self.grid_row_links_header + 1
-        self.grid_row_link_2             = self.grid_row_link_1 + 1
-        self.grid_row_link_3             = self.grid_row_link_2 + 1
-        self.grid_row_link_4             = self.grid_row_link_3 + 1
-        self.grid_row_link_5             = self.grid_row_link_4 + 1
-        self.grid_row_link_6             = self.grid_row_link_5 + 1
-        self.grid_row_link_7             = self.grid_row_link_6 + 1
-        self.grid_row_link_8             = self.grid_row_link_7 + 1
-        self.grid_row_link_9             = self.grid_row_link_8 + 1
-        self.grid_row_link_10            = self.grid_row_link_9 + 1
+        #self.grid_row_weapon_alt_2       = self.grid_row_sub_weapon_alt_1 + 1
+        #self.grid_row_sub_weapon_alt_2   = self.grid_row_weapon_alt_2 + 1
+        #self.grid_row_weapon_alt_3       = self.grid_row_sub_weapon_alt_2 + 1
+        #self.grid_row_sub_weapon_alt_3   = self.grid_row_weapon_alt_3 + 1
+        #self.grid_row_weapon_alt_4       = self.grid_row_sub_weapon_alt_3 + 1
+        #self.grid_row_sub_weapon_alt_4   = self.grid_row_weapon_alt_4 + 1
+        #self.grid_row_weapon_alt_5       = self.grid_row_sub_weapon_alt_4 + 1
+        #self.grid_row_sub_weapon_alt_5   = self.grid_row_weapon_alt_5 + 1
+        #self.grid_row_weapon_alt_6       = self.grid_row_sub_weapon_alt_5 + 1
+        #self.grid_row_sub_weapon_alt_6   = self.grid_row_weapon_alt_6 + 1
+        #self.grid_row_weapon_alt_7       = self.grid_row_sub_weapon_alt_6 + 1
+        #self.grid_row_sub_weapon_alt_7   = self.grid_row_weapon_alt_7 + 1
+        #self.grid_row_weapon_alt_8       = self.grid_row_sub_weapon_alt_7 + 1
+        #self.grid_row_sub_weapon_alt_8   = self.grid_row_weapon_alt_8 + 1
+        #self.grid_row_weapon_alt_9       = self.grid_row_sub_weapon_alt_8 + 1
+        #self.grid_row_sub_weapon_alt_9   = self.grid_row_weapon_alt_9 + 1
+        #self.grid_row_weapon_alt_10      = self.grid_row_sub_weapon_alt_9 + 1
+        #self.grid_row_sub_weapon_alt_10  = self.grid_row_weapon_alt_10 + 1
+        #self.grid_row_links_header       = self.grid_row_sub_weapon_alt_10 + 1
+        #self.grid_row_link_1             = self.grid_row_links_header + 1
+        #self.grid_row_link_2             = self.grid_row_link_1 + 1
+        #self.grid_row_link_3             = self.grid_row_link_2 + 1
+        #self.grid_row_link_4             = self.grid_row_link_3 + 1
+        #self.grid_row_link_5             = self.grid_row_link_4 + 1
+        #self.grid_row_link_6             = self.grid_row_link_5 + 1
+        #self.grid_row_link_7             = self.grid_row_link_6 + 1
+        #self.grid_row_link_8             = self.grid_row_link_7 + 1
+        #self.grid_row_link_9             = self.grid_row_link_8 + 1
+        #self.grid_row_link_10            = self.grid_row_link_9 + 1
 
         # Add this code inside your def set_columns(self): method
-        self.grid_row_bumper_trigger_header = self.grid_row_link_10 + 1
+        #self.grid_row_bumper_trigger_header = self.grid_row_link_10 + 1
 
         # Automatically calculate rows 1 through 10 dynamically
-        for i in range(1, 11):
-            setattr(self, f"grid_row_bumper_trigger_row_{i}", self.grid_row_bumper_trigger_header + i)
+        #for i in range(1, 11):
+        #    setattr(self, f"grid_row_bumper_trigger_row_{i}", self.grid_row_bumper_trigger_header + i)
 
         # CRUCIAL: Make sure to update your subsequent accessory header to sit cleanly below this new block
-        self.grid_row_accessories_header = getattr(self, f"grid_row_bumper_trigger_row_{self.link_rows_count}") + 1
+        #self.grid_row_accessories_header = getattr(self, f"grid_row_bumper_trigger_row_{self.link_rows_count}") + 1
 
         #self.grid_row_accessories_header = self.grid_row_link_10 + 1
-        self.grid_row_accessories_1      = self.grid_row_accessories_header + 1
-        self.grid_row_accessories_2      = self.grid_row_accessories_1 + 1
-        self.grid_row_accessories_3      = self.grid_row_accessories_2 + 1
-        self.grid_row_accessories_4      = self.grid_row_accessories_3 + 1
-        self.grid_row_accessories_5      = self.grid_row_accessories_4 + 1
-        self.grid_row_accessories_6      = self.grid_row_accessories_5 + 1
-        self.grid_row_accessories_7      = self.grid_row_accessories_6 + 1
-        self.grid_row_accessories_8      = self.grid_row_accessories_7 + 1
-        self.grid_row_accessories_9      = self.grid_row_accessories_8 + 1
-        self.grid_row_accessories_10      = self.grid_row_accessories_9 + 1
-        self.grid_row_accessories_11      = self.grid_row_accessories_10 + 1
-        self.grid_row_accessories_12      = self.grid_row_accessories_11 + 1
-        self.grid_row_accessories_13      = self.grid_row_accessories_12 + 1
-        self.grid_row_accessories_14      = self.grid_row_accessories_13 + 1
-        self.grid_row_accessories_15      = self.grid_row_accessories_14 + 1
-        self.grid_row_accessories_16      = self.grid_row_accessories_15 + 1
-        self.grid_row_accessories_17      = self.grid_row_accessories_16 + 1
-        self.grid_row_accessories_18      = self.grid_row_accessories_17 + 1
-        self.grid_row_accessories_19      = self.grid_row_accessories_18 + 1
-        self.grid_row_accessories_20      = self.grid_row_accessories_19 + 1
-        self.grid_row_accessories_21      = self.grid_row_accessories_20 + 1
-        self.grid_row_accessories_22      = self.grid_row_accessories_21 + 1
-        self.grid_row_accessories_23      = self.grid_row_accessories_22 + 1
-        self.grid_row_accessories_24      = self.grid_row_accessories_23 + 1
-        self.grid_row_accessories_25      = self.grid_row_accessories_24 + 1
-        self.grid_row_accessories_26      = self.grid_row_accessories_25 + 1
-        self.grid_row_accessories_27      = self.grid_row_accessories_26 + 1
-        self.grid_row_accessories_28      = self.grid_row_accessories_27 + 1
-        self.grid_row_accessories_29      = self.grid_row_accessories_28 + 1
-        self.grid_row_accessories_30      = self.grid_row_accessories_29 + 1
-        self.grid_row_component_header    = self.grid_row_accessories_30 + 1
-        self.grid_row_component_armor_1   = self.grid_row_component_header + 1
-        self.grid_row_component_armor_2   = self.grid_row_component_armor_1 + 1
-        self.grid_row_component_armor_3   = self.grid_row_component_armor_2 + 1
-        self.grid_row_component_armor_4   = self.grid_row_component_armor_3 + 1
-        self.grid_row_component_armor_5   = self.grid_row_component_armor_4 + 1
-        self.grid_row_rocket_booster_header = self.grid_row_component_armor_5 + 1
-        self.grid_row_rocket_booster_1    = self.grid_row_rocket_booster_header + 1
-        self.grid_row_rocket_booster_2    = self.grid_row_rocket_booster_1 + 1
-        self.grid_row_rocket_booster_3    = self.grid_row_rocket_booster_2 + 1
-        self.grid_row_rocket_booster_4    = self.grid_row_rocket_booster_3 + 1
-        self.grid_row_rocket_booster_5    = self.grid_row_rocket_booster_4 + 1
-        self.grid_row_alt_ge_equivalent   = self.grid_row_rocket_booster_5 + 1
-        self.grid_row_personal_equipment_header = self.grid_row_alt_ge_equivalent + 1
-        self.grid_row_personal_equipment_1 = self.grid_row_personal_equipment_header + 1
-        self.grid_row_personal_equipment_2 = self.grid_row_personal_equipment_1 + 1
-        self.grid_row_personal_equipment_3 = self.grid_row_personal_equipment_2 + 1
-        self.grid_row_personal_equipment_4 = self.grid_row_personal_equipment_3 + 1
-        self.grid_row_personal_equipment_5 = self.grid_row_personal_equipment_4 + 1
-        self.grid_row_personal_equipment_6 = self.grid_row_personal_equipment_5 + 1
-        self.grid_row_personal_equipment_7 = self.grid_row_personal_equipment_6 + 1
-        self.grid_row_personal_equipment_8 = self.grid_row_personal_equipment_7 + 1
-        self.grid_row_personal_equipment_9 = self.grid_row_personal_equipment_8 + 1
-        self.grid_row_personal_equipment_10 = self.grid_row_personal_equipment_9 + 1
+        #self.grid_row_accessories_1      = self.grid_row_accessories_header + 1
+        #self.grid_row_accessories_2      = self.grid_row_accessories_1 + 1
+        #self.grid_row_accessories_3      = self.grid_row_accessories_2 + 1
+        #self.grid_row_accessories_4      = self.grid_row_accessories_3 + 1
+        #self.grid_row_accessories_5      = self.grid_row_accessories_4 + 1
+        #self.grid_row_accessories_6      = self.grid_row_accessories_5 + 1
+        #self.grid_row_accessories_7      = self.grid_row_accessories_6 + 1
+        #self.grid_row_accessories_8      = self.grid_row_accessories_7 + 1
+        #self.grid_row_accessories_9      = self.grid_row_accessories_8 + 1
+        #self.grid_row_accessories_10      = self.grid_row_accessories_9 + 1
+        #self.grid_row_accessories_11      = self.grid_row_accessories_10 + 1
+        #self.grid_row_accessories_12      = self.grid_row_accessories_11 + 1
+        #self.grid_row_accessories_13      = self.grid_row_accessories_12 + 1
+        #self.grid_row_accessories_14      = self.grid_row_accessories_13 + 1
+        #self.grid_row_accessories_15      = self.grid_row_accessories_14 + 1
+        ##self.grid_row_accessories_16      = self.grid_row_accessories_15 + 1
+        #self.grid_row_accessories_17      = self.grid_row_accessories_16 + 1
+        #self.grid_row_accessories_18      = self.grid_row_accessories_17 + 1
+        #self.grid_row_accessories_19      = self.grid_row_accessories_18 + 1
+        #self.grid_row_accessories_20      = self.grid_row_accessories_19 + 1
+        #self.grid_row_accessories_21      = self.grid_row_accessories_20 + 1
+        #self.grid_row_accessories_22      = self.grid_row_accessories_21 + 1
+        #self.grid_row_accessories_23      = self.grid_row_accessories_22 + 1
+        #self.grid_row_accessories_24      = self.grid_row_accessories_23 + 1
+        #self.grid_row_accessories_25      = self.grid_row_accessories_24 + 1
+        #self.grid_row_accessories_26      = self.grid_row_accessories_25 + 1
+        #self.grid_row_accessories_27      = self.grid_row_accessories_26 + 1
+        #self.grid_row_accessories_28      = self.grid_row_accessories_27 + 1
+        #self.grid_row_accessories_29      = self.grid_row_accessories_28 + 1
+        #self.grid_row_accessories_30      = self.grid_row_accessories_29 + 1
+        #self.grid_row_component_header    = self.grid_row_accessories_30 + 1
+        #self.grid_row_component_armor_1   = self.grid_row_component_header + 1
+        #self.grid_row_component_armor_2   = self.grid_row_component_armor_1 + 1
+        #self.grid_row_component_armor_3   = self.grid_row_component_armor_2 + 1
+        #self.grid_row_component_armor_4   = self.grid_row_component_armor_3 + 1
+        #self.grid_row_component_armor_5   = self.grid_row_component_armor_4 + 1
+        #self.grid_row_rocket_booster_header = self.grid_row_component_armor_5 + 1
+        #self.grid_row_rocket_booster_1    = self.grid_row_rocket_booster_header + 1
+        #self.grid_row_rocket_booster_2    = self.grid_row_rocket_booster_1 + 1
+        #self.grid_row_rocket_booster_3    = self.grid_row_rocket_booster_2 + 1
+        #self.grid_row_rocket_booster_4    = self.grid_row_rocket_booster_3 + 1
+        #self.grid_row_rocket_booster_5    = self.grid_row_rocket_booster_4 + 1
+        #self.grid_row_alt_ge_equivalent   = self.grid_row_rocket_booster_5 + 1
+        #self.grid_row_personal_equipment_header = self.grid_row_alt_ge_equivalent + 1
+        #self.grid_row_personal_equipment_1 = self.grid_row_personal_equipment_header + 1
+        #self.grid_row_personal_equipment_2 = self.grid_row_personal_equipment_1 + 1
+        #self.grid_row_personal_equipment_3 = self.grid_row_personal_equipment_2 + 1
+        #self.grid_row_personal_equipment_4 = self.grid_row_personal_equipment_3 + 1
+        #self.grid_row_personal_equipment_5 = self.grid_row_personal_equipment_4 + 1
+        #self.grid_row_personal_equipment_6 = self.grid_row_personal_equipment_5 + 1
+        #self.grid_row_personal_equipment_7 = self.grid_row_personal_equipment_6 + 1
+        #self.grid_row_personal_equipment_8 = self.grid_row_personal_equipment_7 + 1
+        #self.grid_row_personal_equipment_9 = self.grid_row_personal_equipment_8 + 1
+        #self.grid_row_personal_equipment_10 = self.grid_row_personal_equipment_9 + 1
         self.grid_col_item                 = 0
         self.grid_col_qty                  = self.grid_col_item + 1
         self.grid_left_up_button           = self.grid_col_qty + 1
@@ -2295,8 +2191,8 @@ class Python_Designer():
         self.add_dropdown_rear_tires_canvas(canvas_type=canvas_type)
         self.add_dropdown_outer_armor_canvas(canvas_type=canvas_type)
         self.add_dropdown_inner_armor_canvas(canvas_type=canvas_type)
-        self.add_dropdown_accessories_canvas(canvas_type=canvas_type)
-        self.add_dropdown_personal_equipment_canvas(canvas_type=canvas_type)
+        #self.add_dropdown_accessories_canvas(canvas_type=canvas_type)
+        #self.add_dropdown_personal_equipment_canvas(canvas_type=canvas_type)
 
     def add_dropdown_accessories_canvas(self, canvas_type):
         self.add_dropdown_accessories_1_canvas(canvas_type=canvas_type)
@@ -2933,103 +2829,103 @@ class Python_Designer():
         # This single loop processes all 10 weapon rows automatically
         weapons_data = []
         
-        for i in range(1, self.weapon_rows_count + 1):
-            mag_qty_attr = f"var_sub_weapon_extra_mags_{i}_qty"
-            mag_count = 0
-            if hasattr(self, mag_qty_attr) and getattr(self, mag_qty_attr) is not None:
-                try: mag_count = int(getattr(self, mag_qty_attr).get())
-                except (ValueError, tk.TclError): mag_count = 0
+        loop_max = len(self.weapon_cost_label_objects)
+        for loop_index in range(0, loop_max):
+            weapon_cost_obj = self.weapon_cost_label_objects[loop_index]
+            weapon_weight_obj = self.weapon_weight_label_objects[loop_index]
+            weapon_space_obj = self.weapon_spaces_label_objects[loop_index]
+            weapon_cost_str = weapon_cost_obj.cget("text")
+            weapon_weight_str = weapon_weight_obj.cget("text")
+            weapon_space_str = weapon_space_obj.cget("text")
 
             wpn_stats = {
-                "cost":        self._safe_parse_label(f"label_sub_weapon_{i}_cost", int),
-                "weight":      self._safe_parse_label(f"label_sub_weapon_{i}_weight", int),
-                "space":       self._safe_parse_label(f"label_sub_weapon_{i}_space", float),
-                "ammo_cost":   self._safe_parse_label(f"label_sub_weapon_{i}_ammo_cost", float),
-                "ammo_weight": self._safe_parse_label(f"label_sub_weapon_{i}_ammo_weight", float),
+                "cost":        float(weapon_cost_str),
+                "weight":      float(weapon_weight_str),
+                "space":       float(weapon_space_str),
             } #mag cost and weight is already include in the ammo cost and weight, don't include it here as well
             weapons_data.append(wpn_stats)
 
-        active_links_cost = 0
-        for i in range(self.link_rows_count):
-            total_items_linked = 0
+        #active_links_cost = 0
+        #for i in range(self.link_rows_count):
+        #    total_items_linked = 0
             
-            for item_str in self.link_selections[i]:
-                # Look for a number inside a '(Qty: X)' pattern
-                if "(Qty:" in item_str:
-                    try:
-                        # Extract the text between '(Qty:' and the closing ')'
-                        qty_part = item_str.split("(Qty:")[1].split(")")[0].strip()
-                        total_items_linked += int(qty_part)
-                    except (IndexError, ValueError):
-                        total_items_linked += 1 # Safety fallback if parsing fails
-                else:
-                    total_items_linked += 1 # Accessories / Boosters count as 1 item
+        #    for item_str in self.link_selections[i]:
+        #        # Look for a number inside a '(Qty: X)' pattern
+        #        if "(Qty:" in item_str:
+        #            try:
+        #                # Extract the text between '(Qty:' and the closing ')'
+        #                qty_part = item_str.split("(Qty:")[1].split(")")[0].strip()
+        #                total_items_linked += int(qty_part)
+        #            except (IndexError, ValueError):
+        #                total_items_linked += 1 # Safety fallback if parsing fails
+        #        else:
+        #            total_items_linked += 1 # Accessories / Boosters count as 1 item
             
             # A link is mathematically valid and charged $50 if managing 2 or more absolute units
-            if total_items_linked >= 2:
-                active_links_cost += 50
+        #    if total_items_linked >= 2:
+        #        active_links_cost += 50
 
-        active_bt_cost = 0
-        for i in range(self.bt_rows_count):
-            total_items_triggered = 0
+        #active_bt_cost = 0
+        #for i in range(self.bt_rows_count):
+        #    total_items_triggered = 0
             
-            for item_str in self.bt_selections[i]:
-                if "(Qty:" in item_str:
-                    try:
-                        qty_part = item_str.split("(Qty:")[1].split(")")[0].strip()
-                        total_items_triggered += int(qty_part)
-                    except (IndexError, ValueError):
-                        total_items_triggered += 1
-                else:
-                    total_items_triggered += 1 # Accessories / Boosters / Links count as 1
+        #    for item_str in self.bt_selections[i]:
+        #        if "(Qty:" in item_str:
+        #            try:
+        #                qty_part = item_str.split("(Qty:")[1].split(")")[0].strip()
+        #                total_items_triggered += int(qty_part)
+        #            except (IndexError, ValueError):
+        #                total_items_triggered += 1
+        #        else:
+        #            total_items_triggered += 1 # Accessories / Boosters / Links count as 1
             
-            # A bumper trigger is active and charged $50 if it triggers 1 or more total units
-            if total_items_triggered >= 1:
-                active_bt_cost += 50
+        #    # A bumper trigger is active and charged $50 if it triggers 1 or more total units
+        #    if total_items_triggered >= 1:
+        #        active_bt_cost += 50
 
         # This single loop processes all 30 accessory slots automatically
-        accessories_data = []
+        #accessories_data = []
         
-        for i in range(1, 31):
-            acc_stats = {
-                "cost":   self._safe_parse_label(f"label_accessories_{i}_cost", float),
-                "weight": self._safe_parse_label(f"label_accessories_{i}_weight", float),
-                "space":  self._safe_parse_label(f"label_accessories_{i}_space", float)
-            }
-            accessories_data.append(acc_stats)
+        #for i in range(1, 31):
+        #    acc_stats = {
+        #        "cost":   self._safe_parse_label(f"label_accessories_{i}_cost", float),
+        #        "weight": self._safe_parse_label(f"label_accessories_{i}_weight", float),
+        #        "space":  self._safe_parse_label(f"label_accessories_{i}_space", float)
+        #    }
+        #    accessories_data.append(acc_stats)
 
         # This single loop processes all 5 component armor configurations automatically
-        component_armor_data = []
+        #component_armor_data = []
         
-        for i in range(1, 6):
-            ca_stats = {
-                "cost":   self._safe_parse_label(f"label_component_armor_{i}_cost", float),
-                "weight": self._safe_parse_label(f"label_component_armor_{i}_weight", float),
-                "space":  self._safe_parse_label(f"label_component_armor_{i}_space", float)
-            }
-            component_armor_data.append(ca_stats)
+        #for i in range(1, 6):
+        #    ca_stats = {
+        #        "cost":   self._safe_parse_label(f"label_component_armor_{i}_cost", float),
+        #        "weight": self._safe_parse_label(f"label_component_armor_{i}_weight", float),
+        #        "space":  self._safe_parse_label(f"label_component_armor_{i}_space", float)
+        #    }
+        #    component_armor_data.append(ca_stats)
 
         # This single loop processes all 5 rocket booster clusters automatically
-        rocket_booster_data = []
+        #rocket_booster_data = []
         
-        for i in range(1, 6):
-            rb_stats = {
-                "cost":   self._safe_parse_label(f"label_rocket_booster_{i}_cost", float),
-                "weight": self._safe_parse_label(f"label_rocket_booster_{i}_weight", float),
-                "space":  self._safe_parse_label(f"label_rocket_booster_{i}_space", float)
-            }
-            rocket_booster_data.append(rb_stats)
+        #for i in range(1, 6):
+        #    rb_stats = {
+        #        "cost":   self._safe_parse_label(f"label_rocket_booster_{i}_cost", float),
+        #        "weight": self._safe_parse_label(f"label_rocket_booster_{i}_weight", float),
+        #        "space":  self._safe_parse_label(f"label_rocket_booster_{i}_space", float)
+        #    }
+        #    rocket_booster_data.append(rb_stats)
 
         # This single loop processes all 10 personal equipment listings automatically
-        personal_equipment_data = []
+        #personal_equipment_data = []
         
-        for i in range(1, 11):
-            pe_stats = {
-                "cost":   self._safe_parse_label(f"label_personal_equipment_{i}_cost", float),
-                "weight": self._safe_parse_label(f"label_personal_equipment_{i}_weight", float),
-                "space":  self._safe_parse_label(f"label_personal_equipment_{i}_space", float)
-            }
-            personal_equipment_data.append(pe_stats)
+        #for i in range(1, 11):
+        #    pe_stats = {
+        #        "cost":   self._safe_parse_label(f"label_personal_equipment_{i}_cost", float),
+        #        "weight": self._safe_parse_label(f"label_personal_equipment_{i}_weight", float),
+        #        "space":  self._safe_parse_label(f"label_personal_equipment_{i}_space", float)
+        #    }
+        #    personal_equipment_data.append(pe_stats)
 
 
         cost_list: list = []
@@ -3049,27 +2945,25 @@ class Python_Designer():
 
         # Instantly sum up your grand totals for the whole car
         total_weapon_cost   = sum(w["cost"] for w in weapons_data)
-        total_ammo_cost     = sum(w["ammo_cost"] for w in weapons_data)
         cost_list.append(total_weapon_cost)
-        cost_list.append(total_ammo_cost)
-        cost_list.append(active_links_cost)
-        cost_list.append(active_bt_cost)
+        #cost_list.append(active_links_cost)
+        #cost_list.append(active_bt_cost)
 
         # Sum up accessory totals for the vehicle instantly
-        total_accessory_cost   = sum(a["cost"] for a in accessories_data)
-        cost_list.append(total_accessory_cost)
+        #total_accessory_cost   = sum(a["cost"] for a in accessories_data)
+        #cost_list.append(total_accessory_cost)
 
         # Sum up component armor totals instantly
-        total_component_armor_cost   = sum(c["cost"] for c in component_armor_data)
-        cost_list.append(total_component_armor_cost)
+        #total_component_armor_cost   = sum(c["cost"] for c in component_armor_data)
+        #cost_list.append(total_component_armor_cost)
 
         # Sum up rocket booster totals instantly
-        total_rocket_booster_cost   = sum(r["cost"] for r in rocket_booster_data)
-        cost_list.append(total_rocket_booster_cost)
+        #total_rocket_booster_cost   = sum(r["cost"] for r in rocket_booster_data)
+        #cost_list.append(total_rocket_booster_cost)
 
         # Sum up personal equipment totals instantly
-        total_personal_equipment_cost   = sum(p["cost"] for p in personal_equipment_data)
-        cost_list.append(total_personal_equipment_cost)
+        #total_personal_equipment_cost   = sum(p["cost"] for p in personal_equipment_data)
+        #cost_list.append(total_personal_equipment_cost)
 
         weight_list: list = []
         weight_list.append(body_weight)
@@ -3084,21 +2978,19 @@ class Python_Designer():
         weight_list.append(driver_gunner_weight)
         #weight_list.append(passenger_weight)
         total_weapon_weight = sum(w["weight"] for w in weapons_data)
-        total_ammo_weight   = sum(w["ammo_weight"] for w in weapons_data)
         weight_list.append(total_weapon_weight)
-        weight_list.append(total_ammo_weight)
-        total_accessory_weight = sum(a["weight"] for a in accessories_data)
-        weight_list.append(total_accessory_weight)
+        #weight_list.append(total_ammo_weight)
+        #total_accessory_weight = sum(a["weight"] for a in accessories_data)
+        #weight_list.append(total_accessory_weight)
 
-        total_component_armor_weight = sum(c["weight"] for c in component_armor_data)
-        weight_list.append(total_component_armor_weight)
+        #total_component_armor_weight = sum(c["weight"] for c in component_armor_data)
+        #weight_list.append(total_component_armor_weight)
 
-        total_rocket_booster_weight = sum(r["weight"] for r in rocket_booster_data)
-        weight_list.append(total_rocket_booster_weight)
+        #total_rocket_booster_weight = sum(r["weight"] for r in rocket_booster_data)
+        #weight_list.append(total_rocket_booster_weight)
 
-        total_personal_equipment_weight = sum(p["weight"] for p in personal_equipment_data)
-        weight_list.append(total_personal_equipment_weight)
-
+        #total_personal_equipment_weight = sum(p["weight"] for p in personal_equipment_data)
+        #weight_list.append(total_personal_equipment_weight)
 
         space_list: list = []
         space_list.append(modificiation_space)
@@ -3109,17 +3001,17 @@ class Python_Designer():
         #space_list.append(passenger_space)
         total_weapon_space  = sum(w["space"] for w in weapons_data)
         space_list.append(total_weapon_space)
-        total_accessory_space  = sum(a["space"] for a in accessories_data)
-        space_list.append(total_accessory_space)
+        #total_accessory_space  = sum(a["space"] for a in accessories_data)
+        #space_list.append(total_accessory_space)
 
-        total_component_armor_space  = sum(c["space"] for c in component_armor_data)
-        space_list.append(total_component_armor_space)
+        #total_component_armor_space  = sum(c["space"] for c in component_armor_data)
+        #space_list.append(total_component_armor_space)
 
-        total_rocket_booster_space  = sum(r["space"] for r in rocket_booster_data)
-        space_list.append(total_rocket_booster_space)
+        #total_rocket_booster_space  = sum(r["space"] for r in rocket_booster_data)
+        #space_list.append(total_rocket_booster_space)
 
-        total_personal_equipment_space  = sum(p["space"] for p in personal_equipment_data)
-        space_list.append(total_personal_equipment_space) #it's not likely that personal equipment *has* vehicle spaces, but it's here
+        #total_personal_equipment_space  = sum(p["space"] for p in personal_equipment_data)
+        #space_list.append(total_personal_equipment_space) #it's not likely that personal equipment *has* vehicle spaces, but it's here
 
         total_cost:   int = sum(cost_list)
         total_weight: int = sum(weight_list)
@@ -4368,29 +4260,111 @@ class Python_Designer():
                    "MINEDROPPERS",
                    "DISCHARGERS"]
         return options
-
-    def on_select_sub_weapon_unified(self, row_number: int, dropdown_list: list = None, *args):
+    
+    def on_select_sub_weapon_unified(self, row_number: int, *args):
         """
-        A single, unified callback handler that manages selection logic, 
-        hidden label stats configurations, calculations, and To-Hit values for all 10 slots.
+        Runs automatically whenever a sub-weapon item is picked.
+        Calculates cost, weight, and spaces for this row and updates the screen labels.
         """
-        if getattr(self, "is_loading", False):
+        if getattr(self, 'is_loading', False):
             return
 
-        active_list = dropdown_list if dropdown_list is not None else getattr(self, "temp_dropdown_list", None)
-        if active_list is None:
+
+        # 1. Safely retrieve the selected sub-weapon name string
+        # We look it up from the array we built earlier
+        if row_number <= len(self.sub_weapon_dropdown_string_vars):
+            selected_weapon = self.sub_weapon_dropdown_string_vars[row_number - 1].get()
+        else:
             return
 
-        var_name = f"selected_sub_weapon_{row_number}_canvas"
-        if not hasattr(self, var_name):
-            return
-        selected_value = getattr(self, var_name).get()
+        # Get the category type to obtain the sub weapon data dictionary, from there once we know the selected weapon, get the weapon stats
+        try: category_name = self.weapon_dropdown_string_vars[row_number -1].get() 
+        except (IndexError, ValueError, tk.TclError): return #This is a systemic failure
 
-        for entry in active_list:
-            if selected_value == entry.get("Drop-Down Name"):
-                # Forcefully inject statistics into both hidden and visible fields
-                self.add_to_sub_weapon_row_unified(row_number, entry)
-                break
+        weapon_sub_list = self.get_weapon_sub_list(category=category_name)
+
+        # 2. Grab current quantities from the tracking string variables
+        try: qty = int(self.weapon_qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): qty = 0
+    
+        try: ammo_qty = int(self.weapon_ammo_qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): ammo_qty = 0
+    
+        try: extra_mags = int(self.weapon_extra_mag_qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): extra_mags = 0
+    
+        # 3. FETCH WEAPON BASE STATS FROM YOUR DATABASE
+        # (Replace 'self.get_weapon_base_stats' with your actual dictionary/database lookup function)
+
+        weapon_stats = next((entry for entry in weapon_sub_list if entry["Drop-Down Name"] == selected_weapon), None)
+
+        #entry_dict: dict = {
+        # 'Weapon Name': 'Light Machine Gun',                 
+        # 'Drop-Down Name': 'Light Machine Gun - Reg.',                          
+        # 'Ammo Type': 'Reg',                         
+        # 'Abbv': 'LMG',                         
+        # 'Effect': 'Area',                
+        # 'To-Hit': '7',      
+        # 'Dam': '1D-1',               
+        # 'DP': '2',  
+        # 'Cost': '850',    
+        # 'Weight': '100',  
+        # 'Space': '1 ',           
+        # 'Shots': '20', 
+        # 'Shot Cost': '20',    
+        # 'Shot Weight': '2.5'   ,
+        # 'Loaded Cost': '1250',   
+        # 'Loaded Weight': '150',  
+        # 'Mag Cost': '450',   
+        # 'Mag Weight': '65'}
+
+        if not weapon_stats:
+            # Fallback to zero if the item name isn't found
+            weapon_stats = {"base_cost": 0, "base_weight": 0, "base_space": 0.0, "ammo_cost_per": 0, "ammo_weight_per": 0}
+    
+        # 4. MATH ENGINE CALCULATIONS
+        # Cost = (Base Weapon Cost * Qty) + (Ammo Cost * Ammo Qty) + (Extra Mag Costs, etc.)
+        #total_cost = (weapon_stats["Cost"] * qty) + (weapon_stats["Shot Cost"] * ammo_qty)
+        total_cost = int(res) if (res := (float(weapon_stats["Cost"]) * qty) + (float(weapon_stats["Shot Cost"]) * ammo_qty) + 50 * extra_mags).is_integer() else round(res, 2)
+
+        #total_weight = (weapon_stats["Weight"] * qty) + (weapon_stats["Shot Weight"] * ammo_qty)
+        total_weight = int(w_res) if (w_res := (float(weapon_stats["Weight"]) * qty) + (float(weapon_stats["Shot Weight"]) * ammo_qty) + 15 * extra_mags).is_integer() else round(w_res, 2)
+
+        #total_space = weapon_stats["Space"] * qty
+        total_space = int(s_res) if (s_res := float(weapon_stats["Space"]) * qty + extra_mags).is_integer() else round(s_res, 2)
+
+        dp_str = weapon_stats["DP"]
+        to_hit_str = weapon_stats["To-Hit"]
+        damage_str = weapon_stats["Dam"]
+    
+        # 5. REWRITE THE ROW LABELS ON SCREEN (Breaking the $0 loop!)
+        if row_number <= len(self.weapon_cost_label_objects):
+            cost_lbl = self.weapon_cost_label_objects[row_number - 1]
+            cost_lbl.config(text=f"{total_cost}")
+
+        if row_number <= len(self.weapon_weight_label_objects):
+            weight_lbl = self.weapon_weight_label_objects[row_number - 1]
+            weight_lbl.config(text=f"{total_weight}")
+
+        if row_number <= len(self.weapon_spaces_label_objects):
+            space_lbl = self.weapon_spaces_label_objects[row_number - 1]
+            space_lbl.config(text=f"{total_space}")
+
+        if row_number <= len(self.weapon_dp_label_objects):
+            dp_lbl = self.weapon_dp_label_objects[row_number - 1]
+            dp_lbl.config(text=f"{dp_str}")
+
+        if row_number <= len(self.weapon_to_hit_label_objects):
+            to_hit_lbl = self.weapon_to_hit_label_objects[row_number - 1]
+            to_hit_lbl.config(text=f"{to_hit_str}")
+
+        if row_number <= len(self.weapon_damage_label_objects):
+            dam_lbl = self.weapon_damage_label_objects[row_number - 1]
+            dam_lbl.config(text=f"{damage_str}")
+
+        # 6. TRIGGER THE GLOBAL RECALCULATE ENGINE FOR VEHICLE TOTALS
+        if hasattr(self, 'recalculate'):
+            self.recalculate()
 
     def add_to_sub_weapon_row_unified(self, row_number: int, entry: dict):
         """
@@ -4561,244 +4535,203 @@ class Python_Designer():
         if hasattr(self, update_method_name):
             getattr(self, update_method_name)()
 
-    def add_labels_buttons_weapon_row_unified(self, row_number: int, canvas_type):
+    def add_labels_buttons_weapon_row_unified(self, canvas_type, row_number):
         """
-        A single, unified layout method that dynamically instantiates, grids,
-        and configures all hidden property labels, visible stats column fields, 
-        spinboxes, and up/down arrows for weapon rows 1-10.
+        Weapon Row Layout Builder.
+        Standardizes drop-down elements to matching themed ttk.OptionMenu components.
+        Fixes sub-dropdown list extraction to show only the weapon's text name.
         """
         up_arrow = "\u2191"
-        down_arrow = "\u2193"
+        down_arrow = "\u2193"        
+
+        # 1. Instantiate the row-isolated data tracking variables
+        category_var  = tk.StringVar(canvas_type, value="Weapon")
+        weapon_var    = tk.StringVar(canvas_type, value="Select Item...")
+        qty_var       = tk.StringVar(canvas_type, value="0")
+        ammo_var      = tk.StringVar(canvas_type, value="0")
+        mag_var       = tk.StringVar(canvas_type, value="0")
         
-        # Dynamically fetch the correct grid row tracking attribute name for this row slot
-        row_attr_name = f"grid_row_sub_weapon_alt_{row_number}"
-        if not hasattr(self, row_attr_name):
-            return
-        target_grid_row = getattr(self, row_attr_name)
+        # Write to tracking lists for backend engine calculation integrity
+        self.weapon_dropdown_string_vars.append(weapon_var)
+        self.weapon_qty_string_vars.append(qty_var)
+        self.weapon_ammo_qty_string_vars.append(ammo_var)
+        self.weapon_extra_mag_qty_string_vars.append(mag_var)
 
-        # List of string suffix targets for the hidden configuration label trackers
-        hidden_suffixes = [
-            "name", "drop_down_name", "ammo_type", "abbv", "effect", 
-            "to_hit", "damage", "dp", "cost", "weight", "space", "shots", 
-            "ammo_cost", "ammo_weight", "loaded_cost", "loaded_weight", 
-            "mag_cost", "mag_weight"
-        ]
+        # -------------------------------------------------------------------------
+        # COL 0: Dual-Tier Dropdowns (Styled strictly as ttk.OptionMenu elements)
+        # -------------------------------------------------------------------------
+        dropdown_cluster = tk.Frame(canvas_type)
+        dropdown_cluster.grid(row=row_number, column=self.grid_col_item, sticky="w")
 
-        # 1. Instantiate the hidden weapon property label arrays
-        for suffix in hidden_suffixes:
-            lbl_name = f"label_hidden_weapon_{row_number}_{suffix}"
-            setattr(self, lbl_name, tk.Label(canvas_type, text="0", anchor="w"))
+        # Fetch Category strings dynamically from your engine layout code
+        weapon_options_list = self.get_weapon_options_alt()
+        if not weapon_options_list:
+            weapon_options_list = ["No items available"]
 
-        # 2. Instantiate the hidden sub-weapon property label arrays
-        for suffix in hidden_suffixes:
-            lbl_name = f"label_hidden_sub_weapon_{row_number}_{suffix}"
-            setattr(self, lbl_name, tk.Label(canvas_type, text="0", anchor="w"))
-
-        # 3. Configure and grid the visible weapon data column screen fields
-        visible_columns = [
-            (f"label_sub_weapon_{row_number}_cost", self.grid_col_cost, "0"),
-            (f"label_sub_weapon_{row_number}_weight", self.grid_col_weight, "0"),
-            (f"label_sub_weapon_{row_number}_space", self.grid_col_spaces, "0"),
-            (f"label_sub_weapon_{row_number}_dp", self.grid_col_dp, "0"),
-            (f"label_sub_weapon_{row_number}_shots", self.grid_col_max_weight, "0"),
-            (f"label_sub_weapon_{row_number}_ammo_cost", self.grid_col_power_factors, "0"),
-            (f"label_sub_weapon_{row_number}_ammo_weight", self.grid_col_base_mpg, "0"),
-            (f"label_sub_weapon_{row_number}_tohit", self.grid_col_test_track_numbers, ""),
-            (f"label_sub_weapon_{row_number}_damage", self.grid_col_last_column, "")
-        ]
-
-        for attr_name, col_index, default_text in visible_columns:
-            lbl_obj = tk.Label(canvas_type, text=default_text, anchor="w")
-            setattr(self, attr_name, lbl_obj)
-            lbl_obj.grid(column=col_index, row=target_grid_row, sticky="w")
-
-        # 4. Initialize and map Weapon Quantity controls with unified trace listeners
-        var_qty = tk.IntVar(value=0)
-        setattr(self, f"var_sub_weapon_{row_number}_qty", var_qty)
-        
-        qty_entry = ttk.Entry(canvas_type, textvariable=var_qty, width=3)
-        setattr(self, f"entry_sub_weapon_{row_number}_qty", qty_entry)
-        qty_entry.grid(column=self.grid_col_qty, row=target_grid_row, sticky="w")
-        
-        #update_qty_method = f"on_update_sub_weapon_{row_number}_qty"
-        #var_qty.trace_add(
-        #    "write", 
-        #    lambda *args, m=update_qty_method: getattr(self, m)() if hasattr(self, m) else None
-        #)
-        # Target your single, centralized method name
-        qty_unified_method = "on_update_sub_weapon_qty_unified"
-        
-        var_qty.trace_add(
-            "write", 
-            lambda *args, m=qty_unified_method, r=row_number: (
-                getattr(self, m)(row_number=r) 
-                if hasattr(self, m) else None
-            )
+        # 1a. Primary Dropdown Menu (Themed via ttk)
+        category_dropdown = ttk.OptionMenu(
+            dropdown_cluster, 
+            category_var, 
+            "Weapon",
+            *weapon_options_list,
+            command=lambda chosen_cat, r=row_number, c=dropdown_cluster, wv=weapon_var: self.on_weapon_category_changed(chosen_cat, r, c, wv)
         )
+        category_dropdown.pack(side="top", fill="x", anchor="w")
 
+        # Fetch raw weapon sub-lists from database tracking dict
+        raw_sub_weapons = self.get_weapon_sub_list(category_var.get())
+        
+        # CRUCIAL FIX: Parse dictionary list down to text name strings safely [1]
+        if raw_sub_weapons and isinstance(raw_sub_weapons[0], dict):
+            sub_weapons_list = [item.get("Drop-Down Name", "Unknown Weapon") for item in raw_sub_weapons]
+        else:
+            sub_weapons_list = ["Select Item..."]
 
-        # 5. Initialize and map Ammunition Quantity controls with unified trace listeners
-        var_ammo = tk.IntVar(value=0)
-        setattr(self, f"var_sub_weapon_ammo_{row_number}_qty", var_ammo)
-        
-        ammo_entry = ttk.Entry(canvas_type, textvariable=var_ammo, width=3)
-        setattr(self, f"entry_sub_weapon_ammo_{row_number}_qty", ammo_entry)
-        ammo_entry.grid(column=self.grid_right_qty, row=target_grid_row, sticky="w")
-        
-        #update_ammo_method = f"on_update_sub_weapon_ammo_{row_number}_qty"
-        #var_ammo.trace_add(
-        #    "write", 
-        #    lambda *args, m=update_ammo_method: getattr(self, m)() if hasattr(self, m) else None
-        #)
-
-        # Target your single, centralized method name
-        ammo_unified_method = "on_update_sub_weapon_ammo_qty_unified"
-        
-        var_ammo.trace_add(
-            "write", 
-            lambda *args, m=ammo_unified_method, r=row_number: (
-                getattr(self, m)(row_number=r) 
-                if hasattr(self, m) else None
-            )
+        # 1b. Secondary Sub-Dropdown Menu (Themed via ttk, formed inline)
+        sub_weapon_dropdown = ttk.OptionMenu(
+            dropdown_cluster, 
+            weapon_var, 
+            "Select Item...",
+            *sub_weapons_list
         )
+        sub_weapon_dropdown.pack(side="top", fill="x", anchor="w", pady=(4, 0))
+        self.weapon_dropdown_objects.append(sub_weapon_dropdown)
 
+        # =========================================================================
+        # CRUCIAL LAYOUT CORRECTION: Shifting numerical control widgets
+        # downward exactly 2 full rows using the row=(row_number + 2) track.
+        # =========================================================================
+        target_control_row = row_number + 2
 
-        # 6. FIXED WORD SEQUENCE: Maps the text string patterns to match your pre-existing method names exactly
-        buttons_config = [
-        #    (f"btn_sub_weapon_{row_number}_qty_up", "▲", 3, "on_button_sub_weapon_qty_unified"),
-        #    (f"btn_sub_weapon_{row_number}_qty_down", "▼", 4, "on_button_sub_weapon_qty_unified")
-            (f"button_sub_weapon_{row_number}_qty_up", up_arrow, self.grid_left_up_button, "on_button_sub_weapon_qty_unified"),
-            (f"button_sub_weapon_{row_number}_qty_down", down_arrow, self.grid_left_down_button, "on_button_sub_weapon_qty_unified"),
-            (f"button_sub_weapon_ammo_{row_number}_qty_up", up_arrow, self.grid_right_up_button, "on_button_ammo_qty_unified"),
-            (f"button_sub_weapon_ammo_{row_number}_qty_down", down_arrow, self.grid_right_down_button, "on_button_ammo_qty_unified")
-        ]
-        ## Ensure your configuration array targets the single, unified handler name
-        #buttons_config = [
-        #    (f"btn_sub_weapon_{row_number}_qty_up", "▲", 3, "on_button_sub_weapon_qty_unified"),
-        #    (f"btn_sub_weapon_{row_number}_qty_down", "▼", 4, "on_button_sub_weapon_qty_unified")
-        #]
-        #for attr_name, btn_text, col_index, click_method in buttons_config:
-        #    btn_obj = tk.Button(
-        #        canvas_type, 
-        #        text=btn_text, 
-        #        command=lambda m=click_method: getattr(self, m)() if hasattr(self, m) else None
-        #    )
-        #    setattr(self, attr_name, btn_obj)
-        #    btn_obj.grid(column=col_index, row=target_grid_row, sticky="w")
-        for attr_name, btn_text, col_index, click_method in buttons_config:
-            # Determine click direction based on the arrow symbol
-            action_direction = "up" if up_arrow in btn_text else "down"
+        # -------------------------------------------------------------------------
+        # COL 1 - 3: Main Weapon Qty Track
+        # -------------------------------------------------------------------------
+        weapon_qty_entry = tk.Entry(canvas_type, width=3, textvariable=qty_var, command=lambda r=row_number: self.on_select_sub_weapon_unified(row_number=r))
+        weapon_qty_entry.grid(row=target_control_row, column=self.grid_col_qty)
+        self.weapon_qty_entry_objects.append(weapon_qty_entry)
 
-            btn_obj = tk.Button(
-                canvas_type, 
-                text=btn_text, 
-                # Capture variables at creation time using default arguments
-                command=lambda m=click_method, r=row_number, d=action_direction: (
-                    getattr(self, m)(row_number=r, direction=d) 
-                    if hasattr(self, m) else None
-                )
-            ) 
-            setattr(self, attr_name, btn_obj)
-            btn_obj.grid(column=col_index, row=target_grid_row, sticky="w")
+        weapon_qty_up_btn = tk.Button(canvas_type, text=up_arrow, command=lambda r=row_number: self.on_button_sub_weapon_qty_unified(r, direction="up"))
+        weapon_qty_up_btn.grid(row=target_control_row, column=self.grid_left_up_button)
+        self.weapon_qty_up_button_objects.append(weapon_qty_up_btn)
 
+        weapon_qty_down_btn = tk.Button(canvas_type, text=down_arrow, command=lambda r=row_number: self.on_button_sub_weapon_qty_unified(r, direction="down"))
+        weapon_qty_down_btn.grid(row=target_control_row, column=self.grid_left_down_button)
+        self.weapon_qty_down_button_objects.append(weapon_qty_down_btn)
 
-        # 7. Initialize and map Extra Magazines Quantity tracking fields and arrows
-        var_mags = tk.IntVar(value=0)
-        setattr(self, f"var_sub_weapon_extra_mags_{row_number}_qty", var_mags)
+        # -------------------------------------------------------------------------
+        # COL 4 - 6: Ammo Track
+        # -------------------------------------------------------------------------
+        ammo_qty_entry = tk.Entry(canvas_type, width=3, textvariable=ammo_var, command=lambda r=row_number: self.on_select_sub_weapon_unified(row_number=r))
+        ammo_qty_entry.grid(row=target_control_row, column=self.grid_right_qty)
+        self.weapon_ammo_qty_entry_objects.append(ammo_qty_entry)
+
+        ammo_qty_up_btn = tk.Button(canvas_type, text=up_arrow, command=lambda r=row_number: self.on_button_ammo_qty_unified(r, direction="up"))
+        ammo_qty_up_btn.grid(row=target_control_row, column=self.grid_right_up_button)
+        self.weapon_ammo_qty_up_button_objects.append(ammo_qty_up_btn)
+
+        ammo_qty_down_btn = tk.Button(canvas_type, text=down_arrow, command=lambda r=row_number: self.on_button_ammo_qty_unified(r, direction="down"))
+        ammo_qty_down_btn.grid(row=target_control_row, column=self.grid_left_down_button)
+        self.weapon_ammo_qty_down_button_objects.append(ammo_qty_down_btn)
+
+        # -------------------------------------------------------------------------
+        # COL 7 - 9: Extra Mags Track
+        # -------------------------------------------------------------------------
+        extra_mag_entry = tk.Entry(canvas_type, width=3, textvariable=mag_var, command=lambda r=row_number: self.on_select_sub_weapon_unified(row_number=r))
+        extra_mag_entry.grid(row=target_control_row, column=self.grid_col_weapon_ammo_entry)
+        self.weapon_extra_mag_qty_entry_objects.append(extra_mag_entry)
+
+        extra_mag_up_btn = tk.Button(canvas_type, text=up_arrow, command=lambda r=row_number: self.on_button_extra_mags_unified(r, direction="up"))
+        extra_mag_up_btn.grid(row=target_control_row, column=self.grid_col_weapon_ammo_qty_up)
+        self.weapon_extra_mag_qty_up_button_objects.append(extra_mag_up_btn)
+
+        extra_mag_down_btn = tk.Button(canvas_type, text=down_arrow, command=lambda r=row_number: self.on_button_extra_mags_unified(r, direction="down"))
+        extra_mag_down_btn.grid(row=target_control_row, column=self.grid_col_weapon_ammo_qty_down)
+        self.weapon_extra_mag_qty_down_button_objects.append(extra_mag_down_btn)
+
+        # -------------------------------------------------------------------------
+        # COL 13 - 17: Read-Only Calculated Output Data Cells
+        # -------------------------------------------------------------------------
+        weapon_cost_label = tk.Label(canvas_type, text="$0", width=6, anchor="e")
+        weapon_cost_label.grid(row=target_control_row, column=self.grid_col_cost, sticky="e")
+        self.weapon_cost_label_objects.append(weapon_cost_label)
+
+        weapon_weight_label = tk.Label(canvas_type, text="0", width=6, anchor="e")
+        weapon_weight_label.grid(row=target_control_row, column=self.grid_col_weight, sticky="e")
+        self.weapon_weight_label_objects.append(weapon_weight_label)
+
+        weapon_space_label = tk.Label(canvas_type, text="0", width=4, anchor="center")
+        weapon_space_label.grid(row=target_control_row, column=self.grid_col_spaces, sticky="c")
+        self.weapon_spaces_label_objects.append(weapon_space_label)
+
+        weapon_dp_label = tk.Label(canvas_type, text="0", width=4, anchor="center")
+        weapon_dp_label.grid(row=target_control_row, column=self.grid_col_dp, sticky="c")
+        self.weapon_dp_label_objects.append(weapon_dp_label)
+
+        # -------------------------------------------------------------------------
+        # COL 18+: Row Management Action Column
+        # -------------------------------------------------------------------------
+        delete_weapon_row_btn = tk.Button(canvas_type, text="✕", fg="red", command=lambda r=row_number: self.remove_weapon_row(r))
+        delete_weapon_row_btn.grid(row=target_control_row, column=self.grid_col_power_factors, padx=5)
+        self.weapon_delete_button_objects.append(delete_weapon_row_btn)
+
+    def on_weapon_category_changed(self, selected_category, row_number, cluster_frame):
+        """
+        Triggers when the first tier dropdown updates.
+        Clears the old sub-weapon options and dynamically repopulates the new subset
+        directly beneath the Category selector without touching the Category menu.
+        """
+        # 1. Fetch filtered weapons array passing selection context
+        filtered_weapons = self.get_weapon_sub_list(selected_category)
+        if not filtered_weapons:
+            filtered_weapons = [{"Drop-Down Name": "No items available"}]
+    
+        weapon_name_list = []
+        for entry in filtered_weapons:
+            weapon_name_list.append(entry.get("Drop-Down Name"))
+    
+        # 2. Calculate the row coordinates matching your tactical row setup
+        row_top = 2 + ((row_number - 1) * 2)
+        row_bottom = row_top + 1
+    
+        # 3. Setup the text tracking variable for the sub-selection
+        default_val = weapon_name_list[0] if weapon_name_list else "Select Weapon"
+        sub_weapon_var = tk.StringVar(value=default_val)
         
-        mags_entry = ttk.Entry(canvas_type, textvariable=var_mags, width=3)
-        setattr(self, f"entry_sub_weapon_extra_mags_{row_number}_qty", mags_entry)
-        mags_entry.grid(column=self.grid_col_extra_mag_entry, row=target_grid_row, sticky="w")
-        
-        #update_mags_method = f"on_update_sub_weapon_extra_mags_{row_number}_qty"
-        #var_mags.trace_add(
-        #    "write", 
-        #    lambda *args, m=update_mags_method: getattr(self, m)() if hasattr(self, m) else None
-        #)
-        # Target your single, centralized method name
-        mags_unified_method = "on_update_extra_mags_qty_unified"
-        
-        var_mags.trace_add(
-            "write", 
-            lambda *args, m=mags_unified_method, r=row_number: (
-                getattr(self, m)(row_number=r) 
-                if hasattr(self, m) else None
-            )
-        )
-
-        #mag_up_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_up"
-        #btn_mag_up = tk.Button(
-        #    canvas_type, 
-        #    text=up_arrow, 
-        #    command=lambda m=mag_up_method: getattr(self, m)() if hasattr(self, m) else None
-        #)
-        #setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_up", btn_mag_up)
-        #btn_mag_up.grid(column=self.grid_col_extra_mag_qty_up, row=target_grid_row, sticky="w")
-
-        # Target your single, centralized method name
-        mag_unified_method = "on_button_extra_mags_unified"
-        
-        btn_mag_up = tk.Button(
-            canvas_type, 
-            text=up_arrow, 
-            command=lambda m=mag_unified_method, r=row_number: (
-                getattr(self, m)(row_number=r, direction="up") 
-                if hasattr(self, m) else None
-            )
-        )
-        setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_up", btn_mag_up)
-        btn_mag_up.grid(column=self.grid_col_extra_mag_qty_up, row=target_grid_row, sticky="w")
-
-        #mag_down_method = f"on_button_sub_weapon_extra_mags_{row_number}_qty_down"
-        #btn_mag_down = tk.Button(
-        #    canvas_type, 
-        #    text=down_arrow, 
-        #    command=lambda m=mag_down_method: getattr(self, m)() if hasattr(self, m) else None
-        #)
-        #setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_down", btn_mag_down)
-        #btn_mag_down.grid(column=self.grid_col_extra_mag_qty_down, row=target_grid_row, sticky="w")
-
-        # Target your single, centralized method name
-        mag_unified_method = "on_button_extra_mags_unified"
-        
-        btn_mag_down = tk.Button(
-            canvas_type, 
-            text=down_arrow, 
-            command=lambda m=mag_unified_method, r=row_number: (
-                getattr(self, m)(row_number=r, direction="down") 
-                if hasattr(self, m) else None
-            )
-        )
-        setattr(self, f"button_sub_weapon_extra_mags_{row_number}_qty_down", btn_mag_down)
-        btn_mag_down.grid(column=self.grid_col_extra_mag_qty_down, row=target_grid_row, sticky="w")
-
-
-        #self.weapon_armor_facing_1 = tk.StringVar()
-        #self.weapon_armor_facing_1.set("Facing")
-        #options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
-        ## Create the dropdown widget
-        #self.weapon_facing_dropdown_1 = ttk.OptionMenu(canvas_type, self.weapon_armor_facing_1, "Facing", *options) #filled elsewhere
-        #self.weapon_facing_dropdown_1.grid(column=self.grid_col_test_track, row=self.grid_row_sub_weapon_alt_1, sticky="w")
-
-        # Loop dynamically through all active weapon rows (1 to N)
-        for row_idx in range(1, self.weapon_rows_count + 1):
+        # 4. Clean up old sub-dropdown widgets tracking your weapon objects safely
+        # FIX: Check self.sub_weapon_dropdown_objects to leave the category menu alone!
+        if row_number <= len(self.sub_weapon_dropdown_objects):
+            old_widget = self.sub_weapon_dropdown_objects[row_number - 1]
+            if old_widget is not None:
+                try:
+                    old_widget.grid_forget()
+                    old_widget.destroy()
+                except Exception:
+                    pass
+    
+        # Track or replace the sub-weapon string tracking variable cleanly by index slot
+        if row_number <= len(self.sub_weapon_dropdown_string_vars):
+            self.sub_weapon_dropdown_string_vars[row_number - 1] = sub_weapon_var
+        else:
+            self.sub_weapon_dropdown_string_vars.append(sub_weapon_var)
             
-            # 1. Fetch the correct grid row layout coordinate for this index
-            grid_row_attr = f"grid_row_sub_weapon_alt_{row_idx}"
-            target_grid_row = getattr(self, grid_row_attr) if hasattr(self, grid_row_attr) else row_idx
-            
-            # 2. Call your helper function to build and grid the UI components
-            facing_var, facing_dropdown = self.add_weapon_facing_dropdown(
-                canvas_type = canvas_type,
-                column_val  = self.grid_col_test_track,
-                row_val     = target_grid_row
+        # 5. Generate the new sub-options selector menu 
+        new_dropdown = ttk.OptionMenu(cluster_frame, sub_weapon_var, default_val, *weapon_name_list)
+        new_dropdown.grid(row=row_bottom, column=self.grid_col_item, sticky="w")
+    
+        # FIX: Store or replace the widget reference in the dedicated sub-weapon array
+        if row_number <= len(self.sub_weapon_dropdown_objects):
+            self.sub_weapon_dropdown_objects[row_number - 1] = new_dropdown
+        else:
+            self.sub_weapon_dropdown_objects.append(new_dropdown)
+    
+        # 6. Securely trace variable tracking updates
+        sub_weapon_var.trace_add(
+            "write", 
+            lambda *args, r=row_number: (
+                self.on_select_sub_weapon_unified(r)
+                if (getattr(self, 'is_loading', False) is False) else None
             )
-            
-            # 3. Securely register the returned objects back to your class context
-            setattr(self, f"weapon_armor_facing_{row_idx}", facing_var)
-            setattr(self, f"weapon_facing_dropdown_{row_idx}", facing_dropdown)
-
-
+        )
 
     def add_dropdown_weapon_alt_unified(self, row_number: int, canvas_type):
         """
@@ -4884,7 +4817,7 @@ class Python_Designer():
         new_str_var.trace_add(
             "write", 
             lambda *trace_args, r=row_number, d=dropdown_list: (
-                self.on_select_sub_weapon_unified(row_number=r, dropdown_list=d)
+                self.on_select_sub_weapon_unified(row_number=r)
             )
         )
 
@@ -5018,7 +4951,7 @@ class Python_Designer():
 
         # Capture the current index in a default argument for the lambda function
         dropdown = ttk.OptionMenu(canvas_type, getattr(self, f"selected_sub_weapon_{row_number}_canvas"), 
-                "Weapon", *option_list, command=lambda selected_value, idx=row_number: self.on_select_sub_weapon_unified(idx, dropdown_list))
+                "Weapon", *option_list, command=lambda selected_value, idx=row_number: self.on_select_sub_weapon_unified(idx))
             
         # Store the dropdown widget object dynamically
         setattr(self, f"selected_sub_weapon_dropdown_{row_number}", dropdown)
@@ -5026,174 +4959,79 @@ class Python_Designer():
         # Grid the newly created dropdown widget using the row tracker positional offset
         dropdown.grid(column=self.grid_col_item, row=getattr(self, f"grid_row_sub_weapon_alt_{row_number}"), sticky="w")
 
-
-        #self.selected_sub_weapon_dropdown_1 = ttk.OptionMenu(canvas_type, self.selected_sub_weapon_1_canvas, "Weapon", *option_list, command=lambda selected_value: self.on_select_sub_weapon_unified(row_number, dropdown_list)) #filled elsewhere
-        #self.selected_sub_weapon_dropdown_1.grid(column=self.grid_col_item, row=self.grid_row_sub_weapon_alt_1, sticky="w")
-
-        #new_str_var.trace_add(
-        #    "write", 
-        #    lambda *trace_args, rn=row_number, dl=dropdown_list: self.on_select_sub_weapon_unified(rn, dl, *trace_args)
-        #)
-
     def on_button_sub_weapon_qty_unified(self, row_number: int, direction: str):
         """
         Handles up/down arrow button clicks for weapon quantities across all rows.
         """
-        var_name = f"var_sub_weapon_{row_number}_qty"
-        if not hasattr(self, var_name):
-            return
+        var_name = self.weapon_qty_string_vars[row_number-1]
             
-        var_obj = getattr(self, var_name)
         try:
-            current_val = int(var_obj.get())
+            var_value_str = var_name.get()
+            current_val = int(var_value_str)
         except (ValueError, tk.TclError):
             current_val = 0
-            
+
         new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
-        var_obj.set(new_val)
+        var_name.set(str(new_val))
+        if hasattr(self, "on_select_sub_weapon_unified"): 
+            self.on_select_sub_weapon_unified(row_number=row_number)        
+
+    def on_button_ammo_qty_unified(self, row_number: int, direction: str):
+        """
+        Handles up/down arrow button clicks for weapon quantities across all rows.
+        """
+        var_name = self.weapon_ammo_qty_string_vars[row_number - 1]
+            
+        try:
+            var_value_str = var_name.get()
+            current_val = int(var_value_str)
+        except (ValueError, tk.TclError):
+            current_val = 0
+
+        new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+        var_name.set(str(new_val))
+        if hasattr(self, "on_select_sub_weapon_unified"): 
+            self.on_select_sub_weapon_unified(row_number=row_number)        
 
     def on_button_extra_mags_unified(self, row_number: int, direction: str):
         """
         Handles up/down arrow button clicks for extra magazine counts across all rows.
         """
-        var_name = f"var_sub_weapon_extra_mags_{row_number}_qty"
-        if not hasattr(self, var_name):
-            return
-            
-        var_obj = getattr(self, var_name)
+        var_name = self.weapon_extra_mag_qty_string_vars[row_number - 1]
         try:
-            current_val = int(var_obj.get())
+            var_value_str = var_name.get()
+            current_val = int(var_value_str)
         except (ValueError, tk.TclError):
             current_val = 0
-            
+
         new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
-        var_obj.set(new_val)
-
-    def on_update_sub_weapon_qty_unified(self, row_number: int):
-        """
-        Centralized trace tracker that fires whenever a quantity drops or increments.
-        Safely rebuilds weapon data configurations using raw structural fallbacks.
-        """
-        if getattr(self, "is_loading", False):
-            return
-
-        # 1. Recover selection
-        selected_var_attr = f"selected_sub_weapon_{row_number}_canvas"
-        if not hasattr(self, selected_var_attr) or getattr(self, selected_var_attr) is None:
-            print(f"[DIAGNOSTIC] Step 1 Failed: {selected_var_attr} missing or None")
-            return
-        selected_value = getattr(self, selected_var_attr).get()
-        
-        # --- ADD THESE TEMPORARY DIAGNOSTIC LINES HERE ---
-        print(f"[DIAGNOSTIC] Step 1 Success! Row {row_number} Selected Weapon String is: '{selected_value}'")
-        
-        # Check if hidden labels exist to provide fallback data
-        hidden_cost_attr = f"label_hidden_sub_weapon_{row_number}_cost"
-        if hasattr(self, hidden_cost_attr):
-            raw_text_cost = getattr(self, hidden_cost_attr).cget("text")
-            print(f"[DIAGNOSTIC] Hidden Label Check: '{hidden_cost_attr}' exists. Stored Base Cost text is: '{raw_text_cost}'")
-        else:
-            print(f"[DIAGNOSTIC] Hidden Label Check Failed: '{hidden_cost_attr}' does not exist on self.")
-        # -------------------------------------------------
-
-
-        # 1. Recover the active dynamic choice selection text string
-        #selected_var_attr = f"selected_sub_weapon_{row_number}_canvas"
-        #if not hasattr(self, selected_var_attr) or getattr(self, selected_var_attr) is None:
-        #    return
-        #selected_value = getattr(self, selected_var_attr).get()
-
-        # 2. Extract weapon database profiles using hidden layout labels as fallback properties
-        entry = None
-        
-        # Strategy A: Use the text string name to check active category databases
-        if hasattr(self, "get_weapon_sub_list"):
-            var_cat_name = f"selected_weapon_alt_{row_number}"
-            if hasattr(self, var_cat_name):
-                cat = str(getattr(self, var_cat_name).get()).strip().upper()
-                db_list = self.get_weapon_sub_list(category=cat)
-                for item in db_list:
-                    if item.get("Drop-Down Name") == selected_value:
-                        entry = item
-                        break
-
-        # Strategy B: Reconstruct standard parameters directly from legacy backup storage labels
-        if entry is None:
-            entry = {
-                "Drop-Down Name": selected_value,
-                "Weapon Name": getattr(self, f"label_hidden_sub_weapon_{row_number}_name").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_name") else "",
-                "Ammo Type": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_type").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_type") else "",
-                "Abbv": getattr(self, f"label_hidden_sub_weapon_{row_number}_abbv").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_abbv") else "",
-                "Effect": getattr(self, f"label_hidden_sub_weapon_{row_number}_effect").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_effect") else "",
-                "To-Hit": getattr(self, f"label_hidden_sub_weapon_{row_number}_to_hit").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_to_hit") else "7",
-                "Dam": getattr(self, f"label_hidden_sub_weapon_{row_number}_damage").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_damage") else "",
-                "DP": getattr(self, f"label_hidden_sub_weapon_{row_number}_dp").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_dp") else "0",
-                "Cost": getattr(self, f"label_hidden_sub_weapon_{row_number}_cost").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_cost") else "0",
-                "Weight": getattr(self, f"label_hidden_sub_weapon_{row_number}_weight").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_weight") else "0",
-                "Space": getattr(self, f"label_hidden_sub_weapon_{row_number}_space").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_space") else "0",
-                "Shots": getattr(self, f"label_hidden_sub_weapon_{row_number}_shots").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_shots") else "0",
-                "Shot Cost": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_cost").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_cost") else "0",
-                "Shot Weight": getattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_weight").cget("text") if hasattr(self, f"label_hidden_sub_weapon_{row_number}_ammo_weight") else "0",
-            }
-
-        # 3. Fire the calculations block using recovered data matrices
-        if entry and entry.get("Drop-Down Name") != "Weapon":
-            self.add_to_sub_weapon_row_unified(row_number, entry)
-
-        # 4. Trigger structural system recalculationspass
-        if hasattr(self, "recalculate"):
-            self.recalculate()
-
+        var_name.set(str(new_val))
+        if hasattr(self, "on_select_sub_weapon_unified"): 
+            self.on_select_sub_weapon_unified(row_number=row_number)        
+      
     def on_button_ammo_qty_unified(self, row_number: int, direction: str):
         """
         Handles up/down arrow button clicks for ammunition quantities across all rows.
         Forces instant math recalculations for costs and weights.
         """
-        var_name = f"var_sub_weapon_ammo_{row_number}_qty"
-        if not hasattr(self, var_name):
-            return
+        var_name = self.weapon_ammo_qty_string_vars[row_number-1]
             
-        var_obj = getattr(self, var_name)
         try:
-            # Safely fetch the current text value
-            raw_val = var_obj.get()
-            current_val = int(raw_val) if str(raw_val).strip() != "" else 0
+            var_value_str = var_name.get()
+            current_val = int(var_value_str)
         except (ValueError, tk.TclError):
             current_val = 0
-            
-        # Calculate the new value safely (never drop below 0)
+
         new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
-        var_obj.set(new_val) 
-
-        # FORCE RECALCULATION: Explicitly trigger the calculation pipeline
-        if hasattr(self, "on_update_sub_weapon_qty_unified"):
-            self.on_update_sub_weapon_qty_unified(row_number=row_number)
-        elif hasattr(self, "recalculate"):
-            self.recalculate()
-
-    #def on_button_ammo_qty_unified(self, row_number: int, direction: str):
-    #    """
-    #    Handles up/down arrow button clicks for ammunition quantities across all rows.
-    #    """
-    #    var_name = f"var_sub_weapon_ammo_{row_number}_qty"
-    #    if not hasattr(self, var_name):
-    #        return
-    #        
-    #    var_obj = getattr(self, var_name)
-    #    try:
-    #        current_val = int(var_obj.get())
-    #    except (ValueError, tk.TclError):
-    #        current_val = 0
-    #        
-    #    new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
-    #    var_obj.set(new_val) # This updates the variable, which triggers the calculation trace
-
+        var_name.set(str(new_val))
+        if hasattr(self, "on_select_sub_weapon_unified"): 
+            self.on_select_sub_weapon_unified(row_number=row_number)        
 
     def on_update_extra_mags_qty_unified(self, row_number: int):
         """
         Passes extra magazine trace writes straight through to our main calculation method.
         """
-        self.on_update_sub_weapon_qty_unified(row_number)
+        self.on_select_sub_weapon_unified(row_number)
 
     def get_weapon_sub_list(self, category: str) -> list:
         output_list: list = []
@@ -6025,17 +5863,6 @@ class Python_Designer():
     # Weapon Row 1 processing here                                       #
     ######################################################################
 
-    def add_labels_buttons_weapon_header(self, canvas_type):
-        tk.Label(canvas_type, text="Weapons",     anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="Ammo Qty",    anchor="w").grid(column=self.grid_right_qty,                row=self.grid_row_weapon_alt_1, sticky="w", columnspan=3)
-        tk.Label(canvas_type, text="Extra Mags",  anchor="w").grid(column=self.grid_col_extra_mag_entry,      row=self.grid_row_weapon_alt_1, sticky="w", columnspan=3)
-        tk.Label(canvas_type, text="Shots",       anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="Ammo Cost",   anchor="w").grid(column=self.grid_col_power_factors,        row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="Ammo Weight", anchor="w").grid(column=self.grid_col_base_mpg,             row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="Facing",      anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="To Hit",      anchor="w").grid(column=self.grid_col_test_track_numbers,   row=self.grid_row_weapon_alt_1, sticky="w")
-        tk.Label(canvas_type, text="Damage",      anchor="w").grid(column=self.grid_col_last_column,          row=self.grid_row_weapon_alt_1, sticky="w")
-
     def add_dropdown_weapons(self, canvas_type):
         """
         Master initializer method that automatically builds and grids the category 
@@ -6070,8 +5897,8 @@ class Python_Designer():
         # Create the dropdown widget
         dropdown = ttk.OptionMenu(canvas_type, facing, "Facing", *options) #filled elsewhere
         dropdown.grid(column=column_val, row=row_val, sticky="w")
-        return facing, dropdown
-
+        facing.trace_add("write", lambda *trace_args, r=row_val: (self.recalculate()))
+        return facing, "dropdown"
 
     ######################################################################
     # Links Row 1 Processing here                                        #
@@ -6260,3716 +6087,6 @@ class Python_Designer():
             self.label_accessories_1_notes.configure(text=str(accessories_1_notes))
         else:
             self.label_accessories_1_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 2 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_2_canvas(self, canvas_type):
-        self.label_hidden_accessories_2_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_2_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_2_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_2_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_2_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_2, sticky="w")
-        self.label_accessories_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_2_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_2, sticky="w")
-        self.label_accessories_2_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_2_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_2, sticky="w")
-        self.label_accessories_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_2_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_2, sticky="w")
-        self.label_accessories_2_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_2_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_2, sticky="w", columnspan=4)
-
-        self.var_accessories_2_qty = tk.IntVar(value=0)
-        self.entry_accessories_2_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_2_qty, width=3)
-        self.entry_accessories_2_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_2, sticky="w")
-        self.var_accessories_2_qty.trace_add("write", self.accessories_qty_2_update)
-
-    def add_dropdown_accessories_2_canvas(self, canvas_type):
-        self.selected_accessories_2 = tk.StringVar()
-        self.selected_accessories_2.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_2_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_2, "Accessory", *options) #filled elsewhere
-        self.accessories_2_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_2, sticky="w")
-        self.selected_accessories_2.trace_add("write", self.on_select_accessories_2)
-
-    def on_select_accessories_2(self, *args):
-        selected_value = self.selected_accessories_2.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_2_name.configure(text=self.float_to_str(accessories_name))
-                self.label_hidden_accessories_2_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_2_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_2_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_2_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_2_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_2_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_2_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_2_qty_up(self, *args):
-        accessories_2_qty = self.var_accessories_2_qty.get()
-        accessories_2_qty = accessories_2_qty + 1
-        self.var_accessories_2_qty.set(value=accessories_2_qty)
-        accessories_2_cost   = int(self.label_hidden_accessories_2_cost.cget("text"))
-        accessories_2_weight = int(self.label_hidden_accessories_2_weight.cget("text"))
-        accessories_2_space: str  = self.label_hidden_accessories_2_space.cget("text")
-        accessories_2_dp:    str  = self.label_hidden_accessories_2_dp.cget("text")
-        accessories_2_notes: str  = self.label_hidden_accessories_2_notes.cget("text")
-
-        if accessories_2_space == "":
-            accessories_2_space = 0.0
-        else:
-            accessories_2_space = float(accessories_2_space)
-
-        self.label_accessories_2_cost.configure(text=self.float_to_str(accessories_2_cost * accessories_2_qty))
-        self.label_accessories_2_weight.configure(text=self.float_to_str(accessories_2_weight * accessories_2_qty))
-        self.label_accessories_2_space.configure(text=self.float_to_str(accessories_2_space * accessories_2_qty))
-        self.label_accessories_2_dp.configure(text=str(accessories_2_dp))
-        self.label_accessories_2_notes.configure(text=str(accessories_2_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_2_qty_down(self, *args):
-        accessories_2_qty = self.var_accessories_2_qty.get()
-        accessories_2_qty = max(accessories_2_qty - 1, 0)
-        self.var_accessories_2_qty.set(value=accessories_2_qty)
-        accessories_2_cost   = int(self.label_hidden_accessories_2_cost.cget("text"))
-        accessories_2_weight = int(self.label_hidden_accessories_2_weight.cget("text"))
-        accessories_2_space  = float(self.label_hidden_accessories_2_space.cget("text"))
-        accessories_2_dp     = self.label_hidden_accessories_2_dp.cget("text")
-        accessories_2_notes  = self.label_hidden_accessories_2_notes.cget("text")
-        self.label_accessories_2_cost.configure(text=self.float_to_str(accessories_2_cost * accessories_2_qty))
-        self.label_accessories_2_weight.configure(text=self.float_to_str(accessories_2_weight * accessories_2_qty))
-        self.label_accessories_2_space.configure(text=self.float_to_str(accessories_2_space * accessories_2_qty))
-        self.label_accessories_2_dp.configure(text=str(accessories_2_dp))
-        if accessories_2_qty > 0:
-            self.label_accessories_2_notes.configure(text=str(accessories_2_notes))
-        else:
-            self.label_accessories_2_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_2_update(self, *args):
-        accessories_2_qty = self.var_accessories_2_qty.get()
-        accessories_2_cost   = int(self.label_hidden_accessories_2_cost.cget("text"))
-        accessories_2_weight = int(self.label_hidden_accessories_2_weight.cget("text"))
-        accessories_2_space  = float(self.label_hidden_accessories_2_space.cget("text"))
-        accessories_2_dp     = self.label_hidden_accessories_2_dp.cget("text")
-        accessories_2_notes  = self.label_hidden_accessories_2_notes.cget("text")
-        self.label_accessories_2_cost.configure(text=self.float_to_str(accessories_2_cost * accessories_2_qty))
-        self.label_accessories_2_weight.configure(text=self.float_to_str(accessories_2_weight * accessories_2_qty))
-        self.label_accessories_2_space.configure(text=self.float_to_str(accessories_2_space * accessories_2_qty))
-        self.label_accessories_2_dp.configure(text=str(accessories_2_dp))
-        if accessories_2_qty > 0:
-            self.label_accessories_2_notes.configure(text=str(accessories_2_notes))
-        else:
-            self.label_accessories_2_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 3 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_3_canvas(self, canvas_type):
-        self.label_hidden_accessories_3_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_3_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_3_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_3_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_3_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_3, sticky="w")
-        self.label_accessories_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_3_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_3, sticky="w")
-        self.label_accessories_3_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_3_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_3, sticky="w")
-        self.label_accessories_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_3_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_3, sticky="w")
-        self.label_accessories_3_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_3_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_3, sticky="w", columnspan=4)
-
-        self.var_accessories_3_qty = tk.IntVar(value=0)
-        self.entry_accessories_3_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_3_qty, width=3)
-        self.entry_accessories_3_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_3, sticky="w")
-        self.var_accessories_3_qty.trace_add("write", self.accessories_qty_3_update)
-
-    def add_dropdown_accessories_3_canvas(self, canvas_type):
-        self.selected_accessories_3 = tk.StringVar()
-        self.selected_accessories_3.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_3_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_3, "Accessory", *options) #filled elsewhere
-        self.accessories_3_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_3, sticky="w")
-        self.selected_accessories_3.trace_add("write", self.on_select_accessories_3)
-
-    def on_select_accessories_3(self, *args):
-        selected_value = self.selected_accessories_3.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_3_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_3_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_3_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_3_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_3_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_3_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_3_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_3_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_3_qty_up(self, *args):
-        accessories_3_qty = int(self.var_accessories_3_qty.get())
-        accessories_3_qty = accessories_3_qty + 1
-        self.var_accessories_3_qty.set(value=accessories_3_qty)
-        accessories_3_cost   = int(self.label_hidden_accessories_3_cost.cget("text"))
-        accessories_3_weight = int(self.label_hidden_accessories_3_weight.cget("text"))
-        accessories_3_space: str  = self.label_hidden_accessories_3_space.cget("text")
-        accessories_3_dp:    str  = self.label_hidden_accessories_3_dp.cget("text")
-        accessories_3_notes: str  = self.label_hidden_accessories_3_notes.cget("text")
-
-        if accessories_3_space == "":
-            accessories_3_space = 0.0
-        else:
-            accessories_3_space = float(accessories_3_space)
-
-        self.label_accessories_3_cost.configure(text=self.float_to_str(accessories_3_cost * accessories_3_qty))
-        self.label_accessories_3_weight.configure(text=self.float_to_str(accessories_3_weight * accessories_3_qty))
-        self.label_accessories_3_space.configure(text=self.float_to_str(accessories_3_space * accessories_3_qty))
-        self.label_accessories_3_dp.configure(text=str(accessories_3_dp))
-        self.label_accessories_3_notes.configure(text=str(accessories_3_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_3_qty_down(self, *args):
-        accessories_3_qty = self.var_accessories_3_qty.get()
-        accessories_3_qty = max(accessories_3_qty - 1, 0)
-        self.var_accessories_3_qty.set(value=accessories_3_qty)
-        accessories_3_cost   = int(self.label_hidden_accessories_3_cost.cget("text"))
-        accessories_3_weight = int(self.label_hidden_accessories_3_weight.cget("text"))
-        accessories_3_space  = float(self.label_hidden_accessories_3_space.cget("text"))
-        accessories_3_dp     = self.label_hidden_accessories_3_dp.cget("text")
-        accessories_3_notes  = self.label_hidden_accessories_3_notes.cget("text")
-        self.label_accessories_3_cost.configure(text=self.float_to_str(accessories_3_cost * accessories_3_qty))
-        self.label_accessories_3_weight.configure(text=self.float_to_str(accessories_3_weight * accessories_3_qty))
-        self.label_accessories_3_space.configure(text=self.float_to_str(accessories_3_space * accessories_3_qty))
-        self.label_accessories_3_dp.configure(text=str(accessories_3_dp))
-        if accessories_3_qty > 0:
-            self.label_accessories_3_notes.configure(text=str(accessories_3_notes))
-        else:
-            self.label_accessories_3_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_3_update(self, *args):
-        accessories_3_qty = self.var_accessories_3_qty.get()
-        accessories_3_cost   = int(self.label_hidden_accessories_3_cost.cget("text"))
-        accessories_3_weight = int(self.label_hidden_accessories_3_weight.cget("text"))
-        accessories_3_space  = float(self.label_hidden_accessories_3_space.cget("text"))
-        accessories_3_dp     = self.label_hidden_accessories_3_dp.cget("text")
-        accessories_3_notes  = self.label_hidden_accessories_3_notes.cget("text")
-        self.label_accessories_3_cost.configure(text=self.float_to_str(accessories_3_cost * accessories_3_qty))
-        self.label_accessories_3_weight.configure(text=self.float_to_str(accessories_3_weight * accessories_3_qty))
-        self.label_accessories_3_space.configure(text=self.float_to_str(accessories_3_space * accessories_3_qty))
-        self.label_accessories_3_dp.configure(text=str(accessories_3_dp))
-        if accessories_3_qty > 0:
-            self.label_accessories_3_notes.configure(text=str(accessories_3_notes))
-        else:
-            self.label_accessories_3_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 4 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_4_canvas(self, canvas_type):
-        self.label_hidden_accessories_4_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_4_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_4_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_4_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_4_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_4, sticky="w")
-        self.label_accessories_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_4_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_4, sticky="w")
-        self.label_accessories_4_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_4_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_4, sticky="w")
-        self.label_accessories_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_4_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_4, sticky="w")
-        self.label_accessories_4_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_4_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_4, sticky="w", columnspan=4)
-
-        self.var_accessories_4_qty = tk.IntVar(value=0)
-        self.entry_accessories_4_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_4_qty, width=3)
-        self.entry_accessories_4_qty.grid(column=self.grid_col_qty,row=self.grid_row_accessories_4, sticky="w")
-        self.var_accessories_4_qty.trace_add("write", self.accessories_qty_4_update)
-
-    def add_dropdown_accessories_4_canvas(self, canvas_type):
-        self.selected_accessories_4 = tk.StringVar()
-        self.selected_accessories_4.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_4_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_4, "Accessory", *options) #filled elsewhere
-        self.accessories_4_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_4, sticky="w")
-        self.selected_accessories_4.trace_add("write", self.on_select_accessories_4)
-
-    def on_select_accessories_4(self, *args):
-        selected_value = self.selected_accessories_4.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_4_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_4_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_4_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_4_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_4_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_4_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_4_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_4_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_4_qty_up(self, *args):
-        accessories_4_qty = self.var_accessories_4_qty.get()
-        accessories_4_qty = accessories_4_qty + 1
-        self.var_accessories_4_qty.set(value=accessories_4_qty)
-        accessories_4_cost   = int(self.label_hidden_accessories_4_cost.cget("text"))
-        accessories_4_weight = int(self.label_hidden_accessories_4_weight.cget("text"))
-        accessories_4_space: str  = self.label_hidden_accessories_4_space.cget("text")
-        accessories_4_dp:    str  = self.label_hidden_accessories_4_dp.cget("text")
-        accessories_4_notes: str  = self.label_hidden_accessories_4_notes.cget("text")
-
-        if accessories_4_space == "":
-            accessories_4_space = 0.0
-        else:
-            accessories_4_space = float(accessories_4_space)
-
-        self.label_accessories_4_cost.configure(text=self.float_to_str(accessories_4_cost * accessories_4_qty))
-        self.label_accessories_4_weight.configure(text=self.float_to_str(accessories_4_weight * accessories_4_qty))
-        self.label_accessories_4_space.configure(text=self.float_to_str(accessories_4_space * accessories_4_qty))
-        self.label_accessories_4_dp.configure(text=str(accessories_4_dp))
-        self.label_accessories_4_notes.configure(text=str(accessories_4_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_4_qty_down(self, *args):
-        accessories_4_qty = self.var_accessories_4_qty.get()
-        accessories_4_qty = max(accessories_4_qty - 1, 0)
-        self.var_accessories_4_qty.set(value=accessories_4_qty)
-        accessories_4_cost   = int(self.label_hidden_accessories_4_cost.cget("text"))
-        accessories_4_weight = int(self.label_hidden_accessories_4_weight.cget("text"))
-        accessories_4_space  = float(self.label_hidden_accessories_4_space.cget("text"))
-        accessories_4_dp     = self.label_hidden_accessories_4_dp.cget("text")
-        accessories_4_notes  = self.label_hidden_accessories_4_notes.cget("text")
-        self.label_accessories_4_cost.configure(text=self.float_to_str(accessories_4_cost * accessories_4_qty))
-        self.label_accessories_4_weight.configure(text=self.float_to_str(accessories_4_weight * accessories_4_qty))
-        self.label_accessories_4_space.configure(text=self.float_to_str(accessories_4_space * accessories_4_qty))
-        self.label_accessories_4_dp.configure(text=str(accessories_4_dp))
-        if accessories_4_qty > 0:
-            self.label_accessories_4_notes.configure(text=str(accessories_4_notes))
-        else:
-            self.label_accessories_4_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_4_update(self, *args):
-        accessories_4_qty = self.var_accessories_4_qty.get()
-        accessories_4_cost   = int(self.label_hidden_accessories_4_cost.cget("text"))
-        accessories_4_weight = int(self.label_hidden_accessories_4_weight.cget("text"))
-        accessories_4_space  = float(self.label_hidden_accessories_4_space.cget("text"))
-        accessories_4_dp     = self.label_hidden_accessories_4_dp.cget("text")
-        accessories_4_notes  = self.label_hidden_accessories_4_notes.cget("text")
-        self.label_accessories_4_cost.configure(text=self.float_to_str(accessories_4_cost * accessories_4_qty))
-        self.label_accessories_4_weight.configure(text=self.float_to_str(accessories_4_weight * accessories_4_qty))
-        self.label_accessories_4_space.configure(text=self.float_to_str(accessories_4_space * accessories_4_qty))
-        self.label_accessories_4_dp.configure(text=str(accessories_4_dp))
-        if accessories_4_qty > 0:
-            self.label_accessories_4_notes.configure(text=str(accessories_4_notes))
-        else:
-            self.label_accessories_4_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 5 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_5_canvas(self, canvas_type):
-        self.label_hidden_accessories_5_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_5_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_5_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_5_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_5_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_5, sticky="w")
-        self.label_accessories_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_5_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_5, sticky="w")
-        self.label_accessories_5_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_5_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_5, sticky="w")
-        self.label_accessories_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_5_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_5, sticky="w")
-        self.label_accessories_5_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_5_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_5, sticky="w", columnspan=4)
-
-        self.var_accessories_5_qty = tk.IntVar(value=0)
-        self.entry_accessories_5_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_5_qty, width=3)
-        self.entry_accessories_5_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_5, sticky="w")
-        self.var_accessories_5_qty.trace_add("write", self.accessories_qty_5_update)
-
-    def add_dropdown_accessories_5_canvas(self, canvas_type):
-        self.selected_accessories_5 = tk.StringVar()
-        self.selected_accessories_5.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_5_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_5, "Accessory", *options) #filled elsewhere
-        self.accessories_5_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_5, sticky="w")
-        self.selected_accessories_5.trace_add("write", self.on_select_accessories_5)
-
-    def on_select_accessories_5(self, *args):
-        selected_value = self.selected_accessories_5.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_5_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_5_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_5_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_5_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_5_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_5_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_5_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_5_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_5_qty_up(self, *args):
-        accessories_5_qty = self.var_accessories_5_qty.get()
-        accessories_5_qty = accessories_5_qty + 1
-        self.var_accessories_5_qty.set(value=accessories_5_qty)
-        accessories_5_cost   = int(self.label_hidden_accessories_5_cost.cget("text"))
-        accessories_5_weight = int(self.label_hidden_accessories_5_weight.cget("text"))
-        accessories_5_space: str  = self.label_hidden_accessories_5_space.cget("text")
-        accessories_5_dp:    str  = self.label_hidden_accessories_5_dp.cget("text")
-        accessories_5_notes: str  = self.label_hidden_accessories_5_notes.cget("text")
-
-        if accessories_5_space == "":
-            accessories_5_space = 0.0
-        else:
-            accessories_5_space = float(accessories_5_space)
-
-        self.label_accessories_5_cost.configure(text=self.float_to_str(accessories_5_cost * accessories_5_qty))
-        self.label_accessories_5_weight.configure(text=self.float_to_str(accessories_5_weight * accessories_5_qty))
-        self.label_accessories_5_space.configure(text=self.float_to_str(accessories_5_space * accessories_5_qty))
-        self.label_accessories_5_dp.configure(text=str(accessories_5_dp))
-        self.label_accessories_5_notes.configure(text=str(accessories_5_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_5_qty_down(self, *args):
-        accessories_5_qty = self.var_accessories_5_qty.get()
-        accessories_5_qty = max(accessories_5_qty - 1, 0)
-        self.var_accessories_5_qty.set(value=accessories_5_qty)
-        accessories_5_cost   = int(self.label_hidden_accessories_5_cost.cget("text"))
-        accessories_5_weight = int(self.label_hidden_accessories_5_weight.cget("text"))
-        accessories_5_space  = float(self.label_hidden_accessories_5_space.cget("text"))
-        accessories_5_dp     = self.label_hidden_accessories_5_dp.cget("text")
-        accessories_5_notes  = self.label_hidden_accessories_5_notes.cget("text")
-        self.label_accessories_5_cost.configure(text=self.float_to_str(accessories_5_cost * accessories_5_qty))
-        self.label_accessories_5_weight.configure(text=self.float_to_str(accessories_5_weight * accessories_5_qty))
-        self.label_accessories_5_space.configure(text=self.float_to_str(accessories_5_space * accessories_5_qty))
-        self.label_accessories_5_dp.configure(text=str(accessories_5_dp))
-        if accessories_5_qty > 0:
-            self.label_accessories_5_notes.configure(text=str(accessories_5_notes))
-        else:
-            self.label_accessories_5_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_5_update(self, *args):
-        accessories_5_qty = self.var_accessories_5_qty.get()
-        accessories_5_cost   = int(self.label_hidden_accessories_5_cost.cget("text"))
-        accessories_5_weight = int(self.label_hidden_accessories_5_weight.cget("text"))
-        accessories_5_space  = float(self.label_hidden_accessories_5_space.cget("text"))
-        accessories_5_dp     = self.label_hidden_accessories_5_dp.cget("text")
-        accessories_5_notes  = self.label_hidden_accessories_5_notes.cget("text")
-        self.label_accessories_5_cost.configure(text=self.float_to_str(accessories_5_cost * accessories_5_qty))
-        self.label_accessories_5_weight.configure(text=self.float_to_str(accessories_5_weight * accessories_5_qty))
-        self.label_accessories_5_space.configure(text=self.float_to_str(accessories_5_space * accessories_5_qty))
-        self.label_accessories_5_dp.configure(text=str(accessories_5_dp))
-        if accessories_5_qty > 0:
-            self.label_accessories_5_notes.configure(text=str(accessories_5_notes))
-        else:
-            self.label_accessories_5_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 6 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_6_canvas(self, canvas_type):
-        self.label_hidden_accessories_6_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_6_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_6_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_6_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_6_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_6_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_6_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_6_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_6_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_6, sticky="w")
-        self.label_accessories_6_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_6_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_6, sticky="w")
-        self.label_accessories_6_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_6_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_6, sticky="w")
-        self.label_accessories_6_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_6_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_6, sticky="w")
-        self.label_accessories_6_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_6_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_6, sticky="w", columnspan=4)
-
-        self.var_accessories_6_qty = tk.IntVar(value=0)
-        self.entry_accessories_6_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_6_qty, width=3)
-        self.entry_accessories_6_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_6, sticky="w")
-        self.var_accessories_6_qty.trace_add("write", self.accessories_qty_6_update)
-
-    def add_dropdown_accessories_6_canvas(self, canvas_type):
-        self.selected_accessories_6 = tk.StringVar()
-        self.selected_accessories_6.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_6_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_6, "Accessory", *options) #filled elsewhere
-        self.accessories_6_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_6, sticky="w")
-        self.selected_accessories_6.trace_add("write", self.on_select_accessories_6)
-
-    def on_select_accessories_6(self, *args):
-        selected_value = self.selected_accessories_6.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_6_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_6_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_6_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_6_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_6_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_6_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_6_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_6_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_6_qty_up(self, *args):
-        accessories_6_qty = self.var_accessories_6_qty.get()
-        accessories_6_qty = accessories_6_qty + 1
-        self.var_accessories_6_qty.set(value=accessories_6_qty)
-        accessories_6_cost   = int(self.label_hidden_accessories_6_cost.cget("text"))
-        accessories_6_weight = int(self.label_hidden_accessories_6_weight.cget("text"))
-        accessories_6_space: str  = self.label_hidden_accessories_6_space.cget("text")
-        accessories_6_dp:    str  = self.label_hidden_accessories_6_dp.cget("text")
-        accessories_6_notes: str  = self.label_hidden_accessories_6_notes.cget("text")
-
-        if accessories_6_space == "":
-            accessories_6_space = 0.0
-        else:
-            accessories_6_space = float(accessories_6_space)
-
-        self.label_accessories_6_cost.configure(text=self.float_to_str(accessories_6_cost * accessories_6_qty))
-        self.label_accessories_6_weight.configure(text=self.float_to_str(accessories_6_weight * accessories_6_qty))
-        self.label_accessories_6_space.configure(text=self.float_to_str(accessories_6_space * accessories_6_qty))
-        self.label_accessories_6_dp.configure(text=str(accessories_6_dp))
-        self.label_accessories_6_notes.configure(text=str(accessories_6_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_6_qty_down(self, *args):
-        accessories_6_qty = self.var_accessories_6_qty.get()
-        accessories_6_qty = max(accessories_6_qty - 1, 0)
-        self.var_accessories_6_qty.set(value=accessories_6_qty)
-        accessories_6_cost   = int(self.label_hidden_accessories_6_cost.cget("text"))
-        accessories_6_weight = int(self.label_hidden_accessories_6_weight.cget("text"))
-        accessories_6_space  = float(self.label_hidden_accessories_6_space.cget("text"))
-        accessories_6_dp     = self.label_hidden_accessories_6_dp.cget("text")
-        accessories_6_notes  = self.label_hidden_accessories_6_notes.cget("text")
-        self.label_accessories_6_cost.configure(text=self.float_to_str(accessories_6_cost * accessories_6_qty))
-        self.label_accessories_6_weight.configure(text=self.float_to_str(accessories_6_weight * accessories_6_qty))
-        self.label_accessories_6_space.configure(text=self.float_to_str(accessories_6_space * accessories_6_qty))
-        self.label_accessories_6_dp.configure(text=str(accessories_6_dp))
-        if accessories_6_qty > 0:
-            self.label_accessories_6_notes.configure(text=str(accessories_6_notes))
-        else:
-            self.label_accessories_6_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_6_update(self, *args):
-        accessories_6_qty = self.var_accessories_6_qty.get()
-        accessories_6_cost   = int(self.label_hidden_accessories_6_cost.cget("text"))
-        accessories_6_weight = int(self.label_hidden_accessories_6_weight.cget("text"))
-        accessories_6_space  = float(self.label_hidden_accessories_6_space.cget("text"))
-        accessories_6_dp     = self.label_hidden_accessories_6_dp.cget("text")
-        accessories_6_notes  = self.label_hidden_accessories_6_notes.cget("text")
-        self.label_accessories_6_cost.configure(text=self.float_to_str(accessories_6_cost * accessories_6_qty))
-        self.label_accessories_6_weight.configure(text=self.float_to_str(accessories_6_weight * accessories_6_qty))
-        self.label_accessories_6_space.configure(text=self.float_to_str(accessories_6_space * accessories_6_qty))
-        self.label_accessories_6_dp.configure(text=str(accessories_6_dp))
-        if accessories_6_qty > 0:
-            self.label_accessories_6_notes.configure(text=str(accessories_6_notes))
-        else:
-            self.label_accessories_6_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 7 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_7_canvas(self, canvas_type):
-        self.label_hidden_accessories_7_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_7_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_7_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_7_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_7_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_7_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_7_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_7_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_7_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_7, sticky="w")
-        self.label_accessories_7_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_7_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_7, sticky="w")
-        self.label_accessories_7_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_7_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_7, sticky="w")
-        self.label_accessories_7_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_7_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_7, sticky="w")
-        self.label_accessories_7_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_7_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_7, sticky="w", columnspan=4)
-
-        self.var_accessories_7_qty = tk.IntVar(value=0)
-        self.entry_accessories_7_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_7_qty, width=3)
-        self.entry_accessories_7_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_7, sticky="w")
-        self.var_accessories_7_qty.trace_add("write", self.accessories_qty_7_update)
-
-    def add_dropdown_accessories_7_canvas(self, canvas_type):
-        self.selected_accessories_7 = tk.StringVar()
-        self.selected_accessories_7.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_7_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_7, "Accessory", *options) #filled elsewhere
-        self.accessories_7_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_7, sticky="w")
-        self.selected_accessories_7.trace_add("write", self.on_select_accessories_7)
-
-    def on_select_accessories_7(self, *args):
-        selected_value = self.selected_accessories_7.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_7_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_7_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_7_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_7_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_7_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_7_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_7_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_7_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_7_qty_up(self, *args):
-        accessories_7_qty = self.var_accessories_7_qty.get()
-        accessories_7_qty = accessories_7_qty + 1
-        self.var_accessories_7_qty.set(value=accessories_7_qty)
-        accessories_7_cost   = int(self.label_hidden_accessories_7_cost.cget("text"))
-        accessories_7_weight = int(self.label_hidden_accessories_7_weight.cget("text"))
-        accessories_7_space: str  = self.label_hidden_accessories_7_space.cget("text")
-        accessories_7_dp:    str  = self.label_hidden_accessories_7_dp.cget("text")
-        accessories_7_notes: str  = self.label_hidden_accessories_7_notes.cget("text")
-
-        if accessories_7_space == "":
-            accessories_7_space = 0.0
-        else:
-            accessories_7_space = float(accessories_7_space)
-
-        self.label_accessories_7_cost.configure(text=self.float_to_str(accessories_7_cost * accessories_7_qty))
-        self.label_accessories_7_weight.configure(text=self.float_to_str(accessories_7_weight * accessories_7_qty))
-        self.label_accessories_7_space.configure(text=self.float_to_str(accessories_7_space * accessories_7_qty))
-        self.label_accessories_7_dp.configure(text=str(accessories_7_dp))
-        self.label_accessories_7_notes.configure(text=str(accessories_7_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_7_qty_down(self, *args):
-        accessories_7_qty = self.var_accessories_7_qty.get()
-        accessories_7_qty = max(accessories_7_qty - 1, 0)
-        self.var_accessories_7_qty.set(value=accessories_7_qty)
-        accessories_7_cost   = int(self.label_hidden_accessories_7_cost.cget("text"))
-        accessories_7_weight = int(self.label_hidden_accessories_7_weight.cget("text"))
-        accessories_7_space  = float(self.label_hidden_accessories_7_space.cget("text"))
-        accessories_7_dp     = self.label_hidden_accessories_7_dp.cget("text")
-        accessories_7_notes  = self.label_hidden_accessories_7_notes.cget("text")
-        self.label_accessories_7_cost.configure(text=self.float_to_str(accessories_7_cost * accessories_7_qty))
-        self.label_accessories_7_weight.configure(text=self.float_to_str(accessories_7_weight * accessories_7_qty))
-        self.label_accessories_7_space.configure(text=self.float_to_str(accessories_7_space * accessories_7_qty))
-        self.label_accessories_7_dp.configure(text=str(accessories_7_dp))
-        if accessories_7_qty > 0:
-            self.label_accessories_7_notes.configure(text=str(accessories_7_notes))
-        else:
-            self.label_accessories_7_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_7_update(self, *args):
-        accessories_7_qty = self.var_accessories_7_qty.get()
-        accessories_7_cost   = int(self.label_hidden_accessories_7_cost.cget("text"))
-        accessories_7_weight = int(self.label_hidden_accessories_7_weight.cget("text"))
-        accessories_7_space  = float(self.label_hidden_accessories_7_space.cget("text"))
-        accessories_7_dp     = self.label_hidden_accessories_7_dp.cget("text")
-        accessories_7_notes  = self.label_hidden_accessories_7_notes.cget("text")
-        self.label_accessories_7_cost.configure(text=self.float_to_str(accessories_7_cost * accessories_7_qty))
-        self.label_accessories_7_weight.configure(text=self.float_to_str(accessories_7_weight * accessories_7_qty))
-        self.label_accessories_7_space.configure(text=self.float_to_str(accessories_7_space * accessories_7_qty))
-        self.label_accessories_7_dp.configure(text=str(accessories_7_dp))
-        if accessories_7_qty > 0:
-            self.label_accessories_7_notes.configure(text=str(accessories_7_notes))
-        else:
-            self.label_accessories_7_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 8 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_8_canvas(self, canvas_type):
-        self.label_hidden_accessories_8_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_8_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_8_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_8_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_8_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_8_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_8_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_8_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_8_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_8, sticky="w")
-        self.label_accessories_8_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_8_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_8, sticky="w")
-        self.label_accessories_8_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_8_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_8, sticky="w")
-        self.label_accessories_8_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_8_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_8, sticky="w")
-        self.label_accessories_8_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_8_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_8, sticky="w", columnspan=4)
-
-        self.var_accessories_8_qty = tk.IntVar(value=0)
-        self.entry_accessories_8_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_8_qty, width=3)
-        self.entry_accessories_8_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_8, sticky="w")
-        self.var_accessories_8_qty.trace_add("write", self.accessories_qty_8_update)
-
-    def add_dropdown_accessories_8_canvas(self, canvas_type):
-        self.selected_accessories_8 = tk.StringVar()
-        self.selected_accessories_8.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_8_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_8, "Accessory", *options) #filled elsewhere
-        self.accessories_8_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_8, sticky="w")
-        self.selected_accessories_8.trace_add("write", self.on_select_accessories_8)
-
-    def on_select_accessories_8(self, *args):
-        selected_value = self.selected_accessories_8.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_8_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_8_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_8_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_8_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_8_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_8_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_8_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_8_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_8_qty_up(self, *args):
-        accessories_8_qty = self.var_accessories_8_qty.get()
-        accessories_8_qty = accessories_8_qty + 1
-        self.var_accessories_8_qty.set(value=accessories_8_qty)
-        accessories_8_cost   = int(self.label_hidden_accessories_8_cost.cget("text"))
-        accessories_8_weight = int(self.label_hidden_accessories_8_weight.cget("text"))
-        accessories_8_space: str  = self.label_hidden_accessories_8_space.cget("text")
-        accessories_8_dp:    str  = self.label_hidden_accessories_8_dp.cget("text")
-        accessories_8_notes: str  = self.label_hidden_accessories_8_notes.cget("text")
-
-        if accessories_8_space == "":
-            accessories_8_space = 0.0
-        else:
-            accessories_8_space = float(accessories_8_space)
-
-        self.label_accessories_8_cost.configure(text=self.float_to_str(accessories_8_cost * accessories_8_qty))
-        self.label_accessories_8_weight.configure(text=self.float_to_str(accessories_8_weight * accessories_8_qty))
-        self.label_accessories_8_space.configure(text=self.float_to_str(accessories_8_space * accessories_8_qty))
-        self.label_accessories_8_dp.configure(text=str(accessories_8_dp))
-        self.label_accessories_8_notes.configure(text=str(accessories_8_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_8_qty_down(self, *args):
-        accessories_8_qty = self.var_accessories_8_qty.get()
-        accessories_8_qty = max(accessories_8_qty - 1, 0)
-        self.var_accessories_8_qty.set(value=accessories_8_qty)
-        accessories_8_cost   = int(self.label_hidden_accessories_8_cost.cget("text"))
-        accessories_8_weight = int(self.label_hidden_accessories_8_weight.cget("text"))
-        accessories_8_space  = float(self.label_hidden_accessories_8_space.cget("text"))
-        accessories_8_dp     = self.label_hidden_accessories_8_dp.cget("text")
-        accessories_8_notes  = self.label_hidden_accessories_8_notes.cget("text")
-        self.label_accessories_8_cost.configure(text=self.float_to_str(accessories_8_cost * accessories_8_qty))
-        self.label_accessories_8_weight.configure(text=self.float_to_str(accessories_8_weight * accessories_8_qty))
-        self.label_accessories_8_space.configure(text=self.float_to_str(accessories_8_space * accessories_8_qty))
-        self.label_accessories_8_dp.configure(text=str(accessories_8_dp))
-        if accessories_8_qty > 0:
-            self.label_accessories_8_notes.configure(text=str(accessories_8_notes))
-        else:
-            self.label_accessories_8_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_8_update(self, *args):
-        accessories_8_qty = self.var_accessories_8_qty.get()
-        accessories_8_cost   = int(self.label_hidden_accessories_8_cost.cget("text"))
-        accessories_8_weight = int(self.label_hidden_accessories_8_weight.cget("text"))
-        accessories_8_space  = float(self.label_hidden_accessories_8_space.cget("text"))
-        accessories_8_dp     = self.label_hidden_accessories_8_dp.cget("text")
-        accessories_8_notes  = self.label_hidden_accessories_8_notes.cget("text")
-        self.label_accessories_8_cost.configure(text=self.float_to_str(accessories_8_cost * accessories_8_qty))
-        self.label_accessories_8_weight.configure(text=self.float_to_str(accessories_8_weight * accessories_8_qty))
-        self.label_accessories_8_space.configure(text=self.float_to_str(accessories_8_space * accessories_8_qty))
-        self.label_accessories_8_dp.configure(text=str(accessories_8_dp))
-        if accessories_8_qty > 0:
-            self.label_accessories_8_notes.configure(text=str(accessories_8_notes))
-        else:
-            self.label_accessories_8_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 9 processing here                                  #
-    ######################################################################
-    def add_labels_buttons_accessories_9_canvas(self, canvas_type):
-        self.label_hidden_accessories_9_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_9_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_9_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_9_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_9_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_9_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_9_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_9_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_9_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_9, sticky="w")
-        self.label_accessories_9_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_9_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_9, sticky="w")
-        self.label_accessories_9_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_9_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_9, sticky="w")
-        self.label_accessories_9_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_9_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_9, sticky="w")
-        self.label_accessories_9_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_9_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_9, sticky="w", columnspan=4)
-
-        self.var_accessories_9_qty = tk.IntVar(value=0)
-        self.entry_accessories_9_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_9_qty, width=3)
-        self.entry_accessories_9_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_9, sticky="w")
-        self.var_accessories_9_qty.trace_add("write", self.accessories_qty_9_update)
-
-    def add_dropdown_accessories_9_canvas(self, canvas_type):
-        self.selected_accessories_9 = tk.StringVar()
-        self.selected_accessories_9.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_9_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_9, "Accessory", *options) #filled elsewhere
-        self.accessories_9_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_9, sticky="w")
-        self.selected_accessories_9.trace_add("write", self.on_select_accessories_9)
-
-    def on_select_accessories_9(self, *args):
-        selected_value = self.selected_accessories_9.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_9_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_9_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_9_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_9_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_9_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_9_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_9_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_9_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_9_qty_up(self, *args):
-        accessories_9_qty = self.var_accessories_9_qty.get()
-        accessories_9_qty = accessories_9_qty + 1
-        self.var_accessories_9_qty.set(value=accessories_9_qty)
-        accessories_9_cost   = int(self.label_hidden_accessories_9_cost.cget("text"))
-        accessories_9_weight = int(self.label_hidden_accessories_9_weight.cget("text"))
-        accessories_9_space: str  = self.label_hidden_accessories_9_space.cget("text")
-        accessories_9_dp:    str  = self.label_hidden_accessories_9_dp.cget("text")
-        accessories_9_notes: str  = self.label_hidden_accessories_9_notes.cget("text")
-
-        if accessories_9_space == "":
-            accessories_9_space = 0.0
-        else:
-            accessories_9_space = float(accessories_9_space)
-
-        self.label_accessories_9_cost.configure(text=self.float_to_str(accessories_9_cost * accessories_9_qty))
-        self.label_accessories_9_weight.configure(text=self.float_to_str(accessories_9_weight * accessories_9_qty))
-        self.label_accessories_9_space.configure(text=self.float_to_str(accessories_9_space * accessories_9_qty))
-        self.label_accessories_9_dp.configure(text=str(accessories_9_dp))
-        self.label_accessories_9_notes.configure(text=str(accessories_9_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_9_qty_down(self, *args):
-        accessories_9_qty = self.var_accessories_9_qty.get()
-        accessories_9_qty = max(accessories_9_qty - 1, 0)
-        self.var_accessories_9_qty.set(value=accessories_9_qty)
-        accessories_9_cost   = int(self.label_hidden_accessories_9_cost.cget("text"))
-        accessories_9_weight = int(self.label_hidden_accessories_9_weight.cget("text"))
-        accessories_9_space  = float(self.label_hidden_accessories_9_space.cget("text"))
-        accessories_9_dp     = self.label_hidden_accessories_9_dp.cget("text")
-        accessories_9_notes  = self.label_hidden_accessories_9_notes.cget("text")
-        self.label_accessories_9_cost.configure(text=self.float_to_str(accessories_9_cost * accessories_9_qty))
-        self.label_accessories_9_weight.configure(text=self.float_to_str(accessories_9_weight * accessories_9_qty))
-        self.label_accessories_9_space.configure(text=self.float_to_str(accessories_9_space * accessories_9_qty))
-        self.label_accessories_9_dp.configure(text=str(accessories_9_dp))
-        if accessories_9_qty > 0:
-            self.label_accessories_9_notes.configure(text=str(accessories_9_notes))
-        else:
-            self.label_accessories_9_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_9_update(self, *args):
-        accessories_9_qty = self.var_accessories_9_qty.get()
-        accessories_9_cost   = int(self.label_hidden_accessories_9_cost.cget("text"))
-        accessories_9_weight = int(self.label_hidden_accessories_9_weight.cget("text"))
-        accessories_9_space  = float(self.label_hidden_accessories_9_space.cget("text"))
-        accessories_9_dp     = self.label_hidden_accessories_9_dp.cget("text")
-        accessories_9_notes  = self.label_hidden_accessories_9_notes.cget("text")
-        self.label_accessories_9_cost.configure(text=self.float_to_str(accessories_9_cost * accessories_9_qty))
-        self.label_accessories_9_weight.configure(text=self.float_to_str(accessories_9_weight * accessories_9_qty))
-        self.label_accessories_9_space.configure(text=self.float_to_str(accessories_9_space * accessories_9_qty))
-        self.label_accessories_9_dp.configure(text=str(accessories_9_dp))
-        if accessories_9_qty > 0:
-            self.label_accessories_9_notes.configure(text=str(accessories_9_notes))
-        else:
-            self.label_accessories_9_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 10 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_10_canvas(self, canvas_type):
-        self.label_hidden_accessories_10_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_10_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_10_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_10_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_10_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_10_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_10_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_10_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_10_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_10, sticky="w")
-        self.label_accessories_10_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_10_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_10, sticky="w")
-        self.label_accessories_10_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_10_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_10, sticky="w")
-        self.label_accessories_10_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_10_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_10, sticky="w")
-        self.label_accessories_10_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_10_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_10, sticky="w", columnspan=4)
-
-        self.var_accessories_10_qty = tk.IntVar(value=0)
-        self.entry_accessories_10_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_10_qty, width=3)
-        self.entry_accessories_10_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_10, sticky="w")
-        self.var_accessories_10_qty.trace_add("write", self.accessories_qty_10_update)
-
-    def add_dropdown_accessories_10_canvas(self, canvas_type):
-        self.selected_accessories_10 = tk.StringVar()
-        self.selected_accessories_10.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_10_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_10, "Accessory", *options) #filled elsewhere
-        self.accessories_10_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_10, sticky="w")
-        self.selected_accessories_10.trace_add("write", self.on_select_accessories_10)
-
-    def on_select_accessories_10(self, *args):
-        selected_value = self.selected_accessories_10.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_10_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_10_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_10_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_10_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_10_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_10_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_10_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_10_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_10_qty_up(self, *args):
-        accessories_10_qty = self.var_accessories_10_qty.get()
-        accessories_10_qty = accessories_10_qty + 1
-        self.var_accessories_10_qty.set(value=accessories_10_qty)
-        accessories_10_cost   = int(self.label_hidden_accessories_10_cost.cget("text"))
-        accessories_10_weight = int(self.label_hidden_accessories_10_weight.cget("text"))
-        accessories_10_space: str  = self.label_hidden_accessories_10_space.cget("text")
-        accessories_10_dp:    str  = self.label_hidden_accessories_10_dp.cget("text")
-        accessories_10_notes: str  = self.label_hidden_accessories_10_notes.cget("text")
-
-        if accessories_10_space == "":
-            accessories_10_space = 0.0
-        else:
-            accessories_10_space = float(accessories_10_space)
-
-        self.label_accessories_10_cost.configure(text=self.float_to_str(accessories_10_cost * accessories_10_qty))
-        self.label_accessories_10_weight.configure(text=self.float_to_str(accessories_10_weight * accessories_10_qty))
-        self.label_accessories_10_space.configure(text=self.float_to_str(accessories_10_space * accessories_10_qty))
-        self.label_accessories_10_dp.configure(text=str(accessories_10_dp))
-        self.label_accessories_10_notes.configure(text=str(accessories_10_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_10_qty_down(self, *args):
-        accessories_10_qty = self.var_accessories_10_qty.get()
-        accessories_10_qty = max(accessories_10_qty - 1, 0)
-        self.var_accessories_10_qty.set(value=accessories_10_qty)
-        accessories_10_cost   = int(self.label_hidden_accessories_10_cost.cget("text"))
-        accessories_10_weight = int(self.label_hidden_accessories_10_weight.cget("text"))
-        accessories_10_space  = float(self.label_hidden_accessories_10_space.cget("text"))
-        accessories_10_dp     = self.label_hidden_accessories_10_dp.cget("text")
-        accessories_10_notes  = self.label_hidden_accessories_10_notes.cget("text")
-        self.label_accessories_10_cost.configure(text=self.float_to_str(accessories_10_cost * accessories_10_qty))
-        self.label_accessories_10_weight.configure(text=self.float_to_str(accessories_10_weight * accessories_10_qty))
-        self.label_accessories_10_space.configure(text=self.float_to_str(accessories_10_space * accessories_10_qty))
-        self.label_accessories_10_dp.configure(text=str(accessories_10_dp))
-        if accessories_10_qty > 0:
-            self.label_accessories_10_notes.configure(text=str(accessories_10_notes))
-        else:
-            self.label_accessories_10_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_10_update(self, *args):
-        accessories_10_qty = self.var_accessories_10_qty.get()
-        accessories_10_cost   = int(self.label_hidden_accessories_10_cost.cget("text"))
-        accessories_10_weight = int(self.label_hidden_accessories_10_weight.cget("text"))
-        accessories_10_space  = float(self.label_hidden_accessories_10_space.cget("text"))
-        accessories_10_dp     = self.label_hidden_accessories_10_dp.cget("text")
-        accessories_10_notes  = self.label_hidden_accessories_10_notes.cget("text")
-        self.label_accessories_10_cost.configure(text=self.float_to_str(accessories_10_cost * accessories_10_qty))
-        self.label_accessories_10_weight.configure(text=self.float_to_str(accessories_10_weight * accessories_10_qty))
-        self.label_accessories_10_space.configure(text=self.float_to_str(accessories_10_space * accessories_10_qty))
-        self.label_accessories_10_dp.configure(text=str(accessories_10_dp))
-        if accessories_10_qty > 0:
-            self.label_accessories_10_notes.configure(text=str(accessories_10_notes))
-        else:
-            self.label_accessories_10_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 11 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_11_canvas(self, canvas_type):
-        self.label_hidden_accessories_11_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_11_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_11_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_11_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_11_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_11_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_11_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_11_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_11_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_11, sticky="w")
-        self.label_accessories_11_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_11_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_11, sticky="w")
-        self.label_accessories_11_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_11_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_11, sticky="w")
-        self.label_accessories_11_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_11_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_11, sticky="w")
-        self.label_accessories_11_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_11_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_11, sticky="w", columnspan=4)
-
-        self.var_accessories_11_qty = tk.IntVar(value=0)
-        self.entry_accessories_11_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_11_qty, width=3)
-        self.entry_accessories_11_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_11, sticky="w")
-        self.var_accessories_11_qty.trace_add("write", self.accessories_qty_11_update)
-
-    def add_dropdown_accessories_11_canvas(self, canvas_type):
-        self.selected_accessories_11 = tk.StringVar()
-        self.selected_accessories_11.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_11_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_11, "Accessory", *options) #filled elsewhere
-        self.accessories_11_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_11, sticky="w")
-        self.selected_accessories_11.trace_add("write", self.on_select_accessories_11)
-
-    def on_select_accessories_11(self, *args):
-        selected_value = self.selected_accessories_11.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_11_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_11_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_11_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_11_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_11_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_11_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_11_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_11_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_11_qty_up(self, *args):
-        accessories_11_qty = self.var_accessories_11_qty.get()
-        accessories_11_qty = accessories_11_qty + 1
-        self.var_accessories_11_qty.set(value=accessories_11_qty)
-        accessories_11_cost   = int(self.label_hidden_accessories_11_cost.cget("text"))
-        accessories_11_weight = int(self.label_hidden_accessories_11_weight.cget("text"))
-        accessories_11_space: str  = self.label_hidden_accessories_11_space.cget("text")
-        accessories_11_dp:    str  = self.label_hidden_accessories_11_dp.cget("text")
-        accessories_11_notes: str  = self.label_hidden_accessories_11_notes.cget("text")
-
-        if accessories_11_space == "":
-            accessories_11_space = 0.0
-        else:
-            accessories_11_space = float(accessories_11_space)
-
-        self.label_accessories_11_cost.configure(text=self.float_to_str(accessories_11_cost * accessories_11_qty))
-        self.label_accessories_11_weight.configure(text=self.float_to_str(accessories_11_weight * accessories_11_qty))
-        self.label_accessories_11_space.configure(text=self.float_to_str(accessories_11_space * accessories_11_qty))
-        self.label_accessories_11_dp.configure(text=str(accessories_11_dp))
-        self.label_accessories_11_notes.configure(text=str(accessories_11_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_11_qty_down(self, *args):
-        accessories_11_qty = self.var_accessories_11_qty.get()
-        accessories_11_qty = max(accessories_11_qty - 1, 0)
-        self.var_accessories_11_qty.set(value=accessories_11_qty)
-        accessories_11_cost   = int(self.label_hidden_accessories_11_cost.cget("text"))
-        accessories_11_weight = int(self.label_hidden_accessories_11_weight.cget("text"))
-        accessories_11_space  = float(self.label_hidden_accessories_11_space.cget("text"))
-        accessories_11_dp     = self.label_hidden_accessories_11_dp.cget("text")
-        accessories_11_notes  = self.label_hidden_accessories_11_notes.cget("text")
-        self.label_accessories_11_cost.configure(text=self.float_to_str(accessories_11_cost * accessories_11_qty))
-        self.label_accessories_11_weight.configure(text=self.float_to_str(accessories_11_weight * accessories_11_qty))
-        self.label_accessories_11_space.configure(text=self.float_to_str(accessories_11_space * accessories_11_qty))
-        self.label_accessories_11_dp.configure(text=str(accessories_11_dp))
-        if accessories_11_qty > 0:
-            self.label_accessories_11_notes.configure(text=str(accessories_11_notes))
-        else:
-            self.label_accessories_11_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_11_update(self, *args):
-        accessories_11_qty = self.var_accessories_11_qty.get()
-        accessories_11_cost   = int(self.label_hidden_accessories_11_cost.cget("text"))
-        accessories_11_weight = int(self.label_hidden_accessories_11_weight.cget("text"))
-        accessories_11_space  = float(self.label_hidden_accessories_11_space.cget("text"))
-        accessories_11_dp     = self.label_hidden_accessories_11_dp.cget("text")
-        accessories_11_notes  = self.label_hidden_accessories_11_notes.cget("text")
-        self.label_accessories_11_cost.configure(text=self.float_to_str(accessories_11_cost * accessories_11_qty))
-        self.label_accessories_11_weight.configure(text=self.float_to_str(accessories_11_weight * accessories_11_qty))
-        self.label_accessories_11_space.configure(text=self.float_to_str(accessories_11_space * accessories_11_qty))
-        self.label_accessories_11_dp.configure(text=str(accessories_11_dp))
-        if accessories_11_qty > 0:
-            self.label_accessories_11_notes.configure(text=str(accessories_11_notes))
-        else:
-            self.label_accessories_11_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 12 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_12_canvas(self, canvas_type):
-        self.label_hidden_accessories_12_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_12_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_12_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_12_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_12_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_12_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_12_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_12_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_12_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_12, sticky="w")
-        self.label_accessories_12_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_12_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_12, sticky="w")
-        self.label_accessories_12_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_12_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_12, sticky="w")
-        self.label_accessories_12_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_12_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_12, sticky="w")
-        self.label_accessories_12_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_12_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_12, sticky="w", columnspan=4)
-
-        self.var_accessories_12_qty = tk.IntVar(value=0)
-        self.entry_accessories_12_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_12_qty, width=3)
-        self.entry_accessories_12_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_12, sticky="w")
-        self.var_accessories_12_qty.trace_add("write", self.accessories_qty_12_update)
-
-    def add_dropdown_accessories_12_canvas(self, canvas_type):
-        self.selected_accessories_12 = tk.StringVar()
-        self.selected_accessories_12.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_12_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_12, "Accessory", *options) #filled elsewhere
-        self.accessories_12_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_12, sticky="w")
-        self.selected_accessories_12.trace_add("write", self.on_select_accessories_12)
-
-    def on_select_accessories_12(self, *args):
-        selected_value = self.selected_accessories_12.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_12_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_12_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_12_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_12_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_12_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_12_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_12_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_12_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_12_qty_up(self, *args):
-        accessories_12_qty = self.var_accessories_12_qty.get()
-        accessories_12_qty = accessories_12_qty + 1
-        self.var_accessories_12_qty.set(value=accessories_12_qty)
-        accessories_12_cost   = int(self.label_hidden_accessories_12_cost.cget("text"))
-        accessories_12_weight = int(self.label_hidden_accessories_12_weight.cget("text"))
-        accessories_12_space: str  = self.label_hidden_accessories_12_space.cget("text")
-        accessories_12_dp:    str  = self.label_hidden_accessories_12_dp.cget("text")
-        accessories_12_notes: str  = self.label_hidden_accessories_12_notes.cget("text")
-
-        if accessories_12_space == "":
-            accessories_12_space = 0.0
-        else:
-            accessories_12_space = float(accessories_12_space)
-
-        self.label_accessories_12_cost.configure(text=self.float_to_str(accessories_12_cost * accessories_12_qty))
-        self.label_accessories_12_weight.configure(text=self.float_to_str(accessories_12_weight * accessories_12_qty))
-        self.label_accessories_12_space.configure(text=self.float_to_str(accessories_12_space * accessories_12_qty))
-        self.label_accessories_12_dp.configure(text=str(accessories_12_dp))
-        self.label_accessories_12_notes.configure(text=str(accessories_12_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_12_qty_down(self, *args):
-        accessories_12_qty = self.var_accessories_12_qty.get()
-        accessories_12_qty = max(accessories_12_qty - 1, 0)
-        self.var_accessories_12_qty.set(value=accessories_12_qty)
-        accessories_12_cost   = int(self.label_hidden_accessories_12_cost.cget("text"))
-        accessories_12_weight = int(self.label_hidden_accessories_12_weight.cget("text"))
-        accessories_12_space  = float(self.label_hidden_accessories_12_space.cget("text"))
-        accessories_12_dp     = self.label_hidden_accessories_12_dp.cget("text")
-        accessories_12_notes  = self.label_hidden_accessories_12_notes.cget("text")
-        self.label_accessories_12_cost.configure(text=self.float_to_str(accessories_12_cost * accessories_12_qty))
-        self.label_accessories_12_weight.configure(text=self.float_to_str(accessories_12_weight * accessories_12_qty))
-        self.label_accessories_12_space.configure(text=self.float_to_str(accessories_12_space * accessories_12_qty))
-        self.label_accessories_12_dp.configure(text=str(accessories_12_dp))
-        if accessories_12_qty > 0:
-            self.label_accessories_12_notes.configure(text=str(accessories_12_notes))
-        else:
-            self.label_accessories_12_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_12_update(self, *args):
-        accessories_12_qty = self.var_accessories_12_qty.get()
-        accessories_12_cost   = int(self.label_hidden_accessories_12_cost.cget("text"))
-        accessories_12_weight = int(self.label_hidden_accessories_12_weight.cget("text"))
-        accessories_12_space  = float(self.label_hidden_accessories_12_space.cget("text"))
-        accessories_12_dp     = self.label_hidden_accessories_12_dp.cget("text")
-        accessories_12_notes  = self.label_hidden_accessories_12_notes.cget("text")
-        self.label_accessories_12_cost.configure(text=self.float_to_str(accessories_12_cost * accessories_12_qty))
-        self.label_accessories_12_weight.configure(text=self.float_to_str(accessories_12_weight * accessories_12_qty))
-        self.label_accessories_12_space.configure(text=self.float_to_str(accessories_12_space * accessories_12_qty))
-        self.label_accessories_12_dp.configure(text=str(accessories_12_dp))
-        if accessories_12_qty > 0:
-            self.label_accessories_12_notes.configure(text=str(accessories_12_notes))
-        else:
-            self.label_accessories_12_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 13 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_13_canvas(self, canvas_type):
-        self.label_hidden_accessories_13_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_13_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_13_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_13_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_13_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_13_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_13_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_13_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_13_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_13, sticky="w")
-        self.label_accessories_13_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_13_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_13, sticky="w")
-        self.label_accessories_13_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_13_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_13, sticky="w")
-        self.label_accessories_13_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_13_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_13, sticky="w")
-        self.label_accessories_13_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_13_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_13, sticky="w", columnspan=4)
-
-        self.var_accessories_13_qty = tk.IntVar(value=0)
-        self.entry_accessories_13_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_13_qty, width=3)
-        self.entry_accessories_13_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_13, sticky="w")
-        self.var_accessories_13_qty.trace_add("write", self.accessories_qty_13_update)
-
-    def add_dropdown_accessories_13_canvas(self, canvas_type):
-        self.selected_accessories_13 = tk.StringVar()
-        self.selected_accessories_13.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_13_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_13, "Accessory", *options) #filled elsewhere
-        self.accessories_13_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_13, sticky="w")
-        self.selected_accessories_13.trace_add("write", self.on_select_accessories_13)
-
-    def on_select_accessories_13(self, *args):
-        selected_value = self.selected_accessories_13.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_13_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_13_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_13_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_13_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_13_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_13_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_13_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_13_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_13_qty_up(self, *args):
-        accessories_13_qty = self.var_accessories_13_qty.get()
-        accessories_13_qty = accessories_13_qty + 1
-        self.var_accessories_13_qty.set(value=accessories_13_qty)
-        accessories_13_cost   = int(self.label_hidden_accessories_13_cost.cget("text"))
-        accessories_13_weight = int(self.label_hidden_accessories_13_weight.cget("text"))
-        accessories_13_space: str  = self.label_hidden_accessories_13_space.cget("text")
-        accessories_13_dp:    str  = self.label_hidden_accessories_13_dp.cget("text")
-        accessories_13_notes: str  = self.label_hidden_accessories_13_notes.cget("text")
-
-        if accessories_13_space == "":
-            accessories_13_space = 0.0
-        else:
-            accessories_13_space = float(accessories_13_space)
-
-        self.label_accessories_13_cost.configure(text=self.float_to_str(accessories_13_cost * accessories_13_qty))
-        self.label_accessories_13_weight.configure(text=self.float_to_str(accessories_13_weight * accessories_13_qty))
-        self.label_accessories_13_space.configure(text=self.float_to_str(accessories_13_space * accessories_13_qty))
-        self.label_accessories_13_dp.configure(text=str(accessories_13_dp))
-        self.label_accessories_13_notes.configure(text=str(accessories_13_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_13_qty_down(self, *args):
-        accessories_13_qty = self.var_accessories_13_qty.get()
-        accessories_13_qty = max(accessories_13_qty - 1, 0)
-        self.var_accessories_13_qty.set(value=accessories_13_qty)
-        accessories_13_cost   = int(self.label_hidden_accessories_13_cost.cget("text"))
-        accessories_13_weight = int(self.label_hidden_accessories_13_weight.cget("text"))
-        accessories_13_space  = float(self.label_hidden_accessories_13_space.cget("text"))
-        accessories_13_dp     = self.label_hidden_accessories_13_dp.cget("text")
-        accessories_13_notes  = self.label_hidden_accessories_13_notes.cget("text")
-        self.label_accessories_13_cost.configure(text=self.float_to_str(accessories_13_cost * accessories_13_qty))
-        self.label_accessories_13_weight.configure(text=self.float_to_str(accessories_13_weight * accessories_13_qty))
-        self.label_accessories_13_space.configure(text=self.float_to_str(accessories_13_space * accessories_13_qty))
-        self.label_accessories_13_dp.configure(text=str(accessories_13_dp))
-        if accessories_13_qty > 0:
-            self.label_accessories_13_notes.configure(text=str(accessories_13_notes))
-        else:
-            self.label_accessories_13_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_13_update(self, *args):
-        accessories_13_qty = self.var_accessories_13_qty.get()
-        accessories_13_cost   = int(self.label_hidden_accessories_13_cost.cget("text"))
-        accessories_13_weight = int(self.label_hidden_accessories_13_weight.cget("text"))
-        accessories_13_space  = float(self.label_hidden_accessories_13_space.cget("text"))
-        accessories_13_dp     = self.label_hidden_accessories_13_dp.cget("text")
-        accessories_13_notes  = self.label_hidden_accessories_13_notes.cget("text")
-        self.label_accessories_13_cost.configure(text=self.float_to_str(accessories_13_cost * accessories_13_qty))
-        self.label_accessories_13_weight.configure(text=self.float_to_str(accessories_13_weight * accessories_13_qty))
-        self.label_accessories_13_space.configure(text=self.float_to_str(accessories_13_space * accessories_13_qty))
-        self.label_accessories_13_dp.configure(text=str(accessories_13_dp))
-        if accessories_13_qty > 0:
-            self.label_accessories_13_notes.configure(text=str(accessories_13_notes))
-        else:
-            self.label_accessories_13_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 14 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_14_canvas(self, canvas_type):
-        self.label_hidden_accessories_14_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_14_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_14_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_14_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_14_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_14_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_14_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_14_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_14_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_14, sticky="w")
-        self.label_accessories_14_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_14_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_14, sticky="w")
-        self.label_accessories_14_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_14_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_14, sticky="w")
-        self.label_accessories_14_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_14_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_14, sticky="w")
-        self.label_accessories_14_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_14_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_14, sticky="w", columnspan=4)
-
-        self.var_accessories_14_qty = tk.IntVar(value=0)
-        self.entry_accessories_14_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_14_qty, width=3)
-        self.entry_accessories_14_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_14, sticky="w")
-        self.var_accessories_14_qty.trace_add("write", self.accessories_qty_14_update)
-
-    def add_dropdown_accessories_14_canvas(self, canvas_type):
-        self.selected_accessories_14 = tk.StringVar()
-        self.selected_accessories_14.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_14_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_14, "Accessory", *options) #filled elsewhere
-        self.accessories_14_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_14, sticky="w")
-        self.selected_accessories_14.trace_add("write", self.on_select_accessories_14)
-
-    def on_select_accessories_14(self, *args):
-        selected_value = self.selected_accessories_14.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_14_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_14_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_14_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_14_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_14_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_14_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_14_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_14_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_14_qty_up(self, *args):
-        accessories_14_qty = self.var_accessories_14_qty.get()
-        accessories_14_qty = accessories_14_qty + 1
-        self.var_accessories_14_qty.set(value=accessories_14_qty)
-        accessories_14_cost   = int(self.label_hidden_accessories_14_cost.cget("text"))
-        accessories_14_weight = int(self.label_hidden_accessories_14_weight.cget("text"))
-        accessories_14_space: str  = self.label_hidden_accessories_14_space.cget("text")
-        accessories_14_dp:    str  = self.label_hidden_accessories_14_dp.cget("text")
-        accessories_14_notes: str  = self.label_hidden_accessories_14_notes.cget("text")
-
-        if accessories_14_space == "":
-            accessories_14_space = 0.0
-        else:
-            accessories_14_space = float(accessories_14_space)
-
-        self.label_accessories_14_cost.configure(text=self.float_to_str(accessories_14_cost * accessories_14_qty))
-        self.label_accessories_14_weight.configure(text=self.float_to_str(accessories_14_weight * accessories_14_qty))
-        self.label_accessories_14_space.configure(text=self.float_to_str(accessories_14_space * accessories_14_qty))
-        self.label_accessories_14_dp.configure(text=str(accessories_14_dp))
-        self.label_accessories_14_notes.configure(text=str(accessories_14_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_14_qty_down(self, *args):
-        accessories_14_qty = self.var_accessories_14_qty.get()
-        accessories_14_qty = max(accessories_14_qty - 1, 0)
-        self.var_accessories_14_qty.set(value=accessories_14_qty)
-        accessories_14_cost   = int(self.label_hidden_accessories_14_cost.cget("text"))
-        accessories_14_weight = int(self.label_hidden_accessories_14_weight.cget("text"))
-        accessories_14_space  = float(self.label_hidden_accessories_14_space.cget("text"))
-        accessories_14_dp     = self.label_hidden_accessories_14_dp.cget("text")
-        accessories_14_notes  = self.label_hidden_accessories_14_notes.cget("text")
-        self.label_accessories_14_cost.configure(text=self.float_to_str(accessories_14_cost * accessories_14_qty))
-        self.label_accessories_14_weight.configure(text=self.float_to_str(accessories_14_weight * accessories_14_qty))
-        self.label_accessories_14_space.configure(text=self.float_to_str(accessories_14_space * accessories_14_qty))
-        self.label_accessories_14_dp.configure(text=str(accessories_14_dp))
-        if accessories_14_qty > 0:
-            self.label_accessories_14_notes.configure(text=str(accessories_14_notes))
-        else:
-            self.label_accessories_14_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_14_update(self, *args):
-        accessories_14_qty = self.var_accessories_14_qty.get()
-        accessories_14_cost   = int(self.label_hidden_accessories_14_cost.cget("text"))
-        accessories_14_weight = int(self.label_hidden_accessories_14_weight.cget("text"))
-        accessories_14_space  = float(self.label_hidden_accessories_14_space.cget("text"))
-        accessories_14_dp     = self.label_hidden_accessories_14_dp.cget("text")
-        accessories_14_notes  = self.label_hidden_accessories_14_notes.cget("text")
-        self.label_accessories_14_cost.configure(text=self.float_to_str(accessories_14_cost * accessories_14_qty))
-        self.label_accessories_14_weight.configure(text=self.float_to_str(accessories_14_weight * accessories_14_qty))
-        self.label_accessories_14_space.configure(text=self.float_to_str(accessories_14_space * accessories_14_qty))
-        self.label_accessories_14_dp.configure(text=str(accessories_14_dp))
-        if accessories_14_qty > 0:
-            self.label_accessories_14_notes.configure(text=str(accessories_14_notes))
-        else:
-            self.label_accessories_14_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 15 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_15_canvas(self, canvas_type):
-        self.label_hidden_accessories_15_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_15_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_15_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_15_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_15_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_15_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_15_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_15_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_15_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_15, sticky="w")
-        self.label_accessories_15_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_15_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_15, sticky="w")
-        self.label_accessories_15_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_15_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_15, sticky="w")
-        self.label_accessories_15_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_15_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_15, sticky="w")
-        self.label_accessories_15_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_15_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_15, sticky="w", columnspan=4)
-
-        self.var_accessories_15_qty = tk.IntVar(value=0)
-        self.entry_accessories_15_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_15_qty, width=3)
-        self.entry_accessories_15_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_15, sticky="w")
-        self.var_accessories_15_qty.trace_add("write", self.accessories_qty_15_update)
-
-    def add_dropdown_accessories_15_canvas(self, canvas_type):
-        self.selected_accessories_15 = tk.StringVar()
-        self.selected_accessories_15.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_15_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_15, "Accessory", *options) #filled elsewhere
-        self.accessories_15_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_15, sticky="w")
-        self.selected_accessories_15.trace_add("write", self.on_select_accessories_15)
-
-    def on_select_accessories_15(self, *args):
-        selected_value = self.selected_accessories_15.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_15_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_15_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_15_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_15_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_15_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_15_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_15_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_15_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_15_qty_up(self, *args):
-        accessories_15_qty = self.var_accessories_15_qty.get()
-        accessories_15_qty = accessories_15_qty + 1
-        self.var_accessories_15_qty.set(value=accessories_15_qty)
-        accessories_15_cost   = int(self.label_hidden_accessories_15_cost.cget("text"))
-        accessories_15_weight = int(self.label_hidden_accessories_15_weight.cget("text"))
-        accessories_15_space: str  = self.label_hidden_accessories_15_space.cget("text")
-        accessories_15_dp:    str  = self.label_hidden_accessories_15_dp.cget("text")
-        accessories_15_notes: str  = self.label_hidden_accessories_15_notes.cget("text")
-
-        if accessories_15_space == "":
-            accessories_15_space = 0.0
-        else:
-            accessories_15_space = float(accessories_15_space)
-
-        self.label_accessories_15_cost.configure(text=self.float_to_str(accessories_15_cost * accessories_15_qty))
-        self.label_accessories_15_weight.configure(text=self.float_to_str(accessories_15_weight * accessories_15_qty))
-        self.label_accessories_15_space.configure(text=self.float_to_str(accessories_15_space * accessories_15_qty))
-        self.label_accessories_15_dp.configure(text=str(accessories_15_dp))
-        self.label_accessories_15_notes.configure(text=str(accessories_15_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_15_qty_down(self, *args):
-        accessories_15_qty = self.var_accessories_15_qty.get()
-        accessories_15_qty = max(accessories_15_qty - 1, 0)
-        self.var_accessories_15_qty.set(value=accessories_15_qty)
-        accessories_15_cost   = int(self.label_hidden_accessories_15_cost.cget("text"))
-        accessories_15_weight = int(self.label_hidden_accessories_15_weight.cget("text"))
-        accessories_15_space  = float(self.label_hidden_accessories_15_space.cget("text"))
-        accessories_15_dp     = self.label_hidden_accessories_15_dp.cget("text")
-        accessories_15_notes  = self.label_hidden_accessories_15_notes.cget("text")
-        self.label_accessories_15_cost.configure(text=self.float_to_str(accessories_15_cost * accessories_15_qty))
-        self.label_accessories_15_weight.configure(text=self.float_to_str(accessories_15_weight * accessories_15_qty))
-        self.label_accessories_15_space.configure(text=self.float_to_str(accessories_15_space * accessories_15_qty))
-        self.label_accessories_15_dp.configure(text=str(accessories_15_dp))
-        if accessories_15_qty > 0:
-            self.label_accessories_15_notes.configure(text=str(accessories_15_notes))
-        else:
-            self.label_accessories_15_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_15_update(self, *args):
-        accessories_15_qty = self.var_accessories_15_qty.get()
-        accessories_15_cost   = int(self.label_hidden_accessories_15_cost.cget("text"))
-        accessories_15_weight = int(self.label_hidden_accessories_15_weight.cget("text"))
-        accessories_15_space  = float(self.label_hidden_accessories_15_space.cget("text"))
-        accessories_15_dp     = self.label_hidden_accessories_15_dp.cget("text")
-        accessories_15_notes  = self.label_hidden_accessories_15_notes.cget("text")
-        self.label_accessories_15_cost.configure(text=self.float_to_str(accessories_15_cost * accessories_15_qty))
-        self.label_accessories_15_weight.configure(text=self.float_to_str(accessories_15_weight * accessories_15_qty))
-        self.label_accessories_15_space.configure(text=self.float_to_str(accessories_15_space * accessories_15_qty))
-        self.label_accessories_15_dp.configure(text=str(accessories_15_dp))
-        if accessories_15_qty > 0:
-            self.label_accessories_15_notes.configure(text=str(accessories_15_notes))
-        else:
-            self.label_accessories_15_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 16 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_16_canvas(self, canvas_type):
-        self.label_hidden_accessories_16_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_16_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_16_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_16_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_16_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_16_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_16_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_16_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_16_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_16, sticky="w")
-        self.label_accessories_16_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_16_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_16, sticky="w")
-        self.label_accessories_16_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_16_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_16, sticky="w")
-        self.label_accessories_16_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_16_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_16, sticky="w")
-        self.label_accessories_16_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_16_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_16, sticky="w", columnspan=4)
-
-        self.var_accessories_16_qty = tk.IntVar(value=0)
-        self.entry_accessories_16_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_16_qty, width=3)
-        self.entry_accessories_16_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_16, sticky="w")
-        self.var_accessories_16_qty.trace_add("write", self.accessories_qty_16_update)
-
-    def add_dropdown_accessories_16_canvas(self, canvas_type):
-        self.selected_accessories_16 = tk.StringVar()
-        self.selected_accessories_16.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_16_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_16, "Accessory", *options) #filled elsewhere
-        self.accessories_16_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_16, sticky="w")
-        self.selected_accessories_16.trace_add("write", self.on_select_accessories_16)
-
-    def on_select_accessories_16(self, *args):
-        selected_value = self.selected_accessories_16.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_16_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_16_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_16_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_16_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_16_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_16_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_16_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_16_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_16_qty_up(self, *args):
-        accessories_16_qty = self.var_accessories_16_qty.get()
-        accessories_16_qty = accessories_16_qty + 1
-        self.var_accessories_16_qty.set(value=accessories_16_qty)
-        accessories_16_cost   = int(self.label_hidden_accessories_16_cost.cget("text"))
-        accessories_16_weight = int(self.label_hidden_accessories_16_weight.cget("text"))
-        accessories_16_space: str  = self.label_hidden_accessories_16_space.cget("text")
-        accessories_16_dp:    str  = self.label_hidden_accessories_16_dp.cget("text")
-        accessories_16_notes: str  = self.label_hidden_accessories_16_notes.cget("text")
-
-        if accessories_16_space == "":
-            accessories_16_space = 0.0
-        else:
-            accessories_16_space = float(accessories_16_space)
-
-        self.label_accessories_16_cost.configure(text=self.float_to_str(accessories_16_cost * accessories_16_qty))
-        self.label_accessories_16_weight.configure(text=self.float_to_str(accessories_16_weight * accessories_16_qty))
-        self.label_accessories_16_space.configure(text=self.float_to_str(accessories_16_space * accessories_16_qty))
-        self.label_accessories_16_dp.configure(text=str(accessories_16_dp))
-        self.label_accessories_16_notes.configure(text=str(accessories_16_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_16_qty_down(self, *args):
-        accessories_16_qty = self.var_accessories_16_qty.get()
-        accessories_16_qty = max(accessories_16_qty - 1, 0)
-        self.var_accessories_16_qty.set(value=accessories_16_qty)
-        accessories_16_cost   = int(self.label_hidden_accessories_16_cost.cget("text"))
-        accessories_16_weight = int(self.label_hidden_accessories_16_weight.cget("text"))
-        accessories_16_space  = float(self.label_hidden_accessories_16_space.cget("text"))
-        accessories_16_dp     = self.label_hidden_accessories_16_dp.cget("text")
-        accessories_16_notes  = self.label_hidden_accessories_16_notes.cget("text")
-        self.label_accessories_16_cost.configure(text=self.float_to_str(accessories_16_cost * accessories_16_qty))
-        self.label_accessories_16_weight.configure(text=self.float_to_str(accessories_16_weight * accessories_16_qty))
-        self.label_accessories_16_space.configure(text=self.float_to_str(accessories_16_space * accessories_16_qty))
-        self.label_accessories_16_dp.configure(text=str(accessories_16_dp))
-        if accessories_16_qty > 0:
-            self.label_accessories_16_notes.configure(text=str(accessories_16_notes))
-        else:
-            self.label_accessories_16_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_16_update(self, *args):
-        accessories_16_qty = self.var_accessories_16_qty.get()
-        accessories_16_cost   = int(self.label_hidden_accessories_16_cost.cget("text"))
-        accessories_16_weight = int(self.label_hidden_accessories_16_weight.cget("text"))
-        accessories_16_space  = float(self.label_hidden_accessories_16_space.cget("text"))
-        accessories_16_dp     = self.label_hidden_accessories_16_dp.cget("text")
-        accessories_16_notes  = self.label_hidden_accessories_16_notes.cget("text")
-        self.label_accessories_16_cost.configure(text=self.float_to_str(accessories_16_cost * accessories_16_qty))
-        self.label_accessories_16_weight.configure(text=self.float_to_str(accessories_16_weight * accessories_16_qty))
-        self.label_accessories_16_space.configure(text=self.float_to_str(accessories_16_space * accessories_16_qty))
-        self.label_accessories_16_dp.configure(text=str(accessories_16_dp))
-        if accessories_16_qty > 0:
-            self.label_accessories_16_notes.configure(text=str(accessories_16_notes))
-        else:
-            self.label_accessories_16_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 17 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_17_canvas(self, canvas_type):
-        self.label_hidden_accessories_17_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_17_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_17_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_17_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_17_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_17_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_17_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_17_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_17_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_17, sticky="w")
-        self.label_accessories_17_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_17_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_17, sticky="w")
-        self.label_accessories_17_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_17_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_17, sticky="w")
-        self.label_accessories_17_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_17_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_17, sticky="w")
-        self.label_accessories_17_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_17_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_17, sticky="w", columnspan=4)
-
-        self.var_accessories_17_qty = tk.IntVar(value=0)
-        self.entry_accessories_17_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_17_qty, width=3)
-        self.entry_accessories_17_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_17, sticky="w")
-        self.var_accessories_17_qty.trace_add("write", self.accessories_qty_17_update)
-
-    def add_dropdown_accessories_17_canvas(self, canvas_type):
-        self.selected_accessories_17 = tk.StringVar()
-        self.selected_accessories_17.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_17_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_17, "Accessory", *options) #filled elsewhere
-        self.accessories_17_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_17, sticky="w")
-        self.selected_accessories_17.trace_add("write", self.on_select_accessories_17)
-
-    def on_select_accessories_17(self, *args):
-        selected_value = self.selected_accessories_17.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_17_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_17_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_17_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_17_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_17_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_17_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_17_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_17_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_17_qty_up(self, *args):
-        accessories_17_qty = self.var_accessories_17_qty.get()
-        accessories_17_qty = accessories_17_qty + 1
-        self.var_accessories_17_qty.set(value=accessories_17_qty)
-        accessories_17_cost   = int(self.label_hidden_accessories_17_cost.cget("text"))
-        accessories_17_weight = int(self.label_hidden_accessories_17_weight.cget("text"))
-        accessories_17_space: str  = self.label_hidden_accessories_17_space.cget("text")
-        accessories_17_dp:    str  = self.label_hidden_accessories_17_dp.cget("text")
-        accessories_17_notes: str  = self.label_hidden_accessories_17_notes.cget("text")
-
-        if accessories_17_space == "":
-            accessories_17_space = 0.0
-        else:
-            accessories_17_space = float(accessories_17_space)
-
-        self.label_accessories_17_cost.configure(text=self.float_to_str(accessories_17_cost * accessories_17_qty))
-        self.label_accessories_17_weight.configure(text=self.float_to_str(accessories_17_weight * accessories_17_qty))
-        self.label_accessories_17_space.configure(text=self.float_to_str(accessories_17_space * accessories_17_qty))
-        self.label_accessories_17_dp.configure(text=str(accessories_17_dp))
-        self.label_accessories_17_notes.configure(text=str(accessories_17_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_17_qty_down(self, *args):
-        accessories_17_qty = self.var_accessories_17_qty.get()
-        accessories_17_qty = max(accessories_17_qty - 1, 0)
-        self.var_accessories_17_qty.set(value=accessories_17_qty)
-        accessories_17_cost   = int(self.label_hidden_accessories_17_cost.cget("text"))
-        accessories_17_weight = int(self.label_hidden_accessories_17_weight.cget("text"))
-        accessories_17_space  = float(self.label_hidden_accessories_17_space.cget("text"))
-        accessories_17_dp     = self.label_hidden_accessories_17_dp.cget("text")
-        accessories_17_notes  = self.label_hidden_accessories_17_notes.cget("text")
-        self.label_accessories_17_cost.configure(text=self.float_to_str(accessories_17_cost * accessories_17_qty))
-        self.label_accessories_17_weight.configure(text=self.float_to_str(accessories_17_weight * accessories_17_qty))
-        self.label_accessories_17_space.configure(text=self.float_to_str(accessories_17_space * accessories_17_qty))
-        self.label_accessories_17_dp.configure(text=str(accessories_17_dp))
-        if accessories_17_qty > 0:
-            self.label_accessories_17_notes.configure(text=str(accessories_17_notes))
-        else:
-            self.label_accessories_17_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_17_update(self, *args):
-        accessories_17_qty = self.var_accessories_17_qty.get()
-        accessories_17_cost   = int(self.label_hidden_accessories_17_cost.cget("text"))
-        accessories_17_weight = int(self.label_hidden_accessories_17_weight.cget("text"))
-        accessories_17_space  = float(self.label_hidden_accessories_17_space.cget("text"))
-        accessories_17_dp     = self.label_hidden_accessories_17_dp.cget("text")
-        accessories_17_notes  = self.label_hidden_accessories_17_notes.cget("text")
-        self.label_accessories_17_cost.configure(text=self.float_to_str(accessories_17_cost * accessories_17_qty))
-        self.label_accessories_17_weight.configure(text=self.float_to_str(accessories_17_weight * accessories_17_qty))
-        self.label_accessories_17_space.configure(text=self.float_to_str(accessories_17_space * accessories_17_qty))
-        self.label_accessories_17_dp.configure(text=str(accessories_17_dp))
-        if accessories_17_qty > 0:
-            self.label_accessories_17_notes.configure(text=str(accessories_17_notes))
-        else:
-            self.label_accessories_17_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 18 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_18_canvas(self, canvas_type):
-        self.label_hidden_accessories_18_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_18_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_18_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_18_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_18_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_18_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_18_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_18_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_18_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_18, sticky="w")
-        self.label_accessories_18_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_18_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_18, sticky="w")
-        self.label_accessories_18_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_18_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_18, sticky="w")
-        self.label_accessories_18_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_18_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_18, sticky="w")
-        self.label_accessories_18_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_18_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_18, sticky="w", columnspan=4)
-
-        self.var_accessories_18_qty = tk.IntVar(value=0)
-        self.entry_accessories_18_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_18_qty, width=3)
-        self.entry_accessories_18_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_18, sticky="w")
-        self.var_accessories_18_qty.trace_add("write", self.accessories_qty_18_update)
-
-    def add_dropdown_accessories_18_canvas(self, canvas_type):
-        self.selected_accessories_18 = tk.StringVar()
-        self.selected_accessories_18.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_18_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_18, "Accessory", *options) #filled elsewhere
-        self.accessories_18_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_18, sticky="w")
-        self.selected_accessories_18.trace_add("write", self.on_select_accessories_18)
-
-    def on_select_accessories_18(self, *args):
-        selected_value = self.selected_accessories_18.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_18_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_18_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_18_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_18_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_18_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_18_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_18_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_18_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_18_qty_up(self, *args):
-        accessories_18_qty = self.var_accessories_18_qty.get()
-        accessories_18_qty = accessories_18_qty + 1
-        self.var_accessories_18_qty.set(value=accessories_18_qty)
-        accessories_18_cost   = int(self.label_hidden_accessories_18_cost.cget("text"))
-        accessories_18_weight = int(self.label_hidden_accessories_18_weight.cget("text"))
-        accessories_18_space: str  = self.label_hidden_accessories_18_space.cget("text")
-        accessories_18_dp:    str  = self.label_hidden_accessories_18_dp.cget("text")
-        accessories_18_notes: str  = self.label_hidden_accessories_18_notes.cget("text")
-
-        if accessories_18_space == "":
-            accessories_18_space = 0.0
-        else:
-            accessories_18_space = float(accessories_18_space)
-
-        self.label_accessories_18_cost.configure(text=self.float_to_str(accessories_18_cost * accessories_18_qty))
-        self.label_accessories_18_weight.configure(text=self.float_to_str(accessories_18_weight * accessories_18_qty))
-        self.label_accessories_18_space.configure(text=self.float_to_str(accessories_18_space * accessories_18_qty))
-        self.label_accessories_18_dp.configure(text=str(accessories_18_dp))
-        self.label_accessories_18_notes.configure(text=str(accessories_18_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_18_qty_down(self, *args):
-        accessories_18_qty = self.var_accessories_18_qty.get()
-        accessories_18_qty = max(accessories_18_qty - 1, 0)
-        self.var_accessories_18_qty.set(value=accessories_18_qty)
-        accessories_18_cost   = int(self.label_hidden_accessories_18_cost.cget("text"))
-        accessories_18_weight = int(self.label_hidden_accessories_18_weight.cget("text"))
-        accessories_18_space  = float(self.label_hidden_accessories_18_space.cget("text"))
-        accessories_18_dp     = self.label_hidden_accessories_18_dp.cget("text")
-        accessories_18_notes  = self.label_hidden_accessories_18_notes.cget("text")
-        self.label_accessories_18_cost.configure(text=self.float_to_str(accessories_18_cost * accessories_18_qty))
-        self.label_accessories_18_weight.configure(text=self.float_to_str(accessories_18_weight * accessories_18_qty))
-        self.label_accessories_18_space.configure(text=self.float_to_str(accessories_18_space * accessories_18_qty))
-        self.label_accessories_18_dp.configure(text=str(accessories_18_dp))
-        if accessories_18_qty > 0:
-            self.label_accessories_18_notes.configure(text=str(accessories_18_notes))
-        else:
-            self.label_accessories_18_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_18_update(self, *args):
-        accessories_18_qty = self.var_accessories_18_qty.get()
-        accessories_18_cost   = int(self.label_hidden_accessories_18_cost.cget("text"))
-        accessories_18_weight = int(self.label_hidden_accessories_18_weight.cget("text"))
-        accessories_18_space  = float(self.label_hidden_accessories_18_space.cget("text"))
-        accessories_18_dp     = self.label_hidden_accessories_18_dp.cget("text")
-        accessories_18_notes  = self.label_hidden_accessories_18_notes.cget("text")
-        self.label_accessories_18_cost.configure(text=self.float_to_str(accessories_18_cost * accessories_18_qty))
-        self.label_accessories_18_weight.configure(text=self.float_to_str(accessories_18_weight * accessories_18_qty))
-        self.label_accessories_18_space.configure(text=self.float_to_str(accessories_18_space * accessories_18_qty))
-        self.label_accessories_18_dp.configure(text=str(accessories_18_dp))
-        if accessories_18_qty > 0:
-            self.label_accessories_18_notes.configure(text=str(accessories_18_notes))
-        else:
-            self.label_accessories_18_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 19 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_19_canvas(self, canvas_type):
-        self.label_hidden_accessories_19_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_19_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_19_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_19_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_19_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_19_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_19_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_19_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_19_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_19, sticky="w")
-        self.label_accessories_19_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_19_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_19, sticky="w")
-        self.label_accessories_19_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_19_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_19, sticky="w")
-        self.label_accessories_19_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_19_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_19, sticky="w")
-        self.label_accessories_19_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_19_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_19, sticky="w", columnspan=4)
-
-        self.var_accessories_19_qty = tk.IntVar(value=0)
-        self.entry_accessories_19_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_19_qty, width=3)
-        self.entry_accessories_19_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_19, sticky="w")
-        self.var_accessories_19_qty.trace_add("write", self.accessories_qty_19_update)
-
-    def add_dropdown_accessories_19_canvas(self, canvas_type):
-        self.selected_accessories_19 = tk.StringVar()
-        self.selected_accessories_19.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_19_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_19, "Accessory", *options) #filled elsewhere
-        self.accessories_19_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_19, sticky="w")
-        self.selected_accessories_19.trace_add("write", self.on_select_accessories_19)
-
-    def on_select_accessories_19(self, *args):
-        selected_value = self.selected_accessories_19.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_19_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_19_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_19_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_19_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_19_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_19_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_19_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_19_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_19_qty_up(self, *args):
-        accessories_19_qty = self.var_accessories_19_qty.get()
-        accessories_19_qty = accessories_19_qty + 1
-        self.var_accessories_19_qty.set(value=accessories_19_qty)
-        accessories_19_cost   = int(self.label_hidden_accessories_19_cost.cget("text"))
-        accessories_19_weight = int(self.label_hidden_accessories_19_weight.cget("text"))
-        accessories_19_space: str  = self.label_hidden_accessories_19_space.cget("text")
-        accessories_19_dp:    str  = self.label_hidden_accessories_19_dp.cget("text")
-        accessories_19_notes: str  = self.label_hidden_accessories_19_notes.cget("text")
-
-        if accessories_19_space == "":
-            accessories_19_space = 0.0
-        else:
-            accessories_19_space = float(accessories_19_space)
-
-        self.label_accessories_19_cost.configure(text=self.float_to_str(accessories_19_cost * accessories_19_qty))
-        self.label_accessories_19_weight.configure(text=self.float_to_str(accessories_19_weight * accessories_19_qty))
-        self.label_accessories_19_space.configure(text=self.float_to_str(accessories_19_space * accessories_19_qty))
-        self.label_accessories_19_dp.configure(text=str(accessories_19_dp))
-        self.label_accessories_19_notes.configure(text=str(accessories_19_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_19_qty_down(self, *args):
-        accessories_19_qty = self.var_accessories_19_qty.get()
-        accessories_19_qty = max(accessories_19_qty - 1, 0)
-        self.var_accessories_19_qty.set(value=accessories_19_qty)
-        accessories_19_cost   = int(self.label_hidden_accessories_19_cost.cget("text"))
-        accessories_19_weight = int(self.label_hidden_accessories_19_weight.cget("text"))
-        accessories_19_space  = float(self.label_hidden_accessories_19_space.cget("text"))
-        accessories_19_dp     = self.label_hidden_accessories_19_dp.cget("text")
-        accessories_19_notes  = self.label_hidden_accessories_19_notes.cget("text")
-        self.label_accessories_19_cost.configure(text=self.float_to_str(accessories_19_cost * accessories_19_qty))
-        self.label_accessories_19_weight.configure(text=self.float_to_str(accessories_19_weight * accessories_19_qty))
-        self.label_accessories_19_space.configure(text=self.float_to_str(accessories_19_space * accessories_19_qty))
-        self.label_accessories_19_dp.configure(text=str(accessories_19_dp))
-        if accessories_19_qty > 0:
-            self.label_accessories_19_notes.configure(text=str(accessories_19_notes))
-        else:
-            self.label_accessories_19_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_19_update(self, *args):
-        accessories_19_qty = self.var_accessories_19_qty.get()
-        accessories_19_cost   = int(self.label_hidden_accessories_19_cost.cget("text"))
-        accessories_19_weight = int(self.label_hidden_accessories_19_weight.cget("text"))
-        accessories_19_space  = float(self.label_hidden_accessories_19_space.cget("text"))
-        accessories_19_dp     = self.label_hidden_accessories_19_dp.cget("text")
-        accessories_19_notes  = self.label_hidden_accessories_19_notes.cget("text")
-        self.label_accessories_19_cost.configure(text=self.float_to_str(accessories_19_cost * accessories_19_qty))
-        self.label_accessories_19_weight.configure(text=self.float_to_str(accessories_19_weight * accessories_19_qty))
-        self.label_accessories_19_space.configure(text=self.float_to_str(accessories_19_space * accessories_19_qty))
-        self.label_accessories_19_dp.configure(text=str(accessories_19_dp))
-        if accessories_19_qty > 0:
-            self.label_accessories_19_notes.configure(text=str(accessories_19_notes))
-        else:
-            self.label_accessories_19_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 20 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_20_canvas(self, canvas_type):
-        self.label_hidden_accessories_20_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_20_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_20_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_20_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_20_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_20_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_20_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_20_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_20_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_20, sticky="w")
-        self.label_accessories_20_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_20_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_20, sticky="w")
-        self.label_accessories_20_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_20_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_20, sticky="w")
-        self.label_accessories_20_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_20_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_20, sticky="w")
-        self.label_accessories_20_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_20_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_20, sticky="w", columnspan=4)
-
-        self.var_accessories_20_qty = tk.IntVar(value=0)
-        self.entry_accessories_20_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_20_qty, width=3)
-        self.entry_accessories_20_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_20, sticky="w")
-        self.var_accessories_20_qty.trace_add("write", self.accessories_qty_20_update)
-
-    def add_dropdown_accessories_20_canvas(self, canvas_type):
-        self.selected_accessories_20 = tk.StringVar()
-        self.selected_accessories_20.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_20_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_20, "Accessory", *options) #filled elsewhere
-        self.accessories_20_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_20, sticky="w")
-        self.selected_accessories_20.trace_add("write", self.on_select_accessories_20)
-
-    def on_select_accessories_20(self, *args):
-        selected_value = self.selected_accessories_20.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_20_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_20_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_20_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_20_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_20_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_20_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_20_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_20_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_20_qty_up(self, *args):
-        accessories_20_qty = self.var_accessories_20_qty.get()
-        accessories_20_qty = accessories_20_qty + 1
-        self.var_accessories_20_qty.set(value=accessories_20_qty)
-        accessories_20_cost   = int(self.label_hidden_accessories_20_cost.cget("text"))
-        accessories_20_weight = int(self.label_hidden_accessories_20_weight.cget("text"))
-        accessories_20_space: str  = self.label_hidden_accessories_20_space.cget("text")
-        accessories_20_dp:    str  = self.label_hidden_accessories_20_dp.cget("text")
-        accessories_20_notes: str  = self.label_hidden_accessories_20_notes.cget("text")
-
-        if accessories_20_space == "":
-            accessories_20_space = 0.0
-        else:
-            accessories_20_space = float(accessories_20_space)
-
-        self.label_accessories_20_cost.configure(text=self.float_to_str(accessories_20_cost * accessories_20_qty))
-        self.label_accessories_20_weight.configure(text=self.float_to_str(accessories_20_weight * accessories_20_qty))
-        self.label_accessories_20_space.configure(text=self.float_to_str(accessories_20_space * accessories_20_qty))
-        self.label_accessories_20_dp.configure(text=str(accessories_20_dp))
-        self.label_accessories_20_notes.configure(text=str(accessories_20_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_20_qty_down(self, *args):
-        accessories_20_qty = self.var_accessories_20_qty.get()
-        accessories_20_qty = max(accessories_20_qty - 1, 0)
-        self.var_accessories_20_qty.set(value=accessories_20_qty)
-        accessories_20_cost   = int(self.label_hidden_accessories_20_cost.cget("text"))
-        accessories_20_weight = int(self.label_hidden_accessories_20_weight.cget("text"))
-        accessories_20_space  = float(self.label_hidden_accessories_20_space.cget("text"))
-        accessories_20_dp     = self.label_hidden_accessories_20_dp.cget("text")
-        accessories_20_notes  = self.label_hidden_accessories_20_notes.cget("text")
-        self.label_accessories_20_cost.configure(text=self.float_to_str(accessories_20_cost * accessories_20_qty))
-        self.label_accessories_20_weight.configure(text=self.float_to_str(accessories_20_weight * accessories_20_qty))
-        self.label_accessories_20_space.configure(text=self.float_to_str(accessories_20_space * accessories_20_qty))
-        self.label_accessories_20_dp.configure(text=str(accessories_20_dp))
-        if accessories_20_qty > 0:
-            self.label_accessories_20_notes.configure(text=str(accessories_20_notes))
-        else:
-            self.label_accessories_20_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_20_update(self, *args):
-        accessories_20_qty = self.var_accessories_20_qty.get()
-        accessories_20_cost   = int(self.label_hidden_accessories_20_cost.cget("text"))
-        accessories_20_weight = int(self.label_hidden_accessories_20_weight.cget("text"))
-        accessories_20_space  = float(self.label_hidden_accessories_20_space.cget("text"))
-        accessories_20_dp     = self.label_hidden_accessories_20_dp.cget("text")
-        accessories_20_notes  = self.label_hidden_accessories_20_notes.cget("text")
-        self.label_accessories_20_cost.configure(text=self.float_to_str(accessories_20_cost * accessories_20_qty))
-        self.label_accessories_20_weight.configure(text=self.float_to_str(accessories_20_weight * accessories_20_qty))
-        self.label_accessories_20_space.configure(text=self.float_to_str(accessories_20_space * accessories_20_qty))
-        self.label_accessories_20_dp.configure(text=str(accessories_20_dp))
-        if accessories_20_qty > 0:
-            self.label_accessories_20_notes.configure(text=str(accessories_20_notes))
-        else:
-            self.label_accessories_20_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 21 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_21_canvas(self, canvas_type):
-        self.label_hidden_accessories_21_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_21_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_21_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_21_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_21_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_21_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_21_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_21_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_21_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_21, sticky="w")
-        self.label_accessories_21_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_21_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_21, sticky="w")
-        self.label_accessories_21_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_21_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_21, sticky="w")
-        self.label_accessories_21_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_21_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_21, sticky="w")
-        self.label_accessories_21_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_21_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_21, sticky="w", columnspan=4)
-
-        self.var_accessories_21_qty = tk.IntVar(value=0)
-        self.entry_accessories_21_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_21_qty, width=3)
-        self.entry_accessories_21_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_21, sticky="w")
-        self.var_accessories_21_qty.trace_add("write", self.accessories_qty_21_update)
-
-    def add_dropdown_accessories_21_canvas(self, canvas_type):
-        self.selected_accessories_21 = tk.StringVar()
-        self.selected_accessories_21.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_21_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_21, "Accessory", *options) #filled elsewhere
-        self.accessories_21_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_21, sticky="w")
-        self.selected_accessories_21.trace_add("write", self.on_select_accessories_21)
-
-    def on_select_accessories_21(self, *args):
-        selected_value = self.selected_accessories_21.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_21_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_21_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_21_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_21_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_21_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_21_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_21_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_21_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_21_qty_up(self, *args):
-        accessories_21_qty = self.var_accessories_21_qty.get()
-        accessories_21_qty = accessories_21_qty + 1
-        self.var_accessories_21_qty.set(value=accessories_21_qty)
-        accessories_21_cost   = int(self.label_hidden_accessories_21_cost.cget("text"))
-        accessories_21_weight = int(self.label_hidden_accessories_21_weight.cget("text"))
-        accessories_21_space: str  = self.label_hidden_accessories_21_space.cget("text")
-        accessories_21_dp:    str  = self.label_hidden_accessories_21_dp.cget("text")
-        accessories_21_notes: str  = self.label_hidden_accessories_21_notes.cget("text")
-
-        if accessories_21_space == "":
-            accessories_21_space = 0.0
-        else:
-            accessories_21_space = float(accessories_21_space)
-
-        self.label_accessories_21_cost.configure(text=self.float_to_str(accessories_21_cost * accessories_21_qty))
-        self.label_accessories_21_weight.configure(text=self.float_to_str(accessories_21_weight * accessories_21_qty))
-        self.label_accessories_21_space.configure(text=self.float_to_str(accessories_21_space * accessories_21_qty))
-        self.label_accessories_21_dp.configure(text=str(accessories_21_dp))
-        self.label_accessories_21_notes.configure(text=str(accessories_21_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_21_qty_down(self, *args):
-        accessories_21_qty = self.var_accessories_21_qty.get()
-        accessories_21_qty = max(accessories_21_qty - 1, 0)
-        self.var_accessories_21_qty.set(value=accessories_21_qty)
-        accessories_21_cost   = int(self.label_hidden_accessories_21_cost.cget("text"))
-        accessories_21_weight = int(self.label_hidden_accessories_21_weight.cget("text"))
-        accessories_21_space  = float(self.label_hidden_accessories_21_space.cget("text"))
-        accessories_21_dp     = self.label_hidden_accessories_21_dp.cget("text")
-        accessories_21_notes  = self.label_hidden_accessories_21_notes.cget("text")
-        self.label_accessories_21_cost.configure(text=self.float_to_str(accessories_21_cost * accessories_21_qty))
-        self.label_accessories_21_weight.configure(text=self.float_to_str(accessories_21_weight * accessories_21_qty))
-        self.label_accessories_21_space.configure(text=self.float_to_str(accessories_21_space * accessories_21_qty))
-        self.label_accessories_21_dp.configure(text=str(accessories_21_dp))
-        if accessories_21_qty > 0:
-            self.label_accessories_21_notes.configure(text=str(accessories_21_notes))
-        else:
-            self.label_accessories_21_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_21_update(self, *args):
-        accessories_21_qty = self.var_accessories_21_qty.get()
-        accessories_21_cost   = int(self.label_hidden_accessories_21_cost.cget("text"))
-        accessories_21_weight = int(self.label_hidden_accessories_21_weight.cget("text"))
-        accessories_21_space  = float(self.label_hidden_accessories_21_space.cget("text"))
-        accessories_21_dp     = self.label_hidden_accessories_21_dp.cget("text")
-        accessories_21_notes  = self.label_hidden_accessories_21_notes.cget("text")
-        self.label_accessories_21_cost.configure(text=self.float_to_str(accessories_21_cost * accessories_21_qty))
-        self.label_accessories_21_weight.configure(text=self.float_to_str(accessories_21_weight * accessories_21_qty))
-        self.label_accessories_21_space.configure(text=self.float_to_str(accessories_21_space * accessories_21_qty))
-        self.label_accessories_21_dp.configure(text=str(accessories_21_dp))
-        if accessories_21_qty > 0:
-            self.label_accessories_21_notes.configure(text=str(accessories_21_notes))
-        else:
-            self.label_accessories_21_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 22 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_22_canvas(self, canvas_type):
-        self.label_hidden_accessories_22_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_22_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_22_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_22_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_22_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_22_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_22_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_22_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_22_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_22, sticky="w")
-        self.label_accessories_22_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_22_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_22, sticky="w")
-        self.label_accessories_22_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_22_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_22, sticky="w")
-        self.label_accessories_22_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_22_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_22, sticky="w")
-        self.label_accessories_22_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_22_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_22, sticky="w", columnspan=4)
-
-        self.var_accessories_22_qty = tk.IntVar(value=0)
-        self.entry_accessories_22_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_22_qty, width=3)
-        self.entry_accessories_22_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_22, sticky="w")
-        self.var_accessories_22_qty.trace_add("write", self.accessories_qty_22_update)
-
-    def add_dropdown_accessories_22_canvas(self, canvas_type):
-        self.selected_accessories_22 = tk.StringVar()
-        self.selected_accessories_22.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_22_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_22, "Accessory", *options) #filled elsewhere
-        self.accessories_22_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_22, sticky="w")
-        self.selected_accessories_22.trace_add("write", self.on_select_accessories_22)
-
-    def on_select_accessories_22(self, *args):
-        selected_value = self.selected_accessories_22.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_22_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_22_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_22_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_22_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_22_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_22_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_22_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_22_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_22_qty_up(self, *args):
-        accessories_22_qty = self.var_accessories_22_qty.get()
-        accessories_22_qty = accessories_22_qty + 1
-        self.var_accessories_22_qty.set(value=accessories_22_qty)
-        accessories_22_cost   = int(self.label_hidden_accessories_22_cost.cget("text"))
-        accessories_22_weight = int(self.label_hidden_accessories_22_weight.cget("text"))
-        accessories_22_space: str  = self.label_hidden_accessories_22_space.cget("text")
-        accessories_22_dp:    str  = self.label_hidden_accessories_22_dp.cget("text")
-        accessories_22_notes: str  = self.label_hidden_accessories_22_notes.cget("text")
-
-        if accessories_22_space == "":
-            accessories_22_space = 0.0
-        else:
-            accessories_22_space = float(accessories_22_space)
-
-        self.label_accessories_22_cost.configure(text=self.float_to_str(accessories_22_cost * accessories_22_qty))
-        self.label_accessories_22_weight.configure(text=self.float_to_str(accessories_22_weight * accessories_22_qty))
-        self.label_accessories_22_space.configure(text=self.float_to_str(accessories_22_space * accessories_22_qty))
-        self.label_accessories_22_dp.configure(text=str(accessories_22_dp))
-        self.label_accessories_22_notes.configure(text=str(accessories_22_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_22_qty_down(self, *args):
-        accessories_22_qty = self.var_accessories_22_qty.get()
-        accessories_22_qty = max(accessories_22_qty - 1, 0)
-        self.var_accessories_22_qty.set(value=accessories_22_qty)
-        accessories_22_cost   = int(self.label_hidden_accessories_22_cost.cget("text"))
-        accessories_22_weight = int(self.label_hidden_accessories_22_weight.cget("text"))
-        accessories_22_space  = float(self.label_hidden_accessories_22_space.cget("text"))
-        accessories_22_dp     = self.label_hidden_accessories_22_dp.cget("text")
-        accessories_22_notes  = self.label_hidden_accessories_22_notes.cget("text")
-        self.label_accessories_22_cost.configure(text=self.float_to_str(accessories_22_cost * accessories_22_qty))
-        self.label_accessories_22_weight.configure(text=self.float_to_str(accessories_22_weight * accessories_22_qty))
-        self.label_accessories_22_space.configure(text=self.float_to_str(accessories_22_space * accessories_22_qty))
-        self.label_accessories_22_dp.configure(text=str(accessories_22_dp))
-        if accessories_22_qty > 0:
-            self.label_accessories_22_notes.configure(text=str(accessories_22_notes))
-        else:
-            self.label_accessories_22_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_22_update(self, *args):
-        accessories_22_qty = self.var_accessories_22_qty.get()
-        accessories_22_cost   = int(self.label_hidden_accessories_22_cost.cget("text"))
-        accessories_22_weight = int(self.label_hidden_accessories_22_weight.cget("text"))
-        accessories_22_space  = float(self.label_hidden_accessories_22_space.cget("text"))
-        accessories_22_dp     = self.label_hidden_accessories_22_dp.cget("text")
-        accessories_22_notes  = self.label_hidden_accessories_22_notes.cget("text")
-        self.label_accessories_22_cost.configure(text=self.float_to_str(accessories_22_cost * accessories_22_qty))
-        self.label_accessories_22_weight.configure(text=self.float_to_str(accessories_22_weight * accessories_22_qty))
-        self.label_accessories_22_space.configure(text=self.float_to_str(accessories_22_space * accessories_22_qty))
-        self.label_accessories_22_dp.configure(text=str(accessories_22_dp))
-        if accessories_22_qty > 0:
-            self.label_accessories_22_notes.configure(text=str(accessories_22_notes))
-        else:
-            self.label_accessories_22_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 23 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_23_canvas(self, canvas_type):
-        self.label_hidden_accessories_23_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_23_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_23_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_23_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_23_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_23_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_23_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_23_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_23_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_23, sticky="w")
-        self.label_accessories_23_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_23_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_23, sticky="w")
-        self.label_accessories_23_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_23_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_23, sticky="w")
-        self.label_accessories_23_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_23_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_23, sticky="w")
-        self.label_accessories_23_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_23_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_23, sticky="w", columnspan=4)
-
-        self.var_accessories_23_qty = tk.IntVar(value=0)
-        self.entry_accessories_23_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_23_qty, width=3)
-        self.entry_accessories_23_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_23, sticky="w")
-        self.var_accessories_23_qty.trace_add("write", self.accessories_qty_23_update)
-
-    def add_dropdown_accessories_23_canvas(self, canvas_type):
-        self.selected_accessories_23 = tk.StringVar()
-        self.selected_accessories_23.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_23_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_23, "Accessory", *options) #filled elsewhere
-        self.accessories_23_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_23, sticky="w")
-        self.selected_accessories_23.trace_add("write", self.on_select_accessories_23)
-
-    def on_select_accessories_23(self, *args):
-        selected_value = self.selected_accessories_23.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_23_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_23_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_23_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_23_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_23_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_23_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_23_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_23_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_23_qty_up(self, *args):
-        accessories_23_qty = self.var_accessories_23_qty.get()
-        accessories_23_qty = accessories_23_qty + 1
-        self.var_accessories_23_qty.set(value=accessories_23_qty)
-        accessories_23_cost   = int(self.label_hidden_accessories_23_cost.cget("text"))
-        accessories_23_weight = int(self.label_hidden_accessories_23_weight.cget("text"))
-        accessories_23_space: str  = self.label_hidden_accessories_23_space.cget("text")
-        accessories_23_dp:    str  = self.label_hidden_accessories_23_dp.cget("text")
-        accessories_23_notes: str  = self.label_hidden_accessories_23_notes.cget("text")
-
-        if accessories_23_space == "":
-            accessories_23_space = 0.0
-        else:
-            accessories_23_space = float(accessories_23_space)
-
-        self.label_accessories_23_cost.configure(text=self.float_to_str(accessories_23_cost * accessories_23_qty))
-        self.label_accessories_23_weight.configure(text=self.float_to_str(accessories_23_weight * accessories_23_qty))
-        self.label_accessories_23_space.configure(text=self.float_to_str(accessories_23_space * accessories_23_qty))
-        self.label_accessories_23_dp.configure(text=str(accessories_23_dp))
-        self.label_accessories_23_notes.configure(text=str(accessories_23_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_23_qty_down(self, *args):
-        accessories_23_qty = self.var_accessories_23_qty.get()
-        accessories_23_qty = max(accessories_23_qty - 1, 0)
-        self.var_accessories_23_qty.set(value=accessories_23_qty)
-        accessories_23_cost   = int(self.label_hidden_accessories_23_cost.cget("text"))
-        accessories_23_weight = int(self.label_hidden_accessories_23_weight.cget("text"))
-        accessories_23_space  = float(self.label_hidden_accessories_23_space.cget("text"))
-        accessories_23_dp     = self.label_hidden_accessories_23_dp.cget("text")
-        accessories_23_notes  = self.label_hidden_accessories_23_notes.cget("text")
-        self.label_accessories_23_cost.configure(text=self.float_to_str(accessories_23_cost * accessories_23_qty))
-        self.label_accessories_23_weight.configure(text=self.float_to_str(accessories_23_weight * accessories_23_qty))
-        self.label_accessories_23_space.configure(text=self.float_to_str(accessories_23_space * accessories_23_qty))
-        self.label_accessories_23_dp.configure(text=str(accessories_23_dp))
-        if accessories_23_qty > 0:
-            self.label_accessories_23_notes.configure(text=str(accessories_23_notes))
-        else:
-            self.label_accessories_23_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_23_update(self, *args):
-        accessories_23_qty = self.var_accessories_23_qty.get()
-        accessories_23_cost   = int(self.label_hidden_accessories_23_cost.cget("text"))
-        accessories_23_weight = int(self.label_hidden_accessories_23_weight.cget("text"))
-        accessories_23_space  = float(self.label_hidden_accessories_23_space.cget("text"))
-        accessories_23_dp     = self.label_hidden_accessories_23_dp.cget("text")
-        accessories_23_notes  = self.label_hidden_accessories_23_notes.cget("text")
-        self.label_accessories_23_cost.configure(text=self.float_to_str(accessories_23_cost * accessories_23_qty))
-        self.label_accessories_23_weight.configure(text=self.float_to_str(accessories_23_weight * accessories_23_qty))
-        self.label_accessories_23_space.configure(text=self.float_to_str(accessories_23_space * accessories_23_qty))
-        self.label_accessories_23_dp.configure(text=str(accessories_23_dp))
-        if accessories_23_qty > 0:
-            self.label_accessories_23_notes.configure(text=str(accessories_23_notes))
-        else:
-            self.label_accessories_23_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 24 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_24_canvas(self, canvas_type):
-        self.label_hidden_accessories_24_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_24_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_24_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_24_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_24_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_24_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_24_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_24_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_24_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_24, sticky="w")
-        self.label_accessories_24_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_24_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_24, sticky="w")
-        self.label_accessories_24_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_24_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_24, sticky="w")
-        self.label_accessories_24_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_24_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_24, sticky="w")
-        self.label_accessories_24_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_24_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_24, sticky="w", columnspan=4)
-
-        self.var_accessories_24_qty = tk.IntVar(value=0)
-        self.entry_accessories_24_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_24_qty, width=3)
-        self.entry_accessories_24_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_24, sticky="w")
-        self.var_accessories_24_qty.trace_add("write", self.accessories_qty_24_update)
-
-    def add_dropdown_accessories_24_canvas(self, canvas_type):
-        self.selected_accessories_24 = tk.StringVar()
-        self.selected_accessories_24.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_24_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_24, "Accessory", *options) #filled elsewhere
-        self.accessories_24_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_24, sticky="w")
-        self.selected_accessories_24.trace_add("write", self.on_select_accessories_24)
-
-    def on_select_accessories_24(self, *args):
-        selected_value = self.selected_accessories_24.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_24_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_24_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_24_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_24_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_24_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_24_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_24_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_24_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_24_qty_up(self, *args):
-        accessories_24_qty = self.var_accessories_24_qty.get()
-        accessories_24_qty = accessories_24_qty + 1
-        self.var_accessories_24_qty.set(value=accessories_24_qty)
-        accessories_24_cost   = int(self.label_hidden_accessories_24_cost.cget("text"))
-        accessories_24_weight = int(self.label_hidden_accessories_24_weight.cget("text"))
-        accessories_24_space: str  = self.label_hidden_accessories_24_space.cget("text")
-        accessories_24_dp:    str  = self.label_hidden_accessories_24_dp.cget("text")
-        accessories_24_notes: str  = self.label_hidden_accessories_24_notes.cget("text")
-
-        if accessories_24_space == "":
-            accessories_24_space = 0.0
-        else:
-            accessories_24_space = float(accessories_24_space)
-
-        self.label_accessories_24_cost.configure(text=self.float_to_str(accessories_24_cost * accessories_24_qty))
-        self.label_accessories_24_weight.configure(text=self.float_to_str(accessories_24_weight * accessories_24_qty))
-        self.label_accessories_24_space.configure(text=self.float_to_str(accessories_24_space * accessories_24_qty))
-        self.label_accessories_24_dp.configure(text=str(accessories_24_dp))
-        self.label_accessories_24_notes.configure(text=str(accessories_24_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_24_qty_down(self, *args):
-        accessories_24_qty = self.var_accessories_24_qty.get()
-        accessories_24_qty = max(accessories_24_qty - 1, 0)
-        self.var_accessories_24_qty.set(value=accessories_24_qty)
-        accessories_24_cost   = int(self.label_hidden_accessories_24_cost.cget("text"))
-        accessories_24_weight = int(self.label_hidden_accessories_24_weight.cget("text"))
-        accessories_24_space  = float(self.label_hidden_accessories_24_space.cget("text"))
-        accessories_24_dp     = self.label_hidden_accessories_24_dp.cget("text")
-        accessories_24_notes  = self.label_hidden_accessories_24_notes.cget("text")
-        self.label_accessories_24_cost.configure(text=self.float_to_str(accessories_24_cost * accessories_24_qty))
-        self.label_accessories_24_weight.configure(text=self.float_to_str(accessories_24_weight * accessories_24_qty))
-        self.label_accessories_24_space.configure(text=self.float_to_str(accessories_24_space * accessories_24_qty))
-        self.label_accessories_24_dp.configure(text=str(accessories_24_dp))
-        if accessories_24_qty > 0:
-            self.label_accessories_24_notes.configure(text=str(accessories_24_notes))
-        else:
-            self.label_accessories_24_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_24_update(self, *args):
-        accessories_24_qty = self.var_accessories_24_qty.get()
-        accessories_24_cost   = int(self.label_hidden_accessories_24_cost.cget("text"))
-        accessories_24_weight = int(self.label_hidden_accessories_24_weight.cget("text"))
-        accessories_24_space  = float(self.label_hidden_accessories_24_space.cget("text"))
-        accessories_24_dp     = self.label_hidden_accessories_24_dp.cget("text")
-        accessories_24_notes  = self.label_hidden_accessories_24_notes.cget("text")
-        self.label_accessories_24_cost.configure(text=self.float_to_str(accessories_24_cost * accessories_24_qty))
-        self.label_accessories_24_weight.configure(text=self.float_to_str(accessories_24_weight * accessories_24_qty))
-        self.label_accessories_24_space.configure(text=self.float_to_str(accessories_24_space * accessories_24_qty))
-        self.label_accessories_24_dp.configure(text=str(accessories_24_dp))
-        if accessories_24_qty > 0:
-            self.label_accessories_24_notes.configure(text=str(accessories_24_notes))
-        else:
-            self.label_accessories_24_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 25 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_25_canvas(self, canvas_type):
-        self.label_hidden_accessories_25_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_25_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_25_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_25_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_25_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_25_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_25_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_25_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_25_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_25, sticky="w")
-        self.label_accessories_25_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_25_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_25, sticky="w")
-        self.label_accessories_25_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_25_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_25, sticky="w")
-        self.label_accessories_25_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_25_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_25, sticky="w")
-        self.label_accessories_25_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_25_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_25, sticky="w", columnspan=4)
-
-        self.var_accessories_25_qty = tk.IntVar(value=0)
-        self.entry_accessories_25_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_25_qty, width=3)
-        self.entry_accessories_25_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_25, sticky="w")
-        self.var_accessories_25_qty.trace_add("write", self.accessories_qty_25_update)
-
-    def add_dropdown_accessories_25_canvas(self, canvas_type):
-        self.selected_accessories_25 = tk.StringVar()
-        self.selected_accessories_25.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_25_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_25, "Accessory", *options) #filled elsewhere
-        self.accessories_25_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_25, sticky="w")
-        self.selected_accessories_25.trace_add("write", self.on_select_accessories_25)
-
-    def on_select_accessories_25(self, *args):
-        selected_value = self.selected_accessories_25.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_25_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_25_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_25_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_25_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_25_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_25_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_25_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_25_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_25_qty_up(self, *args):
-        accessories_25_qty = self.var_accessories_25_qty.get()
-        accessories_25_qty = accessories_25_qty + 1
-        self.var_accessories_25_qty.set(value=accessories_25_qty)
-        accessories_25_cost   = int(self.label_hidden_accessories_25_cost.cget("text"))
-        accessories_25_weight = int(self.label_hidden_accessories_25_weight.cget("text"))
-        accessories_25_space: str  = self.label_hidden_accessories_25_space.cget("text")
-        accessories_25_dp:    str  = self.label_hidden_accessories_25_dp.cget("text")
-        accessories_25_notes: str  = self.label_hidden_accessories_25_notes.cget("text")
-
-        if accessories_25_space == "":
-            accessories_25_space = 0.0
-        else:
-            accessories_25_space = float(accessories_25_space)
-
-        self.label_accessories_25_cost.configure(text=self.float_to_str(accessories_25_cost * accessories_25_qty))
-        self.label_accessories_25_weight.configure(text=self.float_to_str(accessories_25_weight * accessories_25_qty))
-        self.label_accessories_25_space.configure(text=self.float_to_str(accessories_25_space * accessories_25_qty))
-        self.label_accessories_25_dp.configure(text=str(accessories_25_dp))
-        self.label_accessories_25_notes.configure(text=str(accessories_25_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_25_qty_down(self, *args):
-        accessories_25_qty = self.var_accessories_25_qty.get()
-        accessories_25_qty = max(accessories_25_qty - 1, 0)
-        self.var_accessories_25_qty.set(value=accessories_25_qty)
-        accessories_25_cost   = int(self.label_hidden_accessories_25_cost.cget("text"))
-        accessories_25_weight = int(self.label_hidden_accessories_25_weight.cget("text"))
-        accessories_25_space  = float(self.label_hidden_accessories_25_space.cget("text"))
-        accessories_25_dp     = self.label_hidden_accessories_25_dp.cget("text")
-        accessories_25_notes  = self.label_hidden_accessories_25_notes.cget("text")
-        self.label_accessories_25_cost.configure(text=self.float_to_str(accessories_25_cost * accessories_25_qty))
-        self.label_accessories_25_weight.configure(text=self.float_to_str(accessories_25_weight * accessories_25_qty))
-        self.label_accessories_25_space.configure(text=self.float_to_str(accessories_25_space * accessories_25_qty))
-        self.label_accessories_25_dp.configure(text=str(accessories_25_dp))
-        if accessories_25_qty > 0:
-            self.label_accessories_25_notes.configure(text=str(accessories_25_notes))
-        else:
-            self.label_accessories_25_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_25_update(self, *args):
-        accessories_25_qty = self.var_accessories_25_qty.get()
-        accessories_25_cost   = int(self.label_hidden_accessories_25_cost.cget("text"))
-        accessories_25_weight = int(self.label_hidden_accessories_25_weight.cget("text"))
-        accessories_25_space  = float(self.label_hidden_accessories_25_space.cget("text"))
-        accessories_25_dp     = self.label_hidden_accessories_25_dp.cget("text")
-        accessories_25_notes  = self.label_hidden_accessories_25_notes.cget("text")
-        self.label_accessories_25_cost.configure(text=self.float_to_str(accessories_25_cost * accessories_25_qty))
-        self.label_accessories_25_weight.configure(text=self.float_to_str(accessories_25_weight * accessories_25_qty))
-        self.label_accessories_25_space.configure(text=self.float_to_str(accessories_25_space * accessories_25_qty))
-        self.label_accessories_25_dp.configure(text=str(accessories_25_dp))
-        if accessories_25_qty > 0:
-            self.label_accessories_25_notes.configure(text=str(accessories_25_notes))
-        else:
-            self.label_accessories_25_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 26 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_26_canvas(self, canvas_type):
-        self.label_hidden_accessories_26_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_26_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_26_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_26_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_26_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_26_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_26_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_26_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_26_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_26, sticky="w")
-        self.label_accessories_26_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_26_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_26, sticky="w")
-        self.label_accessories_26_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_26_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_26, sticky="w")
-        self.label_accessories_26_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_26_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_26, sticky="w")
-        self.label_accessories_26_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_26_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_26, sticky="w", columnspan=4)
-
-        self.var_accessories_26_qty = tk.IntVar(value=0)
-        self.entry_accessories_26_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_26_qty, width=3)
-        self.entry_accessories_26_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_26, sticky="w")
-        self.var_accessories_26_qty.trace_add("write", self.accessories_qty_26_update)
-
-    def add_dropdown_accessories_26_canvas(self, canvas_type):
-        self.selected_accessories_26 = tk.StringVar()
-        self.selected_accessories_26.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_26_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_26, "Accessory", *options) #filled elsewhere
-        self.accessories_26_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_26, sticky="w")
-        self.selected_accessories_26.trace_add("write", self.on_select_accessories_26)
-
-    def on_select_accessories_26(self, *args):
-        selected_value = self.selected_accessories_26.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_26_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_26_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_26_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_26_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_26_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_26_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_26_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_26_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_26_qty_up(self, *args):
-        accessories_26_qty = self.var_accessories_26_qty.get()
-        accessories_26_qty = accessories_26_qty + 1
-        self.var_accessories_26_qty.set(value=accessories_26_qty)
-        accessories_26_cost   = int(self.label_hidden_accessories_26_cost.cget("text"))
-        accessories_26_weight = int(self.label_hidden_accessories_26_weight.cget("text"))
-        accessories_26_space: str  = self.label_hidden_accessories_26_space.cget("text")
-        accessories_26_dp:    str  = self.label_hidden_accessories_26_dp.cget("text")
-        accessories_26_notes: str  = self.label_hidden_accessories_26_notes.cget("text")
-
-        if accessories_26_space == "":
-            accessories_26_space = 0.0
-        else:
-            accessories_26_space = float(accessories_26_space)
-
-        self.label_accessories_26_cost.configure(text=self.float_to_str(accessories_26_cost * accessories_26_qty))
-        self.label_accessories_26_weight.configure(text=self.float_to_str(accessories_26_weight * accessories_26_qty))
-        self.label_accessories_26_space.configure(text=self.float_to_str(accessories_26_space * accessories_26_qty))
-        self.label_accessories_26_dp.configure(text=str(accessories_26_dp))
-        self.label_accessories_26_notes.configure(text=str(accessories_26_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_26_qty_down(self, *args):
-        accessories_26_qty = self.var_accessories_26_qty.get()
-        accessories_26_qty = max(accessories_26_qty - 1, 0)
-        self.var_accessories_26_qty.set(value=accessories_26_qty)
-        accessories_26_cost   = int(self.label_hidden_accessories_26_cost.cget("text"))
-        accessories_26_weight = int(self.label_hidden_accessories_26_weight.cget("text"))
-        accessories_26_space  = float(self.label_hidden_accessories_26_space.cget("text"))
-        accessories_26_dp     = self.label_hidden_accessories_26_dp.cget("text")
-        accessories_26_notes  = self.label_hidden_accessories_26_notes.cget("text")
-        self.label_accessories_26_cost.configure(text=self.float_to_str(accessories_26_cost * accessories_26_qty))
-        self.label_accessories_26_weight.configure(text=self.float_to_str(accessories_26_weight * accessories_26_qty))
-        self.label_accessories_26_space.configure(text=self.float_to_str(accessories_26_space * accessories_26_qty))
-        self.label_accessories_26_dp.configure(text=str(accessories_26_dp))
-        if accessories_26_qty > 0:
-            self.label_accessories_26_notes.configure(text=str(accessories_26_notes))
-        else:
-            self.label_accessories_26_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_26_update(self, *args):
-        accessories_26_qty = self.var_accessories_26_qty.get()
-        accessories_26_cost   = int(self.label_hidden_accessories_26_cost.cget("text"))
-        accessories_26_weight = int(self.label_hidden_accessories_26_weight.cget("text"))
-        accessories_26_space  = float(self.label_hidden_accessories_26_space.cget("text"))
-        accessories_26_dp     = self.label_hidden_accessories_26_dp.cget("text")
-        accessories_26_notes  = self.label_hidden_accessories_26_notes.cget("text")
-        self.label_accessories_26_cost.configure(text=self.float_to_str(accessories_26_cost * accessories_26_qty))
-        self.label_accessories_26_weight.configure(text=self.float_to_str(accessories_26_weight * accessories_26_qty))
-        self.label_accessories_26_space.configure(text=self.float_to_str(accessories_26_space * accessories_26_qty))
-        self.label_accessories_26_dp.configure(text=str(accessories_26_dp))
-        if accessories_26_qty > 0:
-            self.label_accessories_26_notes.configure(text=str(accessories_26_notes))
-        else:
-            self.label_accessories_26_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 27 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_27_canvas(self, canvas_type):
-        self.label_hidden_accessories_27_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_27_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_27_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_27_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_27_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_27_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_27_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_27_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_27_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_27, sticky="w")
-        self.label_accessories_27_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_27_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_27, sticky="w")
-        self.label_accessories_27_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_27_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_27, sticky="w")
-        self.label_accessories_27_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_27_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_27, sticky="w")
-        self.label_accessories_27_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_27_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_27, sticky="w", columnspan=4)
-
-        self.var_accessories_27_qty = tk.IntVar(value=0)
-        self.entry_accessories_27_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_27_qty, width=3)
-        self.entry_accessories_27_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_27, sticky="w")
-        self.var_accessories_27_qty.trace_add("write", self.accessories_qty_27_update)
-
-    def add_dropdown_accessories_27_canvas(self, canvas_type):
-        self.selected_accessories_27 = tk.StringVar()
-        self.selected_accessories_27.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_27_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_27, "Accessory", *options) #filled elsewhere
-        self.accessories_27_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_27, sticky="w")
-        self.selected_accessories_27.trace_add("write", self.on_select_accessories_27)
-
-    def on_select_accessories_27(self, *args):
-        selected_value = self.selected_accessories_27.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_27_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_27_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_27_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_27_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_27_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_27_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_27_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_27_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_27_qty_up(self, *args):
-        accessories_27_qty = self.var_accessories_27_qty.get()
-        accessories_27_qty = accessories_27_qty + 1
-        self.var_accessories_27_qty.set(value=accessories_27_qty)
-        accessories_27_cost   = int(self.label_hidden_accessories_27_cost.cget("text"))
-        accessories_27_weight = int(self.label_hidden_accessories_27_weight.cget("text"))
-        accessories_27_space: str  = self.label_hidden_accessories_27_space.cget("text")
-        accessories_27_dp:    str  = self.label_hidden_accessories_27_dp.cget("text")
-        accessories_27_notes: str  = self.label_hidden_accessories_27_notes.cget("text")
-
-        if accessories_27_space == "":
-            accessories_27_space = 0.0
-        else:
-            accessories_27_space = float(accessories_27_space)
-
-        self.label_accessories_27_cost.configure(text=self.float_to_str(accessories_27_cost * accessories_27_qty))
-        self.label_accessories_27_weight.configure(text=self.float_to_str(accessories_27_weight * accessories_27_qty))
-        self.label_accessories_27_space.configure(text=self.float_to_str(accessories_27_space * accessories_27_qty))
-        self.label_accessories_27_dp.configure(text=str(accessories_27_dp))
-        self.label_accessories_27_notes.configure(text=str(accessories_27_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_27_qty_down(self, *args):
-        accessories_27_qty = self.var_accessories_27_qty.get()
-        accessories_27_qty = max(accessories_27_qty - 1, 0)
-        self.var_accessories_27_qty.set(value=accessories_27_qty)
-        accessories_27_cost   = int(self.label_hidden_accessories_27_cost.cget("text"))
-        accessories_27_weight = int(self.label_hidden_accessories_27_weight.cget("text"))
-        accessories_27_space  = float(self.label_hidden_accessories_27_space.cget("text"))
-        accessories_27_dp     = self.label_hidden_accessories_27_dp.cget("text")
-        accessories_27_notes  = self.label_hidden_accessories_27_notes.cget("text")
-        self.label_accessories_27_cost.configure(text=self.float_to_str(accessories_27_cost * accessories_27_qty))
-        self.label_accessories_27_weight.configure(text=self.float_to_str(accessories_27_weight * accessories_27_qty))
-        self.label_accessories_27_space.configure(text=self.float_to_str(accessories_27_space * accessories_27_qty))
-        self.label_accessories_27_dp.configure(text=str(accessories_27_dp))
-        if accessories_27_qty > 0:
-            self.label_accessories_27_notes.configure(text=str(accessories_27_notes))
-        else:
-            self.label_accessories_27_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_27_update(self, *args):
-        accessories_27_qty = self.var_accessories_27_qty.get()
-        accessories_27_cost   = int(self.label_hidden_accessories_27_cost.cget("text"))
-        accessories_27_weight = int(self.label_hidden_accessories_27_weight.cget("text"))
-        accessories_27_space  = float(self.label_hidden_accessories_27_space.cget("text"))
-        accessories_27_dp     = self.label_hidden_accessories_27_dp.cget("text")
-        accessories_27_notes  = self.label_hidden_accessories_27_notes.cget("text")
-        self.label_accessories_27_cost.configure(text=self.float_to_str(accessories_27_cost * accessories_27_qty))
-        self.label_accessories_27_weight.configure(text=self.float_to_str(accessories_27_weight * accessories_27_qty))
-        self.label_accessories_27_space.configure(text=self.float_to_str(accessories_27_space * accessories_27_qty))
-        self.label_accessories_27_dp.configure(text=str(accessories_27_dp))
-        if accessories_27_qty > 0:
-            self.label_accessories_27_notes.configure(text=str(accessories_27_notes))
-        else:
-            self.label_accessories_27_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 28 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_28_canvas(self, canvas_type):
-        self.label_hidden_accessories_28_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_28_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_28_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_28_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_28_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_28_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_28_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_28_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_28_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_28, sticky="w")
-        self.label_accessories_28_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_28_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_28, sticky="w")
-        self.label_accessories_28_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_28_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_28, sticky="w")
-        self.label_accessories_28_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_28_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_28, sticky="w")
-        self.label_accessories_28_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_28_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_28, sticky="w", columnspan=4)
-
-        self.var_accessories_28_qty = tk.IntVar(value=0)
-        self.entry_accessories_28_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_28_qty, width=3)
-        self.entry_accessories_28_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_28, sticky="w")
-        self.var_accessories_28_qty.trace_add("write", self.accessories_qty_28_update)
-
-    def add_dropdown_accessories_28_canvas(self, canvas_type):
-        self.selected_accessories_28 = tk.StringVar()
-        self.selected_accessories_28.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_28_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_28, "Accessory", *options) #filled elsewhere
-        self.accessories_28_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_28, sticky="w")
-        self.selected_accessories_28.trace_add("write", self.on_select_accessories_28)
-
-    def on_select_accessories_28(self, *args):
-        selected_value = self.selected_accessories_28.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_28_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_28_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_28_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_28_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_28_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_28_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_28_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_28_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_28_qty_up(self, *args):
-        accessories_28_qty = self.var_accessories_28_qty.get()
-        accessories_28_qty = accessories_28_qty + 1
-        self.var_accessories_28_qty.set(value=accessories_28_qty)
-        accessories_28_cost   = int(self.label_hidden_accessories_28_cost.cget("text"))
-        accessories_28_weight = int(self.label_hidden_accessories_28_weight.cget("text"))
-        accessories_28_space: str  = self.label_hidden_accessories_28_space.cget("text")
-        accessories_28_dp:    str  = self.label_hidden_accessories_28_dp.cget("text")
-        accessories_28_notes: str  = self.label_hidden_accessories_28_notes.cget("text")
-
-        if accessories_28_space == "":
-            accessories_28_space = 0.0
-        else:
-            accessories_28_space = float(accessories_28_space)
-
-        self.label_accessories_28_cost.configure(text=self.float_to_str(accessories_28_cost * accessories_28_qty))
-        self.label_accessories_28_weight.configure(text=self.float_to_str(accessories_28_weight * accessories_28_qty))
-        self.label_accessories_28_space.configure(text=self.float_to_str(accessories_28_space * accessories_28_qty))
-        self.label_accessories_28_dp.configure(text=str(accessories_28_dp))
-        self.label_accessories_28_notes.configure(text=str(accessories_28_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_28_qty_down(self, *args):
-        accessories_28_qty = self.var_accessories_28_qty.get()
-        accessories_28_qty = max(accessories_28_qty - 1, 0)
-        self.var_accessories_28_qty.set(value=accessories_28_qty)
-        accessories_28_cost   = int(self.label_hidden_accessories_28_cost.cget("text"))
-        accessories_28_weight = int(self.label_hidden_accessories_28_weight.cget("text"))
-        accessories_28_space  = float(self.label_hidden_accessories_28_space.cget("text"))
-        accessories_28_dp     = self.label_hidden_accessories_28_dp.cget("text")
-        accessories_28_notes  = self.label_hidden_accessories_28_notes.cget("text")
-        self.label_accessories_28_cost.configure(text=self.float_to_str(accessories_28_cost * accessories_28_qty))
-        self.label_accessories_28_weight.configure(text=self.float_to_str(accessories_28_weight * accessories_28_qty))
-        self.label_accessories_28_space.configure(text=self.float_to_str(accessories_28_space * accessories_28_qty))
-        self.label_accessories_28_dp.configure(text=str(accessories_28_dp))
-        if accessories_28_qty > 0:
-            self.label_accessories_28_notes.configure(text=str(accessories_28_notes))
-        else:
-            self.label_accessories_28_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_28_update(self, *args):
-        accessories_28_qty = self.var_accessories_28_qty.get()
-        accessories_28_cost   = int(self.label_hidden_accessories_28_cost.cget("text"))
-        accessories_28_weight = int(self.label_hidden_accessories_28_weight.cget("text"))
-        accessories_28_space  = float(self.label_hidden_accessories_28_space.cget("text"))
-        accessories_28_dp     = self.label_hidden_accessories_28_dp.cget("text")
-        accessories_28_notes  = self.label_hidden_accessories_28_notes.cget("text")
-        self.label_accessories_28_cost.configure(text=self.float_to_str(accessories_28_cost * accessories_28_qty))
-        self.label_accessories_28_weight.configure(text=self.float_to_str(accessories_28_weight * accessories_28_qty))
-        self.label_accessories_28_space.configure(text=self.float_to_str(accessories_28_space * accessories_28_qty))
-        self.label_accessories_28_dp.configure(text=str(accessories_28_dp))
-        if accessories_28_qty > 0:
-            self.label_accessories_28_notes.configure(text=str(accessories_28_notes))
-        else:
-            self.label_accessories_28_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 29 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_29_canvas(self, canvas_type):
-        self.label_hidden_accessories_29_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_29_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_29_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_29_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_29_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_29_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_29_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_29_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_29_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_29, sticky="w")
-        self.label_accessories_29_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_29_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_29, sticky="w")
-        self.label_accessories_29_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_29_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_29, sticky="w")
-        self.label_accessories_29_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_29_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_29, sticky="w")
-        self.label_accessories_29_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_29_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_29, sticky="w", columnspan=4)
-
-        self.var_accessories_29_qty = tk.IntVar(value=0)
-        self.entry_accessories_29_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_29_qty, width=3)
-        self.entry_accessories_29_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_29, sticky="w")
-        self.var_accessories_29_qty.trace_add("write", self.accessories_qty_29_update)
-
-    def add_dropdown_accessories_29_canvas(self, canvas_type):
-        self.selected_accessories_29 = tk.StringVar()
-        self.selected_accessories_29.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_29_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_29, "Accessory", *options) #filled elsewhere
-        self.accessories_29_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_29, sticky="w")
-        self.selected_accessories_29.trace_add("write", self.on_select_accessories_29)
-
-    def on_select_accessories_29(self, *args):
-        selected_value = self.selected_accessories_29.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_29_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_29_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_29_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_29_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_29_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_29_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_29_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_29_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_29_qty_up(self, *args):
-        accessories_29_qty = self.var_accessories_29_qty.get()
-        accessories_29_qty = accessories_29_qty + 1
-        self.var_accessories_29_qty.set(value=accessories_29_qty)
-        accessories_29_cost   = int(self.label_hidden_accessories_29_cost.cget("text"))
-        accessories_29_weight = int(self.label_hidden_accessories_29_weight.cget("text"))
-        accessories_29_space: str  = self.label_hidden_accessories_29_space.cget("text")
-        accessories_29_dp:    str  = self.label_hidden_accessories_29_dp.cget("text")
-        accessories_29_notes: str  = self.label_hidden_accessories_29_notes.cget("text")
-
-        if accessories_29_space == "":
-            accessories_29_space = 0.0
-        else:
-            accessories_29_space = float(accessories_29_space)
-
-        self.label_accessories_29_cost.configure(text=self.float_to_str(accessories_29_cost * accessories_29_qty))
-        self.label_accessories_29_weight.configure(text=self.float_to_str(accessories_29_weight * accessories_29_qty))
-        self.label_accessories_29_space.configure(text=self.float_to_str(accessories_29_space * accessories_29_qty))
-        self.label_accessories_29_dp.configure(text=str(accessories_29_dp))
-        self.label_accessories_29_notes.configure(text=str(accessories_29_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_29_qty_down(self, *args):
-        accessories_29_qty = self.var_accessories_29_qty.get()
-        accessories_29_qty = max(accessories_29_qty - 1, 0)
-        self.var_accessories_29_qty.set(value=accessories_29_qty)
-        accessories_29_cost   = int(self.label_hidden_accessories_29_cost.cget("text"))
-        accessories_29_weight = int(self.label_hidden_accessories_29_weight.cget("text"))
-        accessories_29_space  = float(self.label_hidden_accessories_29_space.cget("text"))
-        accessories_29_dp     = self.label_hidden_accessories_29_dp.cget("text")
-        accessories_29_notes  = self.label_hidden_accessories_29_notes.cget("text")
-        self.label_accessories_29_cost.configure(text=self.float_to_str(accessories_29_cost * accessories_29_qty))
-        self.label_accessories_29_weight.configure(text=self.float_to_str(accessories_29_weight * accessories_29_qty))
-        self.label_accessories_29_space.configure(text=self.float_to_str(accessories_29_space * accessories_29_qty))
-        self.label_accessories_29_dp.configure(text=str(accessories_29_dp))
-        if accessories_29_qty > 0:
-            self.label_accessories_29_notes.configure(text=str(accessories_29_notes))
-        else:
-            self.label_accessories_29_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_29_update(self, *args):
-        accessories_29_qty = self.var_accessories_29_qty.get()
-        accessories_29_cost   = int(self.label_hidden_accessories_29_cost.cget("text"))
-        accessories_29_weight = int(self.label_hidden_accessories_29_weight.cget("text"))
-        accessories_29_space  = float(self.label_hidden_accessories_29_space.cget("text"))
-        accessories_29_dp     = self.label_hidden_accessories_29_dp.cget("text")
-        accessories_29_notes  = self.label_hidden_accessories_29_notes.cget("text")
-        self.label_accessories_29_cost.configure(text=self.float_to_str(accessories_29_cost * accessories_29_qty))
-        self.label_accessories_29_weight.configure(text=self.float_to_str(accessories_29_weight * accessories_29_qty))
-        self.label_accessories_29_space.configure(text=self.float_to_str(accessories_29_space * accessories_29_qty))
-        self.label_accessories_29_dp.configure(text=str(accessories_29_dp))
-        if accessories_29_qty > 0:
-            self.label_accessories_29_notes.configure(text=str(accessories_29_notes))
-        else:
-            self.label_accessories_29_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    ######################################################################
-    # Accessories Row 30 processing here                                 #
-    ######################################################################
-    def add_labels_buttons_accessories_30_canvas(self, canvas_type):
-        self.label_hidden_accessories_30_name = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_30_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_30_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_30_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_30_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_accessories_30_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_hidden_accessories_30_turret_size = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_accessories_30_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_30_cost.grid(column=self.grid_col_cost,row=self.grid_row_accessories_30, sticky="w")
-        self.label_accessories_30_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_30_weight.grid(column=self.grid_col_weight ,row=self.grid_row_accessories_30, sticky="w")
-        self.label_accessories_30_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_30_space.grid(column=self.grid_col_spaces,row=self.grid_row_accessories_30, sticky="w")
-        self.label_accessories_30_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_accessories_30_dp.grid(column=self.grid_col_dp,row=self.grid_row_accessories_30, sticky="w")
-        self.label_accessories_30_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_accessories_30_notes.grid(column=self.grid_col_max_weight,row=self.grid_row_accessories_30, sticky="w", columnspan=4)
-
-        self.var_accessories_30_qty = tk.IntVar(value=0)
-        self.entry_accessories_30_qty = ttk.Entry(canvas_type, textvariable=self.var_accessories_30_qty, width=3)
-        self.entry_accessories_30_qty.grid(column=self.grid_col_qty, row=self.grid_row_accessories_30, sticky="w")
-        self.var_accessories_30_qty.trace_add("write", self.accessories_qty_30_update)
-
-    def add_dropdown_accessories_30_canvas(self, canvas_type):
-        self.selected_accessories_30 = tk.StringVar()
-        self.selected_accessories_30.set("Accessories")
-        options = self.get_accessories_options()
-        # Create the dropdown widget
-        self.accessories_30_dropdown = ttk.OptionMenu(canvas_type, self.selected_accessories_30, "Accessory", *options) #filled elsewhere
-        self.accessories_30_dropdown.grid(column=self.grid_col_item, row=self.grid_row_accessories_30, sticky="w")
-        self.selected_accessories_30.trace_add("write", self.on_select_accessories_30)
-
-    def on_select_accessories_30(self, *args):
-        selected_value = self.selected_accessories_30.get()
-        for entry in self.accessories_list: #use the same self.accessories_list for every accessories dropdown
-            accessories_name: str = entry.get("Accessory Name")
-            if selected_value == accessories_name:
-                accessories_cost:          str = entry.get("Cost")
-                accessories_weight:        str = entry.get("Weight")
-                accessories_space:         str = entry.get("Space")
-                accessories_dp:            str = entry.get("DP")
-                accessories_notes:         str = entry.get("Notes")
-                accessories_turret_size:   str = entry.get("Turret Size")
-
-                if accessories_cost == "":
-                    accessories_cost = "0"
-                if accessories_weight == "":
-                    accessories_weight = "0"
-                if accessories_space == "":
-                    accessories_space = "0"
-
-                self.label_hidden_accessories_30_name.configure(text=str(accessories_name))
-                self.label_hidden_accessories_30_cost.configure(text=self.float_to_str(accessories_cost))
-                self.label_hidden_accessories_30_weight.configure(text=self.float_to_str(accessories_weight))
-                self.label_hidden_accessories_30_space.configure(text=self.float_to_str(accessories_space))
-                self.label_hidden_accessories_30_dp.configure(text=str(accessories_dp))
-                self.label_hidden_accessories_30_notes.configure(text=str(accessories_notes))
-                self.label_hidden_accessories_30_turret_size.configure(text=str(accessories_turret_size))
-                self.accessories_qty_30_update()
-                self.recalculate()
-                return#exit now
-
-    def on_button_accessories_30_qty_up(self, *args):
-        accessories_30_qty = self.var_accessories_30_qty.get()
-        accessories_30_qty = accessories_30_qty + 1
-        self.var_accessories_30_qty.set(value=accessories_30_qty)
-        accessories_30_cost   = int(self.label_hidden_accessories_30_cost.cget("text"))
-        accessories_30_weight = int(self.label_hidden_accessories_30_weight.cget("text"))
-        accessories_30_space: str  = self.label_hidden_accessories_30_space.cget("text")
-        accessories_30_dp:    str  = self.label_hidden_accessories_30_dp.cget("text")
-        accessories_30_notes: str  = self.label_hidden_accessories_30_notes.cget("text")
-        if accessories_30_space == "":
-            accessories_30_space = 0.0
-        else:
-            accessories_30_space = float(accessories_30_space)
-        self.label_accessories_30_cost.configure(text=self.float_to_str(accessories_30_cost * accessories_30_qty))
-        self.label_accessories_30_weight.configure(text=self.float_to_str(accessories_30_weight * accessories_30_qty))
-        self.label_accessories_30_space.configure(text=self.float_to_str(accessories_30_space * accessories_30_qty))
-        self.label_accessories_30_dp.configure(text=str(accessories_30_dp))
-        self.label_accessories_30_notes.configure(text=str(accessories_30_notes))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def on_button_accessories_30_qty_down(self, *args):
-        accessories_30_qty = self.var_accessories_30_qty.get()
-        accessories_30_qty = max(accessories_30_qty - 1, 0)
-        self.var_accessories_30_qty.set(value=accessories_30_qty)
-        accessories_30_cost   = int(self.label_hidden_accessories_30_cost.cget("text"))
-        accessories_30_weight = int(self.label_hidden_accessories_30_weight.cget("text"))
-        accessories_30_space  = float(self.label_hidden_accessories_30_space.cget("text"))
-        accessories_30_dp     = self.label_hidden_accessories_30_dp.cget("text")
-        accessories_30_notes  = self.label_hidden_accessories_30_notes.cget("text")
-        self.label_accessories_30_cost.configure(text=self.float_to_str(accessories_30_cost * accessories_30_qty))
-        self.label_accessories_30_weight.configure(text=self.float_to_str(accessories_30_weight * accessories_30_qty))
-        self.label_accessories_30_space.configure(text=self.float_to_str(accessories_30_space * accessories_30_qty))
-        self.label_accessories_30_dp.configure(text=str(accessories_30_dp))
-        if accessories_30_qty > 0:
-            self.label_accessories_30_notes.configure(text=str(accessories_30_notes))
-        else:
-            self.label_accessories_30_notes.configure(text=str(""))
-        self.accessories_special_processing()
-        self.recalculate()
-
-    def accessories_qty_30_update(self, *args):
-        accessories_30_qty = self.var_accessories_30_qty.get()
-        accessories_30_cost   = int(self.label_hidden_accessories_30_cost.cget("text"))
-        accessories_30_weight = int(self.label_hidden_accessories_30_weight.cget("text"))
-        accessories_30_space  = float(self.label_hidden_accessories_30_space.cget("text"))
-        accessories_30_dp     = self.label_hidden_accessories_30_dp.cget("text")
-        accessories_30_notes  = self.label_hidden_accessories_30_notes.cget("text")
-        self.label_accessories_30_cost.configure(text=self.float_to_str(accessories_30_cost * accessories_30_qty))
-        self.label_accessories_30_weight.configure(text=self.float_to_str(accessories_30_weight * accessories_30_qty))
-        self.label_accessories_30_space.configure(text=self.float_to_str(accessories_30_space * accessories_30_qty))
-        self.label_accessories_30_dp.configure(text=str(accessories_30_dp))
-        if accessories_30_qty > 0:
-            self.label_accessories_30_notes.configure(text=str(accessories_30_notes))
-        else:
-            self.label_accessories_30_notes.configure(text=str(""))
         self.accessories_special_processing()
         self.recalculate()
 
@@ -10492,639 +6609,6 @@ class Python_Designer():
         self.component_armor_facing_dropdown_1 = ttk.OptionMenu(canvas_type, self.selected_component_armor_facing_1, "Facing", *options) #filled elsewhere
         self.component_armor_facing_dropdown_1.grid(column=self.grid_col_max_weight, row=self.grid_row_component_armor_1, sticky="w")
 
-    ######################################################################
-    # Component Armor Row 2 processing here                              #
-    ######################################################################
-
-    def add_dropdown_component_armor_canvas_2(self, canvas_type):
-        self.get_component_armor_dictionaries()
-        self.selected_component_armor_2 = tk.StringVar()
-        self.selected_component_armor_2.set("Component Armor")
-        options = self.get_component_armor_options()
-        # Create the dropdown widget
-        self.component_armor_dropdown_2 = ttk.OptionMenu(canvas_type, self.selected_component_armor_2, "Component Armor", *options) #filled elsewhere
-        self.component_armor_dropdown_2.grid(column=self.grid_col_item, row=self.grid_row_component_armor_2, sticky="w")
-        self.selected_component_armor_2.trace_add("write", self.on_select_component_armor_2)
-
-    def add_labels_buttons_component_armor_row_2(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_component_armor_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_2_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_component_armor_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_2_cost.grid(column=self.grid_col_cost,row=self.grid_row_component_armor_2, sticky="w")
-        self.label_component_armor_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_2_weight.grid(column=self.grid_col_weight ,row=self.grid_row_component_armor_2, sticky="w")
-        self.label_component_armor_2_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_2_space.grid(column=self.grid_col_spaces,row=self.grid_row_component_armor_2, sticky="w")
-        self.label_component_armor_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_2_dp.grid(column=self.grid_col_dp,row=self.grid_row_component_armor_2, sticky="w")
-
-        self.var_component_armor_spaces_qty_2 = tk.IntVar(value=0)
-        self.entry_component_armor_spaces_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_spaces_qty_2, width=3)
-        self.entry_component_armor_spaces_qty.grid(column=self.grid_col_qty,row=self.grid_row_component_armor_2, sticky="w")
-        self.var_component_armor_spaces_qty_2.trace_add("write", self.on_changed_component_armor_spaces_2)
-
-        self.button_component_armor_spaces_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_spaces_2_qty_up)
-        self.button_component_armor_spaces_2_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_component_armor_2, sticky="w")
-        self.button_component_armor_spaces_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_spaces_2_qty_down)
-        self.button_component_armor_spaces_2_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_component_armor_2, sticky="w")
-
-        self.var_component_armor_count_qty_2 = tk.IntVar(value=0)
-        self.entry_component_armor_count_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_count_qty_2, width=3)
-        self.entry_component_armor_count_qty.grid(column=self.grid_right_qty,row=self.grid_row_component_armor_2, sticky="w")
-        self.var_component_armor_count_qty_2.trace_add("write", self.on_changed_component_armor_count_2)
-
-        self.button_component_armor_count_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_count_2_qty_up)
-        self.button_component_armor_count_2_qty_up.grid(column=self.grid_right_up_button,row=self.grid_row_component_armor_2, sticky="w")
-        self.button_component_armor_count_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_count_2_qty_down)
-        self.button_component_armor_count_2_qty_down.grid(column=self.grid_right_down_button,row=self.grid_row_component_armor_2, sticky="w")
-
-    def on_select_component_armor_2(self, *args):
-        selected_value = self.selected_component_armor_2.get()
-        for entry in self.component_armor_list:
-            armor_type: str = entry.get("Component Armor")
-            if selected_value == armor_type:
-                component_armor_adjustment_cost = float(entry.get("Cost"))
-                component_armor_adjustment_weight = float(entry.get("Weight"))
-                component_armor_cost: float = 5.0
-                component_armor_weight:  float = 2.0
-                component_armor_spaces_qty = self.var_component_armor_spaces_qty_2.get()
-                component_armor_count_qty = self.var_component_armor_count_qty_2.get()
-
-                calculated_armor_cost = component_armor_adjustment_cost * component_armor_cost * component_armor_spaces_qty * component_armor_count_qty
-                calculated_armor_weight = component_armor_adjustment_weight * component_armor_weight * component_armor_spaces_qty * component_armor_count_qty
-
-                #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-                if component_armor_weight * component_armor_count_qty * component_armor_adjustment_weight > 20.0:
-                    if component_armor_adjustment_weight > 0.0:
-                        component_armor_count_qty = min(10, int(10.0/component_armor_adjustment_weight))
-                        self.var_component_armor_count_qty_2.set(component_armor_count_qty)
-
-
-                self.label_hidden_component_armor_2_cost.configure(text=str(component_armor_adjustment_cost*component_armor_cost))
-                self.label_hidden_component_armor_2_weight.configure(text=str(component_armor_adjustment_weight*component_armor_weight))
-                self.label_hidden_component_armor_2_dp.configure(text=str(component_armor_count_qty))
-                self.label_hidden_component_armor_2_space.configure(text=str(1))
-
-                self.label_component_armor_2_cost.configure(text=str(calculated_armor_cost))
-                self.label_component_armor_2_weight.configure(text=str(calculated_armor_weight))
-                self.label_component_armor_2_space.configure(text=str(1))
-                self.label_component_armor_2_dp.configure(text="1")
-                self.calculate_component_armor_2(self.canvas_type)
-                self.recalculate()
-
-    def on_changed_component_armor_spaces_2(self, *args):
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def calculate_component_armor_2(self, canvas_type):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_2.get()
-        component_armor_count_qty = self.var_component_armor_count_qty_2.get()
-        component_armor_cost_adjustment: float = float(self.label_hidden_component_armor_2_cost.cget("text"))
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_2_weight.cget("text"))
-
-        if component_armor_space_qty > 0 and component_armor_count_qty > 0:
-            component_armor_2_cost:   float = 0.0
-            component_armor_2_weight: float = 0.0
-            component_armor_2_dp = component_armor_count_qty
-            if self.is_cycle:
-                component_armor_2_spaces = 0.5
-            else:
-                component_armor_2_spaces = 1
-            component_armor_2_cost =  component_armor_space_qty * component_armor_count_qty * component_armor_cost_adjustment
-            component_armor_2_weight =  component_armor_space_qty * component_armor_count_qty * component_armor_weight_adjustment
-        else:
-            component_armor_2_cost = 0
-            component_armor_2_weight = 0
-            component_armor_2_dp = 0
-            component_armor_2_spaces = 0
-        self.label_component_armor_2_cost.configure(text=self.float_to_str(component_armor_2_cost))
-        self.label_component_armor_2_weight.configure(text=self.float_to_str(component_armor_2_weight))
-        self.label_component_armor_2_dp.configure(text=str(component_armor_2_dp))
-        self.label_component_armor_2_space.configure(text=str(component_armor_2_spaces))
-        self.recalculate()
-
-    def on_button_component_armor_spaces_2_qty_up(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_2.get()
-        component_armor_space_qty = component_armor_space_qty + 1
-        component_armor_space_qty = min(component_armor_space_qty, 10)
-        self.var_component_armor_spaces_qty_2.set(component_armor_space_qty)
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def on_button_component_armor_spaces_2_qty_down(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_2.get()
-        component_armor_space_qty = component_armor_space_qty - 1
-        component_armor_space_qty = max(component_armor_space_qty, 0)
-        self.var_component_armor_spaces_qty_2.set(component_armor_space_qty)
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def on_changed_component_armor_count_2(self, *args):
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def on_button_component_armor_count_2_qty_up(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_2.get()
-        component_armor_count_qty = component_armor_count_qty + 1
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_2_weight.cget("text"))
-        #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-        if component_armor_count_qty * component_armor_weight_adjustment > 20.0:
-            component_armor_count_qty = component_armor_count_qty - 1
-        self.var_component_armor_count_qty_2.set(component_armor_count_qty)
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def on_button_component_armor_count_2_qty_down(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_2.get()
-        component_armor_count_qty = component_armor_count_qty - 1
-        component_armor_count_qty = max(component_armor_count_qty, 0)
-        self.var_component_armor_count_qty_2.set(component_armor_count_qty)
-        self.calculate_component_armor_2(self.canvas_type)
-
-    def add_dropdown_component_armor_facing_2_canvas(self, canvas_type):
-        self.selected_component_armor_facing_2 = tk.StringVar()
-        self.selected_component_armor_facing_2.set("Component Armor")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody", "Driver", "Gunner", "Driver & Gunner", "Power Plant", "Gas Tank"]
-        # Create the dropdown widget
-        self.component_armor_facing_dropdown_2 = ttk.OptionMenu(canvas_type, self.selected_component_armor_facing_2, "Facing", *options) #filled elsewhere
-        self.component_armor_facing_dropdown_2.grid(column=self.grid_col_max_weight, row=self.grid_row_component_armor_2, sticky="w")
-
-    ######################################################################
-    # Component Armor Row 3 processing here                              #
-    ######################################################################
-
-    def add_dropdown_component_armor_canvas_3(self, canvas_type):
-        self.get_component_armor_dictionaries()
-        self.selected_component_armor_3 = tk.StringVar()
-        self.selected_component_armor_3.set("Component Armor")
-        options = self.get_component_armor_options()
-        # Create the dropdown widget
-        self.component_armor_dropdown_3 = ttk.OptionMenu(canvas_type, self.selected_component_armor_3, "Component Armor", *options) #filled elsewhere
-        self.component_armor_dropdown_3.grid(column=self.grid_col_item, row=self.grid_row_component_armor_3, sticky="w")
-        self.selected_component_armor_3.trace_add("write", self.on_select_component_armor_3)
-
-    def add_labels_buttons_component_armor_row_3(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_component_armor_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_3_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_component_armor_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_3_cost.grid(column=self.grid_col_cost,row=self.grid_row_component_armor_3, sticky="w")
-        self.label_component_armor_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_3_weight.grid(column=self.grid_col_weight ,row=self.grid_row_component_armor_3, sticky="w")
-        self.label_component_armor_3_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_3_space.grid(column=self.grid_col_spaces,row=self.grid_row_component_armor_3, sticky="w")
-        self.label_component_armor_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_3_dp.grid(column=self.grid_col_dp,row=self.grid_row_component_armor_3, sticky="w")
-
-        self.var_component_armor_spaces_qty_3 = tk.IntVar(value=0)
-        self.entry_component_armor_spaces_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_spaces_qty_3, width=3)
-        self.entry_component_armor_spaces_qty.grid(column=self.grid_col_qty,row=self.grid_row_component_armor_3, sticky="w")
-        self.var_component_armor_spaces_qty_3.trace_add("write", self.on_changed_component_armor_spaces_3)
-
-        self.button_component_armor_spaces_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_spaces_3_qty_up)
-        self.button_component_armor_spaces_3_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_component_armor_3, sticky="w")
-        self.button_component_armor_spaces_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_spaces_3_qty_down)
-        self.button_component_armor_spaces_3_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_component_armor_3, sticky="w")
-
-        self.var_component_armor_count_qty_3 = tk.IntVar(value=0)
-        self.entry_component_armor_count_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_count_qty_3, width=3)
-        self.entry_component_armor_count_qty.grid(column=self.grid_right_qty,row=self.grid_row_component_armor_3, sticky="w")
-        self.var_component_armor_count_qty_3.trace_add("write", self.on_changed_component_armor_count_3)
-
-        self.button_component_armor_count_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_count_3_qty_up)
-        self.button_component_armor_count_3_qty_up.grid(column=self.grid_right_up_button,row=self.grid_row_component_armor_3, sticky="w")
-        self.button_component_armor_count_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_count_3_qty_down)
-        self.button_component_armor_count_3_qty_down.grid(column=self.grid_right_down_button,row=self.grid_row_component_armor_3, sticky="w")
-
-    def on_select_component_armor_3(self, *args):
-        selected_value = self.selected_component_armor_3.get()
-        for entry in self.component_armor_list:
-            armor_type: str = entry.get("Component Armor")
-            if selected_value == armor_type:
-                component_armor_adjustment_cost = float(entry.get("Cost"))
-                component_armor_adjustment_weight = float(entry.get("Weight"))
-                component_armor_cost: float = 5.0
-                component_armor_weight:  float = 2.0
-                component_armor_spaces_qty = self.var_component_armor_spaces_qty_3.get()
-                component_armor_count_qty = self.var_component_armor_count_qty_3.get()
-
-                calculated_armor_cost = component_armor_adjustment_cost * component_armor_cost * component_armor_spaces_qty * component_armor_count_qty
-                calculated_armor_weight = component_armor_adjustment_weight * component_armor_weight * component_armor_spaces_qty * component_armor_count_qty
-
-                #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-                if component_armor_weight * component_armor_count_qty * component_armor_adjustment_weight > 20.0:
-                    if component_armor_adjustment_weight > 0.0:
-                        component_armor_count_qty = min(10, int(10.0/component_armor_adjustment_weight))
-                        self.var_component_armor_count_qty_3.set(component_armor_count_qty)
-
-
-                self.label_hidden_component_armor_3_cost.configure(text=str(component_armor_adjustment_cost*component_armor_cost))
-                self.label_hidden_component_armor_3_weight.configure(text=str(component_armor_adjustment_weight*component_armor_weight))
-                self.label_hidden_component_armor_3_dp.configure(text=str(component_armor_count_qty))
-                self.label_hidden_component_armor_3_space.configure(text=str(1))
-
-                self.label_component_armor_3_cost.configure(text=str(calculated_armor_cost))
-                self.label_component_armor_3_weight.configure(text=str(calculated_armor_weight))
-                self.label_component_armor_3_space.configure(text=str(1))
-                self.label_component_armor_3_dp.configure(text="1")
-                self.calculate_component_armor_3(self.canvas_type)
-                self.recalculate()
-
-    def on_changed_component_armor_spaces_3(self, *args):
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def calculate_component_armor_3(self, canvas_type):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_3.get()
-        component_armor_count_qty = self.var_component_armor_count_qty_3.get()
-        component_armor_cost_adjustment: float = float(self.label_hidden_component_armor_3_cost.cget("text"))
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_3_weight.cget("text"))
-
-        if component_armor_space_qty > 0 and component_armor_count_qty > 0:
-            component_armor_3_cost:   float = 0.0
-            component_armor_3_weight: float = 0.0
-            component_armor_3_dp = component_armor_count_qty
-            if self.is_cycle:
-                component_armor_3_spaces = 0.5
-            else:
-                component_armor_3_spaces = 1
-            component_armor_3_cost =  component_armor_space_qty * component_armor_count_qty * component_armor_cost_adjustment
-            component_armor_3_weight =  component_armor_space_qty * component_armor_count_qty * component_armor_weight_adjustment
-        else:
-            component_armor_3_cost = 0
-            component_armor_3_weight = 0
-            component_armor_3_dp = 0
-            component_armor_3_spaces = 0
-        self.label_component_armor_3_cost.configure(text=self.float_to_str(component_armor_3_cost))
-        self.label_component_armor_3_weight.configure(text=self.float_to_str(component_armor_3_weight))
-        self.label_component_armor_3_dp.configure(text=str(component_armor_3_dp))
-        self.label_component_armor_3_space.configure(text=str(component_armor_3_spaces))
-        self.recalculate()
-
-    def on_button_component_armor_spaces_3_qty_up(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_3.get()
-        component_armor_space_qty = component_armor_space_qty + 1
-        component_armor_space_qty = min(component_armor_space_qty, 10)
-        self.var_component_armor_spaces_qty_3.set(component_armor_space_qty)
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def on_button_component_armor_spaces_3_qty_down(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_3.get()
-        component_armor_space_qty = component_armor_space_qty - 1
-        component_armor_space_qty = max(component_armor_space_qty, 0)
-        self.var_component_armor_spaces_qty_3.set(component_armor_space_qty)
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def on_changed_component_armor_count_3(self, *args):
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def on_button_component_armor_count_3_qty_up(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_3.get()
-        component_armor_count_qty = component_armor_count_qty + 1
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_3_weight.cget("text"))
-        #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-        if component_armor_count_qty * component_armor_weight_adjustment > 20.0:
-            component_armor_count_qty = component_armor_count_qty - 1
-        self.var_component_armor_count_qty_3.set(component_armor_count_qty)
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def on_button_component_armor_count_3_qty_down(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_3.get()
-        component_armor_count_qty = component_armor_count_qty - 1
-        component_armor_count_qty = max(component_armor_count_qty, 0)
-        self.var_component_armor_count_qty_3.set(component_armor_count_qty)
-        self.calculate_component_armor_3(self.canvas_type)
-
-    def add_dropdown_component_armor_facing_3_canvas(self, canvas_type):
-        self.selected_component_armor_facing_3 = tk.StringVar()
-        self.selected_component_armor_facing_3.set("Component Armor")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody", "Driver", "Gunner", "Driver & Gunner", "Power Plant", "Gas Tank"]
-        # Create the dropdown widget
-        self.component_armor_facing_dropdown_3 = ttk.OptionMenu(canvas_type, self.selected_component_armor_facing_3, "Facing", *options) #filled elsewhere
-        self.component_armor_facing_dropdown_3.grid(column=self.grid_col_max_weight, row=self.grid_row_component_armor_3, sticky="w")
-
-    ######################################################################
-    # Component Armor Row 4 processing here                              #
-    ######################################################################
-
-    def add_dropdown_component_armor_canvas_4(self, canvas_type):
-        self.get_component_armor_dictionaries()
-        self.selected_component_armor_4 = tk.StringVar()
-        self.selected_component_armor_4.set("Component Armor")
-        options = self.get_component_armor_options()
-        # Create the dropdown widget
-        self.component_armor_dropdown_4 = ttk.OptionMenu(canvas_type, self.selected_component_armor_4, "Component Armor", *options) #filled elsewhere
-        self.component_armor_dropdown_4.grid(column=self.grid_col_item, row=self.grid_row_component_armor_4, sticky="w")
-        self.selected_component_armor_4.trace_add("write", self.on_select_component_armor_4)
-
-    def add_labels_buttons_component_armor_row_4(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_component_armor_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_4_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_component_armor_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_4_cost.grid(column=self.grid_col_cost,row=self.grid_row_component_armor_4, sticky="w")
-        self.label_component_armor_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_4_weight.grid(column=self.grid_col_weight ,row=self.grid_row_component_armor_4, sticky="w")
-        self.label_component_armor_4_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_4_space.grid(column=self.grid_col_spaces,row=self.grid_row_component_armor_4, sticky="w")
-        self.label_component_armor_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_4_dp.grid(column=self.grid_col_dp,row=self.grid_row_component_armor_4, sticky="w")
-
-        self.var_component_armor_spaces_qty_4 = tk.IntVar(value=0)
-        self.entry_component_armor_spaces_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_spaces_qty_4, width=3)
-        self.entry_component_armor_spaces_qty.grid(column=self.grid_col_qty,row=self.grid_row_component_armor_4, sticky="w")
-        self.var_component_armor_spaces_qty_4.trace_add("write", self.on_changed_component_armor_spaces_4)
-
-        self.button_component_armor_spaces_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_spaces_4_qty_up)
-        self.button_component_armor_spaces_4_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_component_armor_4, sticky="w")
-        self.button_component_armor_spaces_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_spaces_4_qty_down)
-        self.button_component_armor_spaces_4_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_component_armor_4, sticky="w")
-
-        self.var_component_armor_count_qty_4 = tk.IntVar(value=0)
-        self.entry_component_armor_count_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_count_qty_4, width=3)
-        self.entry_component_armor_count_qty.grid(column=self.grid_right_qty,row=self.grid_row_component_armor_4, sticky="w")
-        self.var_component_armor_count_qty_4.trace_add("write", self.on_changed_component_armor_count_4)
-
-        self.button_component_armor_count_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_count_4_qty_up)
-        self.button_component_armor_count_4_qty_up.grid(column=self.grid_right_up_button,row=self.grid_row_component_armor_4, sticky="w")
-        self.button_component_armor_count_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_count_4_qty_down)
-        self.button_component_armor_count_4_qty_down.grid(column=self.grid_right_down_button,row=self.grid_row_component_armor_4, sticky="w")
-
-    def on_select_component_armor_4(self, *args):
-        selected_value = self.selected_component_armor_4.get()
-        for entry in self.component_armor_list:
-            armor_type: str = entry.get("Component Armor")
-            if selected_value == armor_type:
-                component_armor_adjustment_cost = float(entry.get("Cost"))
-                component_armor_adjustment_weight = float(entry.get("Weight"))
-                component_armor_cost: float = 5.0
-                component_armor_weight:  float = 2.0
-                component_armor_spaces_qty = self.var_component_armor_spaces_qty_4.get()
-                component_armor_count_qty = self.var_component_armor_count_qty_4.get()
-
-                calculated_armor_cost = component_armor_adjustment_cost * component_armor_cost * component_armor_spaces_qty * component_armor_count_qty
-                calculated_armor_weight = component_armor_adjustment_weight * component_armor_weight * component_armor_spaces_qty * component_armor_count_qty
-
-                #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-                if component_armor_weight * component_armor_count_qty * component_armor_adjustment_weight > 20.0:
-                    if component_armor_adjustment_weight > 0.0:
-                        component_armor_count_qty = min(10, int(10.0/component_armor_adjustment_weight))
-                        self.var_component_armor_count_qty_4.set(component_armor_count_qty)
-
-
-                self.label_hidden_component_armor_4_cost.configure(text=str(component_armor_adjustment_cost*component_armor_cost))
-                self.label_hidden_component_armor_4_weight.configure(text=str(component_armor_adjustment_weight*component_armor_weight))
-                self.label_hidden_component_armor_4_dp.configure(text=str(component_armor_count_qty))
-                self.label_hidden_component_armor_4_space.configure(text=str(1))
-
-                self.label_component_armor_4_cost.configure(text=str(calculated_armor_cost))
-                self.label_component_armor_4_weight.configure(text=str(calculated_armor_weight))
-                self.label_component_armor_4_space.configure(text=str(1))
-                self.label_component_armor_4_dp.configure(text="1")
-                self.calculate_component_armor_4(self.canvas_type)
-                self.recalculate()
-
-    def on_changed_component_armor_spaces_4(self, *args):
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def calculate_component_armor_4(self, canvas_type):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_4.get()
-        component_armor_count_qty = self.var_component_armor_count_qty_4.get()
-        component_armor_cost_adjustment: float = float(self.label_hidden_component_armor_4_cost.cget("text"))
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_4_weight.cget("text"))
-
-        if component_armor_space_qty > 0 and component_armor_count_qty > 0:
-            component_armor_4_cost:   float = 0.0
-            component_armor_4_weight: float = 0.0
-            component_armor_4_dp = component_armor_count_qty
-            if self.is_cycle:
-                component_armor_4_spaces = 0.5
-            else:
-                component_armor_4_spaces = 1
-            component_armor_4_cost =  component_armor_space_qty * component_armor_count_qty * component_armor_cost_adjustment
-            component_armor_4_weight =  component_armor_space_qty * component_armor_count_qty * component_armor_weight_adjustment
-        else:
-            component_armor_4_cost = 0
-            component_armor_4_weight = 0
-            component_armor_4_dp = 0
-            component_armor_4_spaces = 0
-        self.label_component_armor_4_cost.configure(text=self.float_to_str(component_armor_4_cost))
-        self.label_component_armor_4_weight.configure(text=self.float_to_str(component_armor_4_weight))
-        self.label_component_armor_4_dp.configure(text=str(component_armor_4_dp))
-        self.label_component_armor_4_space.configure(text=str(component_armor_4_spaces))
-        self.recalculate()
-
-    def on_button_component_armor_spaces_4_qty_up(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_4.get()
-        component_armor_space_qty = component_armor_space_qty + 1
-        component_armor_space_qty = min(component_armor_space_qty, 10)
-        self.var_component_armor_spaces_qty_4.set(component_armor_space_qty)
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def on_button_component_armor_spaces_4_qty_down(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_4.get()
-        component_armor_space_qty = component_armor_space_qty - 1
-        component_armor_space_qty = max(component_armor_space_qty, 0)
-        self.var_component_armor_spaces_qty_4.set(component_armor_space_qty)
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def on_changed_component_armor_count_4(self, *args):
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def on_button_component_armor_count_4_qty_up(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_4.get()
-        component_armor_count_qty = component_armor_count_qty + 1
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_4_weight.cget("text"))
-        #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-        if component_armor_count_qty * component_armor_weight_adjustment > 20.0:
-            component_armor_count_qty = component_armor_count_qty - 1
-        self.var_component_armor_count_qty_4.set(component_armor_count_qty)
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def on_button_component_armor_count_4_qty_down(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_4.get()
-        component_armor_count_qty = component_armor_count_qty - 1
-        component_armor_count_qty = max(component_armor_count_qty, 0)
-        self.var_component_armor_count_qty_4.set(component_armor_count_qty)
-        self.calculate_component_armor_4(self.canvas_type)
-
-    def add_dropdown_component_armor_facing_4_canvas(self, canvas_type):
-        self.selected_component_armor_facing_4 = tk.StringVar()
-        self.selected_component_armor_facing_4.set("Component Armor")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody", "Driver", "Gunner", "Driver & Gunner", "Power Plant", "Gas Tank"]
-        # Create the dropdown widget
-        self.component_armor_facing_dropdown_4 = ttk.OptionMenu(canvas_type, self.selected_component_armor_facing_4, "Facing", *options) #filled elsewhere
-        self.component_armor_facing_dropdown_4.grid(column=self.grid_col_max_weight, row=self.grid_row_component_armor_4, sticky="w")
-
-    ######################################################################
-    # Component Armor Row 5 processing here                              #
-    ######################################################################
-
-    def add_dropdown_component_armor_canvas_5(self, canvas_type):
-        self.get_component_armor_dictionaries()
-        self.selected_component_armor_5 = tk.StringVar()
-        self.selected_component_armor_5.set("Component Armor")
-        options = self.get_component_armor_options()
-        # Create the dropdown widget
-        self.component_armor_dropdown_5 = ttk.OptionMenu(canvas_type, self.selected_component_armor_5, "Component Armor", *options) #filled elsewhere
-        self.component_armor_dropdown_5.grid(column=self.grid_col_item, row=self.grid_row_component_armor_5, sticky="w")
-        self.selected_component_armor_5.trace_add("write", self.on_select_component_armor_5)
-
-    def add_labels_buttons_component_armor_row_5(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_component_armor_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_component_armor_5_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_component_armor_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_5_cost.grid(column=self.grid_col_cost,row=self.grid_row_component_armor_5, sticky="w")
-        self.label_component_armor_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_5_weight.grid(column=self.grid_col_weight ,row=self.grid_row_component_armor_5, sticky="w")
-        self.label_component_armor_5_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_5_space.grid(column=self.grid_col_spaces,row=self.grid_row_component_armor_5, sticky="w")
-        self.label_component_armor_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_component_armor_5_dp.grid(column=self.grid_col_dp,row=self.grid_row_component_armor_5, sticky="w")
-
-        self.var_component_armor_spaces_qty_5 = tk.IntVar(value=0)
-        self.entry_component_armor_spaces_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_spaces_qty_5, width=3)
-        self.entry_component_armor_spaces_qty.grid(column=self.grid_col_qty,row=self.grid_row_component_armor_5, sticky="w")
-        self.var_component_armor_spaces_qty_5.trace_add("write", self.on_changed_component_armor_spaces_5)
-
-        self.button_component_armor_spaces_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_spaces_5_qty_up)
-        self.button_component_armor_spaces_5_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_component_armor_5, sticky="w")
-        self.button_component_armor_spaces_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_spaces_5_qty_down)
-        self.button_component_armor_spaces_5_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_component_armor_5, sticky="w")
-
-        self.var_component_armor_count_qty_5 = tk.IntVar(value=0)
-        self.entry_component_armor_count_qty = ttk.Entry(canvas_type, textvariable=self.var_component_armor_count_qty_5, width=3)
-        self.entry_component_armor_count_qty.grid(column=self.grid_right_qty,row=self.grid_row_component_armor_5, sticky="w")
-        self.var_component_armor_count_qty_5.trace_add("write", self.on_changed_component_armor_count_5)
-
-        self.button_component_armor_count_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_component_armor_count_5_qty_up)
-        self.button_component_armor_count_5_qty_up.grid(column=self.grid_right_up_button,row=self.grid_row_component_armor_5, sticky="w")
-        self.button_component_armor_count_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_component_armor_count_5_qty_down)
-        self.button_component_armor_count_5_qty_down.grid(column=self.grid_right_down_button,row=self.grid_row_component_armor_5, sticky="w")
-
-    def on_select_component_armor_5(self, *args):
-        selected_value = self.selected_component_armor_5.get()
-        for entry in self.component_armor_list:
-            armor_type: str = entry.get("Component Armor")
-            if selected_value == armor_type:
-                component_armor_adjustment_cost = float(entry.get("Cost"))
-                component_armor_adjustment_weight = float(entry.get("Weight"))
-                component_armor_cost: float = 5.0
-                component_armor_weight:  float = 2.0
-                component_armor_spaces_qty = self.var_component_armor_spaces_qty_5.get()
-                component_armor_count_qty = self.var_component_armor_count_qty_5.get()
-
-                calculated_armor_cost = component_armor_adjustment_cost * component_armor_cost * component_armor_spaces_qty * component_armor_count_qty
-                calculated_armor_weight = component_armor_adjustment_weight * component_armor_weight * component_armor_spaces_qty * component_armor_count_qty
-
-                #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-                if component_armor_weight * component_armor_count_qty * component_armor_adjustment_weight > 20.0:
-                    if component_armor_adjustment_weight > 0.0:
-                        component_armor_count_qty = min(10, int(10.0/component_armor_adjustment_weight))
-                        self.var_component_armor_count_qty_5.set(component_armor_count_qty)
-
-
-                self.label_hidden_component_armor_5_cost.configure(text=str(component_armor_adjustment_cost*component_armor_cost))
-                self.label_hidden_component_armor_5_weight.configure(text=str(component_armor_adjustment_weight*component_armor_weight))
-                self.label_hidden_component_armor_5_dp.configure(text=str(component_armor_count_qty))
-                self.label_hidden_component_armor_5_space.configure(text=str(1))
-
-                self.label_component_armor_5_cost.configure(text=str(calculated_armor_cost))
-                self.label_component_armor_5_weight.configure(text=str(calculated_armor_weight))
-                self.label_component_armor_5_space.configure(text=str(1))
-                self.label_component_armor_5_dp.configure(text="1")
-                self.calculate_component_armor_5(self.canvas_type)
-                self.recalculate()
-
-    def on_changed_component_armor_spaces_5(self, *args):
-        self.calculate_component_armor_5(self.canvas_type)
-
-    def calculate_component_armor_5(self, canvas_type):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_5.get()
-        component_armor_count_qty = self.var_component_armor_count_qty_5.get()
-        component_armor_cost_adjustment: float = float(self.label_hidden_component_armor_5_cost.cget("text"))
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_5_weight.cget("text"))
-
-        if component_armor_space_qty > 0 and component_armor_count_qty > 0:
-            component_armor_5_cost:   float = 0.0
-            component_armor_5_weight: float = 0.0
-            component_armor_5_dp = component_armor_count_qty
-            if self.is_cycle:
-                component_armor_5_spaces = 0.5
-            else:
-                component_armor_5_spaces = 1
-            component_armor_5_cost =  component_armor_space_qty * component_armor_count_qty * component_armor_cost_adjustment
-            component_armor_5_weight = component_armor_space_qty * component_armor_count_qty * component_armor_weight_adjustment
-        else:
-            component_armor_5_cost = 0
-            component_armor_5_weight = 0
-            component_armor_5_dp = 0
-            component_armor_5_spaces = 0
-        self.label_component_armor_5_cost.configure(text=self.float_to_str(component_armor_5_cost))
-        self.label_component_armor_5_weight.configure(text=self.float_to_str(component_armor_5_weight))
-        self.label_component_armor_5_dp.configure(text=str(component_armor_5_dp))
-        self.label_component_armor_5_space.configure(text=str(component_armor_5_spaces))
-        self.recalculate()
-
-    def on_button_component_armor_spaces_5_qty_up(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_5.get()
-        component_armor_space_qty = component_armor_space_qty + 1
-        component_armor_space_qty = min(component_armor_space_qty, 10)
-        self.var_component_armor_spaces_qty_5.set(component_armor_space_qty)
-        self.calculate_component_armor_5(self.canvas_type)
-
-    def on_button_component_armor_spaces_5_qty_down(self, *args):
-        component_armor_space_qty = self.var_component_armor_spaces_qty_5.get()
-        component_armor_space_qty = component_armor_space_qty - 1
-        component_armor_space_qty = max(component_armor_space_qty, 0)
-        self.var_component_armor_spaces_qty_5.set(component_armor_space_qty)
-        self.calculate_component_armor_5(self.canvas_type)
-
-    def on_changed_component_armor_count_5(self, *args):
-        self.calculate_component_armor_5(self.canvas_type)
-
-    def on_button_component_armor_count_5_qty_up(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_5.get()
-        component_armor_count_qty = component_armor_count_qty + 1
-        component_armor_weight_adjustment: float = float(self.label_hidden_component_armor_5_weight.cget("text"))
-        #calculate that the weight of the armor choice doesn't exceed 20 lbs per space
-        if component_armor_count_qty * component_armor_weight_adjustment > 20.0:
-            component_armor_count_qty = component_armor_count_qty - 1
-        self.var_component_armor_count_qty_5.set(component_armor_count_qty)
-        #self.calculate_component_armor_5(self.canvas_type)
-
-    def on_button_component_armor_count_5_qty_down(self, *args):
-        component_armor_count_qty = self.var_component_armor_count_qty_5.get()
-        component_armor_count_qty = component_armor_count_qty - 1
-        if component_armor_count_qty < 0:
-            component_armor_count_qty = 10
-        self.var_component_armor_count_qty_5.set(component_armor_count_qty)
-        #self.calculate_component_armor_5(self.canvas_type)
-
-    def add_dropdown_component_armor_facing_5_canvas(self, canvas_type):
-        self.selected_component_armor_facing_5 = tk.StringVar()
-        self.selected_component_armor_facing_5.set("Component Armor")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody", "Driver", "Gunner", "Driver & Gunner", "Power Plant", "Gas Tank"]
-        # Create the dropdown widget
-        self.component_armor_facing_dropdown_5 = ttk.OptionMenu(canvas_type, self.selected_component_armor_facing_5, "Facing", *options) #filled elsewhere
-        self.component_armor_facing_dropdown_5.grid(column=self.grid_col_max_weight, row=self.grid_row_component_armor_5, sticky="w")
-
     ######################################################
     # Rocket Booster Common processing                   #
     ######################################################
@@ -11156,7 +6640,6 @@ class Python_Designer():
         self.add_dropdown_rocket_boost_facing_3_canvas(canvas_type)
         self.add_dropdown_rocket_boost_facing_4_canvas(canvas_type)
         self.add_dropdown_rocket_boost_facing_5_canvas(canvas_type)
-
     ######################################################
     # Rocket Booster Row 1 processing                    #
     ######################################################
@@ -11234,318 +6717,6 @@ class Python_Designer():
         # Create the dropdown widget
         self.rocket_booster_facing_dropdown_1 = ttk.OptionMenu(canvas_type, self.selected_rocket_booster_facing_1, "Facing", *options) #filled elsewhere
         self.rocket_booster_facing_dropdown_1.grid(column=self.grid_col_max_weight, row=self.grid_row_rocket_booster_1, sticky="w")
-
-    ######################################################
-    # Rocket Booster Row 2 processing                    #
-    ######################################################
-    def add_row_rocket_boosters_2_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_rocket_booster_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_2_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_rocket_booster_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_2_cost.grid(column=self.grid_col_cost,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.label_rocket_booster_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_2_weight.grid(column=self.grid_col_weight ,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.label_rocket_booster_2_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_2_space.grid(column=self.grid_col_spaces,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.label_rocket_booster_2_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_2_dp.grid(column=self.grid_col_dp,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.label_rocket_booster_2_thrust = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_2_thrust.grid(column=self.grid_col_power_factors,row=self.grid_row_rocket_booster_2, sticky="w")
-
-        self.var_rocket_booster_pounds_qty_2 = tk.IntVar(value=0)
-        self.entry_rocket_booster_pounds_qty = ttk.Entry(canvas_type, textvariable=self.var_rocket_booster_pounds_qty_2, width=3)
-        self.entry_rocket_booster_pounds_qty.grid(column=self.grid_col_qty,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.var_rocket_booster_pounds_qty_2.trace_add("write", self.on_changed_rocket_booster_pounds_2)
-
-        self.button_rocket_booster_pounds_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_rocket_booster_pounds_2_qty_up)
-        self.button_rocket_booster_pounds_2_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_rocket_booster_2, sticky="w")
-        self.button_rocket_booster_pounds_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_rocket_booster_pounds_2_qty_down)
-        self.button_rocket_booster_pounds_2_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_rocket_booster_2, sticky="w")
-
-    def on_changed_rocket_booster_pounds_2(self, *args):
-        rocket_boost_qty_2 = self.var_rocket_booster_pounds_qty_2.get()
-        self.label_rocket_booster_2_cost.configure(text=str(25*rocket_boost_qty_2))
-        self.label_rocket_booster_2_weight.configure(text=str(rocket_boost_qty_2))
-        space_value: int = 0
-        if rocket_boost_qty_2 == 0:
-            space_value = 0
-        elif rocket_boost_qty_2 <= 100:
-            space_value = 1
-        else:
-            space_value = math.ceil(float(rocket_boost_qty_2 / 100.0))
-        self.label_rocket_booster_2_space.configure(text=str(space_value))
-        self.label_rocket_booster_2_dp.configure(text=str(space_value))
-        self.recalculate() # we need the accurate current_total weight to calculate thrust
-
-        current_total_weight: float = float(self.label_total_weight.cget("text")) #this could be a decimal
-        if current_total_weight > 0.0:
-            thrust_value = int(rocket_boost_qty_2 * 1000 / current_total_weight)
-        else:
-            thrust_value = 0
-        thrust_value = math.floor(thrust_value / 5) * 5
-        self.label_rocket_booster_2_thrust.configure(text=str(thrust_value))
-        self.recalculate() #and re-re-calculate
-
-    def on_button_rocket_booster_pounds_2_qty_up(self):
-        rocket_boost_qty_2 = self.var_rocket_booster_pounds_qty_2.get()
-        rocket_boost_qty_2 = rocket_boost_qty_2 + 1
-        self.var_rocket_booster_pounds_qty_2.set(rocket_boost_qty_2)
-        self.on_changed_rocket_booster_pounds_2()
-
-    def on_button_rocket_booster_pounds_2_qty_down(self, *args):
-        rocket_boost_qty_2 = self.var_rocket_booster_pounds_qty_2.get()
-        rocket_boost_qty_2 = rocket_boost_qty_2 - 1
-        rocket_boost_qty_2 = max(rocket_boost_qty_2, 0)
-        self.var_rocket_booster_pounds_qty_2.set(rocket_boost_qty_2)
-        self.on_changed_rocket_booster_pounds_2()
-
-    def add_dropdown_rocket_boost_facing_2_canvas(self, canvas_type):
-        self.selected_rocket_booster_facing_2 = tk.StringVar()
-        self.selected_rocket_booster_facing_2.set("Facing")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
-        # Create the dropdown widget
-        self.rocket_booster_facing_dropdown_2 = ttk.OptionMenu(canvas_type, self.selected_rocket_booster_facing_2, "Facing", *options) #filled elsewhere
-        self.rocket_booster_facing_dropdown_2.grid(column=self.grid_col_max_weight, row=self.grid_row_rocket_booster_2, sticky="w")
-
-    ######################################################
-    # Rocket Booster Row 3 processing                    #
-    ######################################################
-    def add_row_rocket_boosters_3_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_rocket_booster_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_3_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_rocket_booster_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_3_cost.grid(column=self.grid_col_cost,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.label_rocket_booster_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_3_weight.grid(column=self.grid_col_weight ,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.label_rocket_booster_3_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_3_space.grid(column=self.grid_col_spaces,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.label_rocket_booster_3_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_3_dp.grid(column=self.grid_col_dp,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.label_rocket_booster_3_thrust = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_3_thrust.grid(column=self.grid_col_power_factors,row=self.grid_row_rocket_booster_3, sticky="w")
-
-        self.var_rocket_booster_pounds_qty_3 = tk.IntVar(value=0)
-        self.entry_rocket_booster_pounds_qty = ttk.Entry(canvas_type, textvariable=self.var_rocket_booster_pounds_qty_3, width=3)
-        self.entry_rocket_booster_pounds_qty.grid(column=self.grid_col_qty,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.var_rocket_booster_pounds_qty_3.trace_add("write", self.on_changed_rocket_booster_pounds_3)
-
-        self.button_rocket_booster_pounds_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_rocket_booster_pounds_3_qty_up)
-        self.button_rocket_booster_pounds_3_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_rocket_booster_3, sticky="w")
-        self.button_rocket_booster_pounds_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_rocket_booster_pounds_3_qty_down)
-        self.button_rocket_booster_pounds_3_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_rocket_booster_3, sticky="w")
-
-    def on_changed_rocket_booster_pounds_3(self, *args):
-        rocket_boost_qty_3 = self.var_rocket_booster_pounds_qty_3.get()
-        self.label_rocket_booster_3_cost.configure(text=str(25*rocket_boost_qty_3))
-        self.label_rocket_booster_3_weight.configure(text=str(rocket_boost_qty_3))
-        space_value: int = 0
-        if rocket_boost_qty_3 == 0:
-            space_value = 0
-        elif rocket_boost_qty_3 <= 100:
-            space_value = 1
-        else:
-            space_value = math.ceil(float(rocket_boost_qty_3 / 100.0))
-        self.label_rocket_booster_3_space.configure(text=str(space_value))
-        self.label_rocket_booster_3_dp.configure(text=str(space_value))
-        self.recalculate() # we need the accurate current_total weight to calculate thrust
-
-        current_total_weight: float = float(self.label_total_weight.cget("text")) #this could be a decimal
-        if current_total_weight > 0.0:
-            thrust_value = int(rocket_boost_qty_3 * 1000 / current_total_weight)
-        else:
-            thrust_value = 0
-        thrust_value = math.floor(thrust_value / 5) * 5
-        self.label_rocket_booster_3_thrust.configure(text=str(thrust_value))
-        self.recalculate() #and re-re-calculate
-
-    def on_button_rocket_booster_pounds_3_qty_up(self):
-        rocket_boost_qty_3 = self.var_rocket_booster_pounds_qty_3.get()
-        rocket_boost_qty_3 = rocket_boost_qty_3 + 1
-        self.var_rocket_booster_pounds_qty_3.set(rocket_boost_qty_3)
-        self.on_changed_rocket_booster_pounds_3()
-
-    def on_button_rocket_booster_pounds_3_qty_down(self):
-        rocket_boost_qty_3 = self.var_rocket_booster_pounds_qty_3.get()
-        rocket_boost_qty_3 = rocket_boost_qty_3 - 1
-        rocket_boost_qty_3 = max(rocket_boost_qty_3, 0)
-        self.var_rocket_booster_pounds_qty_3.set(rocket_boost_qty_3)
-        self.on_changed_rocket_booster_pounds_3()
-
-    def add_dropdown_rocket_boost_facing_3_canvas(self, canvas_type):
-        self.selected_rocket_booster_facing_3 = tk.StringVar()
-        self.selected_rocket_booster_facing_3.set("Facing")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
-        # Create the dropdown widget
-        self.rocket_booster_facing_dropdown_3 = ttk.OptionMenu(canvas_type, self.selected_rocket_booster_facing_3, "Facing", *options) #filled elsewhere
-        self.rocket_booster_facing_dropdown_3.grid(column=self.grid_col_max_weight, row=self.grid_row_rocket_booster_3, sticky="w")
-
-    ######################################################
-    # Rocket Booster Row 4 processing                    #
-    ######################################################
-    def add_row_rocket_boosters_4_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_rocket_booster_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_4_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_rocket_booster_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_4_cost.grid(column=self.grid_col_cost,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.label_rocket_booster_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_4_weight.grid(column=self.grid_col_weight ,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.label_rocket_booster_4_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_4_space.grid(column=self.grid_col_spaces,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.label_rocket_booster_4_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_4_dp.grid(column=self.grid_col_dp,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.label_rocket_booster_4_thrust = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_4_thrust.grid(column=self.grid_col_power_factors,row=self.grid_row_rocket_booster_4, sticky="w")
-
-        self.var_rocket_booster_pounds_qty_4 = tk.IntVar(value=0)
-        self.entry_rocket_booster_pounds_qty = ttk.Entry(canvas_type, textvariable=self.var_rocket_booster_pounds_qty_4, width=3)
-        self.entry_rocket_booster_pounds_qty.grid(column=self.grid_col_qty,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.var_rocket_booster_pounds_qty_4.trace_add("write", self.on_changed_rocket_booster_pounds_4)
-
-        self.button_rocket_booster_pounds_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_rocket_booster_pounds_4_qty_up)
-        self.button_rocket_booster_pounds_4_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_rocket_booster_4, sticky="w")
-        self.button_rocket_booster_pounds_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_rocket_booster_pounds_4_qty_down)
-        self.button_rocket_booster_pounds_4_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_rocket_booster_4, sticky="w")
-
-    def on_changed_rocket_booster_pounds_4(self, *args):
-        rocket_boost_qty_4 = self.var_rocket_booster_pounds_qty_4.get()
-        self.label_rocket_booster_4_cost.configure(text=str(25*rocket_boost_qty_4))
-        self.label_rocket_booster_4_weight.configure(text=str(rocket_boost_qty_4))
-        space_value: int = 0
-        if rocket_boost_qty_4 == 0:
-            space_value = 0
-        elif rocket_boost_qty_4 <= 100:
-            space_value = 1
-        else:
-            space_value = math.ceil(float(rocket_boost_qty_4 / 100.0))
-        self.label_rocket_booster_4_space.configure(text=str(space_value))
-        self.label_rocket_booster_4_dp.configure(text=str(space_value))
-        self.recalculate() # we need the accurate current_total weight to calculate thrust
-
-        current_total_weight: float = float(self.label_total_weight.cget("text")) #this could be a decimal
-        if current_total_weight > 0.0:
-            thrust_value = int(rocket_boost_qty_4 * 1000 / current_total_weight)
-        else:
-            thrust_value = 0
-        thrust_value = math.floor(thrust_value / 5) * 5
-        self.label_rocket_booster_4_thrust.configure(text=str(thrust_value))
-        self.recalculate() #and re-re-calculate
-
-    def on_button_rocket_booster_pounds_4_qty_up(self):
-        rocket_boost_qty_4 = self.var_rocket_booster_pounds_qty_4.get()
-        rocket_boost_qty_4 = rocket_boost_qty_4 + 1
-        self.var_rocket_booster_pounds_qty_4.set(rocket_boost_qty_4)
-        self.on_changed_rocket_booster_pounds_4()
-
-    def on_button_rocket_booster_pounds_4_qty_down(self):
-        rocket_boost_qty_4 = self.var_rocket_booster_pounds_qty_4.get()
-        rocket_boost_qty_4 = rocket_boost_qty_4 - 1
-        rocket_boost_qty_4 = max(rocket_boost_qty_4, 0)
-        self.var_rocket_booster_pounds_qty_4.set(rocket_boost_qty_4)
-        self.on_changed_rocket_booster_pounds_4()
-
-    def add_dropdown_rocket_boost_facing_4_canvas(self, canvas_type):
-        self.selected_rocket_booster_facing_4 = tk.StringVar()
-        self.selected_rocket_booster_facing_4.set("Facing")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
-        # Create the dropdown widget
-        self.rocket_booster_facing_dropdown_4 = ttk.OptionMenu(canvas_type, self.selected_rocket_booster_facing_4, "Facing", *options) #filled elsewhere
-        self.rocket_booster_facing_dropdown_4.grid(column=self.grid_col_max_weight, row=self.grid_row_rocket_booster_4, sticky="w")
-
-    ######################################################
-    # Rocket Booster Row 5 processing                    #
-    ######################################################
-    def add_row_rocket_boosters_5_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_rocket_booster_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_rocket_booster_5_space = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_rocket_booster_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_5_cost.grid(column=self.grid_col_cost,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.label_rocket_booster_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_5_weight.grid(column=self.grid_col_weight ,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.label_rocket_booster_5_space = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_5_space.grid(column=self.grid_col_spaces,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.label_rocket_booster_5_dp = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_5_dp.grid(column=self.grid_col_dp,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.label_rocket_booster_5_thrust = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_rocket_booster_5_thrust.grid(column=self.grid_col_power_factors,row=self.grid_row_rocket_booster_5, sticky="w")
-
-        self.var_rocket_booster_pounds_qty_5 = tk.IntVar(value=0)
-        self.entry_rocket_booster_pounds_qty = ttk.Entry(canvas_type, textvariable=self.var_rocket_booster_pounds_qty_5, width=3)
-        self.entry_rocket_booster_pounds_qty.grid(column=self.grid_col_qty,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.var_rocket_booster_pounds_qty_5.trace_add("write", self.on_changed_rocket_booster_pounds_5)
-
-        self.button_rocket_booster_pounds_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_rocket_booster_pounds_5_qty_up)
-        self.button_rocket_booster_pounds_5_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_rocket_booster_5, sticky="w")
-        self.button_rocket_booster_pounds_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_rocket_booster_pounds_5_qty_down)
-        self.button_rocket_booster_pounds_5_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_rocket_booster_5, sticky="w")
-
-    def on_changed_rocket_booster_pounds_5(self, *args):
-        rocket_boost_qty_5 = self.var_rocket_booster_pounds_qty_5.get()
-        self.label_rocket_booster_5_cost.configure(text=str(25*rocket_boost_qty_5))
-        self.label_rocket_booster_5_weight.configure(text=str(rocket_boost_qty_5))
-        space_value: int = 0
-        if rocket_boost_qty_5 == 0:
-            space_value = 0
-        elif rocket_boost_qty_5 <= 100:
-            space_value = 1
-        else:
-            space_value = math.ceil(float(rocket_boost_qty_5 / 100.0))
-        self.label_rocket_booster_5_space.configure(text=str(space_value))
-        self.label_rocket_booster_5_dp.configure(text=str(space_value))
-        self.recalculate() # we need the accurate current_total weight to calculate thrust
-
-        current_total_weight: float = float(self.label_total_weight.cget("text")) #this could be a decimal
-        if current_total_weight > 0.0:
-            thrust_value = int(rocket_boost_qty_5 * 1000 / current_total_weight)
-        else:
-            thrust_value = 0
-        thrust_value = math.floor(thrust_value / 5) * 5
-        self.label_rocket_booster_5_thrust.configure(text=str(thrust_value))
-        self.recalculate() #and re-re-calculate
-
-    def on_button_rocket_booster_pounds_5_qty_up(self):
-        rocket_boost_qty_5 = self.var_rocket_booster_pounds_qty_5.get()
-        rocket_boost_qty_5 = rocket_boost_qty_5 + 1
-        self.var_rocket_booster_pounds_qty_5.set(rocket_boost_qty_5)
-        self.on_changed_rocket_booster_pounds_5()
-
-    def on_button_rocket_booster_pounds_5_qty_down(self):
-        rocket_boost_qty_5 = self.var_rocket_booster_pounds_qty_5.get()
-        rocket_boost_qty_5 = rocket_boost_qty_5 - 1
-        rocket_boost_qty_5 = max(rocket_boost_qty_5, 0)
-        self.var_rocket_booster_pounds_qty_5.set(rocket_boost_qty_5)
-        self.on_changed_rocket_booster_pounds_5()
-
-    def add_dropdown_rocket_boost_facing_5_canvas(self, canvas_type):
-        self.selected_rocket_booster_facing_5 = tk.StringVar()
-        self.selected_rocket_booster_facing_5.set("Facing")
-        options = ["Facing", "Front", "Back", "Left", "Right", "Top", "Underbody"]
-        # Create the dropdown widget
-        self.rocket_booster_facing_dropdown_5 = ttk.OptionMenu(canvas_type, self.selected_rocket_booster_facing_5, "Facing", *options) #filled elsewhere
-        self.rocket_booster_facing_dropdown_5.grid(column=self.grid_col_max_weight, row=self.grid_row_rocket_booster_5, sticky="w")
 
     ######################################################################
     # Personal Equipment Common Funtions here                            #
@@ -11992,1096 +7163,6 @@ class Python_Designer():
 
         self.recalculate()
 
-    ######################################################################
-    # Personal Equipment Row 2 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_2_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_2_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_2_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_2_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_2_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_2_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_2_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_2_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_2_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_2_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_2_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_2_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.label_personal_equipment_2_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_2_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_2, sticky="w")
-
-        self.var_personal_equipment_2_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_2_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_2_qty, width=3)
-        self.entry_personal_equipment_2_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_2, sticky="w")
-        self.var_personal_equipment_2_qty.trace_add("write", self.personal_equipment_qty_2_update)
-
-        self.button_personal_equipment_2_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_2_qty_up)
-        self.button_personal_equipment_2_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_2, sticky="w")
-        self.button_personal_equipment_2_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_2_qty_down)
-        self.button_personal_equipment_2_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_2, sticky="w")
-
-    def add_dropdown_personal_equipment_2_canvas(self, canvas_type):
-        self.selected_personal_equipment_2 = tk.StringVar()
-        self.selected_personal_equipment_2.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_2_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_2, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_2_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_2, sticky="w")
-        self.selected_personal_equipment_2.trace_add("write", self.on_select_personal_equipment_2)
-
-    def on_select_personal_equipment_2(self, *args):
-        selected_value = self.selected_personal_equipment_2.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_2_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_2_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_2_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_2_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_2_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_2_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_2_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_2_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_2_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_2_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_2_update()
-                return
-
-    def on_button_personal_equipment_2_qty_up(self, *args):
-        personal_equipment_2_qty = self.var_personal_equipment_2_qty.get()
-        personal_equipment_2_qty = personal_equipment_2_qty + 1
-        self.var_personal_equipment_2_qty.set(value=personal_equipment_2_qty)
-
-    def on_button_personal_equipment_2_qty_down(self, *args):
-        personal_equipment_2_qty = self.var_personal_equipment_2_qty.get()
-        personal_equipment_2_qty = max(personal_equipment_2_qty - 1, 0)
-        self.var_personal_equipment_2_qty.set(value=personal_equipment_2_qty)
-
-    def personal_equipment_qty_2_update(self, *args):
-        personal_equipment_2_qty = self.var_personal_equipment_2_qty.get()
-
-        personal_equipment_2_cost        = int(self.label_hidden_personal_equipment_2_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_2_weight  = int(self.label_hidden_personal_equipment_2_weight.cget("text"))
-        else:
-            personal_equipment_2_weight  = 0
-        personal_equipment_2_ge:     int = int(self.label_hidden_personal_equipment_2_ge.cget("text"))
-        personal_equipment_2_to_hit: str = self.label_hidden_personal_equipment_2_to_hit.cget("text")
-        personal_equipment_2_damage: str = self.label_hidden_personal_equipment_2_damage.cget("text")
-        personal_equipment_2_shots:  str = self.label_hidden_personal_equipment_2_shots.cget("text")
-        personal_equipment_2_cps:    str = self.label_hidden_personal_equipment_2_cps.cget("text")
-        personal_equipment_2_wps:    str = self.label_hidden_personal_equipment_2_wps.cget("text")
-        personal_equipment_2_notes:  str = self.label_hidden_personal_equipment_2_notes.cget("text")
-
-        self.label_personal_equipment_2_cost.configure(text=str(personal_equipment_2_cost * personal_equipment_2_qty))
-        self.label_personal_equipment_2_weight.configure(text=str(personal_equipment_2_weight * personal_equipment_2_qty))
-        self.label_personal_equipment_2_ge.configure(text=str(personal_equipment_2_ge * personal_equipment_2_qty))
-        self.label_personal_equipment_2_to_hit.configure(text=str(personal_equipment_2_to_hit))
-        self.label_personal_equipment_2_damage.configure(text=str(personal_equipment_2_damage))
-        self.label_personal_equipment_2_shots.configure(text=str(personal_equipment_2_shots))
-        self.label_personal_equipment_2_cps.configure(text=str(personal_equipment_2_cps))
-        self.label_personal_equipment_2_wps.configure(text=str(personal_equipment_2_wps))
-        self.label_personal_equipment_2_notes.configure(text=str(personal_equipment_2_notes))
-
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 3 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_3_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_3_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_3_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_3_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_3_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_3_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_3_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_3_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_3_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_3_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_3_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_3_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.label_personal_equipment_3_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_3_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_3, sticky="w")
-
-        self.var_personal_equipment_3_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_3_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_3_qty, width=3)
-        self.entry_personal_equipment_3_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_3, sticky="w")
-        self.var_personal_equipment_3_qty.trace_add("write", self.personal_equipment_qty_3_update)
-
-        self.button_personal_equipment_3_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_3_qty_up)
-        self.button_personal_equipment_3_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_3, sticky="w")
-        self.button_personal_equipment_3_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_3_qty_down)
-        self.button_personal_equipment_3_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_3, sticky="w")
-
-    def add_dropdown_personal_equipment_3_canvas(self, canvas_type):
-        self.selected_personal_equipment_3 = tk.StringVar()
-        self.selected_personal_equipment_3.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_3_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_3, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_3_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_3, sticky="w")
-        self.selected_personal_equipment_3.trace_add("write", self.on_select_personal_equipment_3)
-
-    def on_select_personal_equipment_3(self, *args):
-        selected_value = self.selected_personal_equipment_3.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_3_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_3_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_3_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_3_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_3_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_3_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_3_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_3_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_3_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_3_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_3_update()
-                return
-
-    def on_button_personal_equipment_3_qty_up(self, *args):
-        personal_equipment_3_qty = self.var_personal_equipment_3_qty.get()
-        personal_equipment_3_qty = personal_equipment_3_qty + 1
-        self.var_personal_equipment_3_qty.set(value=personal_equipment_3_qty)
-
-    def on_button_personal_equipment_3_qty_down(self, *args):
-        personal_equipment_3_qty = self.var_personal_equipment_3_qty.get()
-        personal_equipment_3_qty = max(personal_equipment_3_qty - 1, 0)
-        self.var_personal_equipment_3_qty.set(value=personal_equipment_3_qty)
-
-    def personal_equipment_qty_3_update(self, *args):
-        personal_equipment_3_qty = self.var_personal_equipment_3_qty.get()
-
-        personal_equipment_3_cost        = int(self.label_hidden_personal_equipment_3_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_3_weight  = int(self.label_hidden_personal_equipment_3_weight.cget("text"))
-        else:
-            personal_equipment_3_weight  = 0
-        personal_equipment_3_ge:     int = int(self.label_hidden_personal_equipment_3_ge.cget("text"))
-        personal_equipment_3_to_hit: str = self.label_hidden_personal_equipment_3_to_hit.cget("text")
-        personal_equipment_3_damage: str = self.label_hidden_personal_equipment_3_damage.cget("text")
-        personal_equipment_3_shots:  str = self.label_hidden_personal_equipment_3_shots.cget("text")
-        personal_equipment_3_cps:    str = self.label_hidden_personal_equipment_3_cps.cget("text")
-        personal_equipment_3_wps:    str = self.label_hidden_personal_equipment_3_wps.cget("text")
-        personal_equipment_3_notes:  str = self.label_hidden_personal_equipment_3_notes.cget("text")
-
-        self.label_personal_equipment_3_cost.configure(text=str(personal_equipment_3_cost * personal_equipment_3_qty))
-        self.label_personal_equipment_3_weight.configure(text=str(personal_equipment_3_weight * personal_equipment_3_qty))
-        self.label_personal_equipment_3_ge.configure(text=str(personal_equipment_3_ge * personal_equipment_3_qty))
-        self.label_personal_equipment_3_to_hit.configure(text=str(personal_equipment_3_to_hit))
-        self.label_personal_equipment_3_damage.configure(text=str(personal_equipment_3_damage))
-        self.label_personal_equipment_3_shots.configure(text=str(personal_equipment_3_shots))
-        self.label_personal_equipment_3_cps.configure(text=str(personal_equipment_3_cps))
-        self.label_personal_equipment_3_wps.configure(text=str(personal_equipment_3_wps))
-        self.label_personal_equipment_3_notes.configure(text=str(personal_equipment_3_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 4 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_4_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_4_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_4_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_4_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_4_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_4_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_4_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_4_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_4_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_4_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_4_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_4_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.label_personal_equipment_4_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_4_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_4, sticky="w")
-
-        self.var_personal_equipment_4_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_4_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_4_qty, width=3)
-        self.entry_personal_equipment_4_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_4, sticky="w")
-        self.var_personal_equipment_4_qty.trace_add("write", self.personal_equipment_qty_4_update)
-
-        self.button_personal_equipment_4_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_4_qty_up)
-        self.button_personal_equipment_4_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_4, sticky="w")
-        self.button_personal_equipment_4_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_4_qty_down)
-        self.button_personal_equipment_4_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_4, sticky="w")
-
-    def add_dropdown_personal_equipment_4_canvas(self, canvas_type):
-        self.selected_personal_equipment_4 = tk.StringVar()
-        self.selected_personal_equipment_4.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_4_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_4, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_4_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_4, sticky="w")
-        self.selected_personal_equipment_4.trace_add("write", self.on_select_personal_equipment_4)
-
-    def on_select_personal_equipment_4(self, *args):
-        selected_value = self.selected_personal_equipment_4.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_4_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_4_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_4_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_4_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_4_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_4_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_4_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_4_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_4_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_4_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_4_update()
-                return
-
-    def on_button_personal_equipment_4_qty_up(self, *args):
-        personal_equipment_4_qty = self.var_personal_equipment_4_qty.get()
-        personal_equipment_4_qty = personal_equipment_4_qty + 1
-        self.var_personal_equipment_4_qty.set(value=personal_equipment_4_qty)
-
-    def on_button_personal_equipment_4_qty_down(self, *args):
-        personal_equipment_4_qty = self.var_personal_equipment_4_qty.get()
-        personal_equipment_4_qty = max(personal_equipment_4_qty - 1, 0)
-        self.var_personal_equipment_4_qty.set(value=personal_equipment_4_qty)
-
-    def personal_equipment_qty_4_update(self, *args):
-        personal_equipment_4_qty = self.var_personal_equipment_4_qty.get()
-
-        personal_equipment_4_cost        = int(self.label_hidden_personal_equipment_4_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_4_weight  = int(self.label_hidden_personal_equipment_4_weight.cget("text"))
-        else:
-            personal_equipment_4_weight  = 0
-        personal_equipment_4_ge:     int = int(self.label_hidden_personal_equipment_4_ge.cget("text"))
-        personal_equipment_4_to_hit: str = self.label_hidden_personal_equipment_4_to_hit.cget("text")
-        personal_equipment_4_damage: str = self.label_hidden_personal_equipment_4_damage.cget("text")
-        personal_equipment_4_shots:  str = self.label_hidden_personal_equipment_4_shots.cget("text")
-        personal_equipment_4_cps:    str = self.label_hidden_personal_equipment_4_cps.cget("text")
-        personal_equipment_4_wps:    str = self.label_hidden_personal_equipment_4_wps.cget("text")
-        personal_equipment_4_notes:  str = self.label_hidden_personal_equipment_4_notes.cget("text")
-
-        self.label_personal_equipment_4_cost.configure(text=str(personal_equipment_4_cost * personal_equipment_4_qty))
-        self.label_personal_equipment_4_weight.configure(text=str(personal_equipment_4_weight * personal_equipment_4_qty))
-        self.label_personal_equipment_4_ge.configure(text=str(personal_equipment_4_ge * personal_equipment_4_qty))
-        self.label_personal_equipment_4_to_hit.configure(text=str(personal_equipment_4_to_hit))
-        self.label_personal_equipment_4_damage.configure(text=str(personal_equipment_4_damage))
-        self.label_personal_equipment_4_shots.configure(text=str(personal_equipment_4_shots))
-        self.label_personal_equipment_4_cps.configure(text=str(personal_equipment_4_cps))
-        self.label_personal_equipment_4_wps.configure(text=str(personal_equipment_4_wps))
-        self.label_personal_equipment_4_notes.configure(text=str(personal_equipment_4_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 5 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_5_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_5_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_5_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_5_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_5_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_5_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_5_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_5_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_5_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_5_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_5_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_5_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.label_personal_equipment_5_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_5_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_5, sticky="w")
-
-        self.var_personal_equipment_5_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_5_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_5_qty, width=3)
-        self.entry_personal_equipment_5_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_5, sticky="w")
-        self.var_personal_equipment_5_qty.trace_add("write", self.personal_equipment_qty_5_update)
-
-        self.button_personal_equipment_5_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_5_qty_up)
-        self.button_personal_equipment_5_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_5, sticky="w")
-        self.button_personal_equipment_5_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_5_qty_down)
-        self.button_personal_equipment_5_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_5, sticky="w")
-
-    def add_dropdown_personal_equipment_5_canvas(self, canvas_type):
-        self.selected_personal_equipment_5 = tk.StringVar()
-        self.selected_personal_equipment_5.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_5_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_5, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_5_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_5, sticky="w")
-        self.selected_personal_equipment_5.trace_add("write", self.on_select_personal_equipment_5)
-
-    def on_select_personal_equipment_5(self, *args):
-        selected_value = self.selected_personal_equipment_5.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_5_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_5_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_5_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_5_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_5_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_5_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_5_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_5_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_5_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_5_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_5_update()
-                return
-
-    def on_button_personal_equipment_5_qty_up(self, *args):
-        personal_equipment_5_qty = self.var_personal_equipment_5_qty.get()
-        personal_equipment_5_qty = personal_equipment_5_qty + 1
-        self.var_personal_equipment_5_qty.set(value=personal_equipment_5_qty)
-
-    def on_button_personal_equipment_5_qty_down(self, *args):
-        personal_equipment_5_qty = self.var_personal_equipment_5_qty.get()
-        personal_equipment_5_qty = max(personal_equipment_5_qty - 1, 0)
-        self.var_personal_equipment_5_qty.set(value=personal_equipment_5_qty)
-
-    def personal_equipment_qty_5_update(self, *args):
-        personal_equipment_5_qty = self.var_personal_equipment_5_qty.get()
-
-        personal_equipment_5_cost        = int(self.label_hidden_personal_equipment_5_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_5_weight  = int(self.label_hidden_personal_equipment_5_weight.cget("text"))
-        else:
-            personal_equipment_5_weight  = 0
-        personal_equipment_5_ge:     int = int(self.label_hidden_personal_equipment_5_ge.cget("text"))
-        personal_equipment_5_to_hit: str = self.label_hidden_personal_equipment_5_to_hit.cget("text")
-        personal_equipment_5_damage: str = self.label_hidden_personal_equipment_5_damage.cget("text")
-        personal_equipment_5_shots:  str = self.label_hidden_personal_equipment_5_shots.cget("text")
-        personal_equipment_5_cps:    str = self.label_hidden_personal_equipment_5_cps.cget("text")
-        personal_equipment_5_wps:    str = self.label_hidden_personal_equipment_5_wps.cget("text")
-        personal_equipment_5_notes:  str = self.label_hidden_personal_equipment_5_notes.cget("text")
-
-        self.label_personal_equipment_5_cost.configure(text=str(personal_equipment_5_cost * personal_equipment_5_qty))
-        self.label_personal_equipment_5_weight.configure(text=str(personal_equipment_5_weight * personal_equipment_5_qty))
-        self.label_personal_equipment_5_ge.configure(text=str(personal_equipment_5_ge * personal_equipment_5_qty))
-        self.label_personal_equipment_5_to_hit.configure(text=str(personal_equipment_5_to_hit))
-        self.label_personal_equipment_5_damage.configure(text=str(personal_equipment_5_damage))
-        self.label_personal_equipment_5_shots.configure(text=str(personal_equipment_5_shots))
-        self.label_personal_equipment_5_cps.configure(text=str(personal_equipment_5_cps))
-        self.label_personal_equipment_5_wps.configure(text=str(personal_equipment_5_wps))
-        self.label_personal_equipment_5_notes.configure(text=str(personal_equipment_5_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 6 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_6_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_6_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_6_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_6_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_6_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_6_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_6_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_6_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_6_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_6_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_6_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_6_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.label_personal_equipment_6_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_6_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_6, sticky="w")
-
-        self.var_personal_equipment_6_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_6_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_6_qty, width=3)
-        self.entry_personal_equipment_6_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_6, sticky="w")
-        self.var_personal_equipment_6_qty.trace_add("write", self.personal_equipment_qty_6_update)
-
-        self.button_personal_equipment_6_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_6_qty_up)
-        self.button_personal_equipment_6_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_6, sticky="w")
-        self.button_personal_equipment_6_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_6_qty_down)
-        self.button_personal_equipment_6_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_6, sticky="w")
-
-    def add_dropdown_personal_equipment_6_canvas(self, canvas_type):
-        self.selected_personal_equipment_6 = tk.StringVar()
-        self.selected_personal_equipment_6.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_6_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_6, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_6_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_6, sticky="w")
-        self.selected_personal_equipment_6.trace_add("write", self.on_select_personal_equipment_6)
-
-    def on_select_personal_equipment_6(self, *args):
-        selected_value = self.selected_personal_equipment_6.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_6_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_6_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_6_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_6_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_6_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_6_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_6_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_6_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_6_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_6_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_6_update()
-                return
-
-    def on_button_personal_equipment_6_qty_up(self, *args):
-        personal_equipment_6_qty = self.var_personal_equipment_6_qty.get()
-        personal_equipment_6_qty = personal_equipment_6_qty + 1
-        self.var_personal_equipment_6_qty.set(value=personal_equipment_6_qty)
-
-    def on_button_personal_equipment_6_qty_down(self, *args):
-        personal_equipment_6_qty = self.var_personal_equipment_6_qty.get()
-        personal_equipment_6_qty = max(personal_equipment_6_qty - 1, 0)
-        self.var_personal_equipment_6_qty.set(value=personal_equipment_6_qty)
-
-    def personal_equipment_qty_6_update(self, *args):
-        personal_equipment_6_qty = self.var_personal_equipment_6_qty.get()
-
-        personal_equipment_6_cost        = int(self.label_hidden_personal_equipment_6_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_6_weight  = int(self.label_hidden_personal_equipment_6_weight.cget("text"))
-        else:
-            personal_equipment_6_weight  = 0
-        personal_equipment_6_ge:     int = int(self.label_hidden_personal_equipment_6_ge.cget("text"))
-        personal_equipment_6_to_hit: str = self.label_hidden_personal_equipment_6_to_hit.cget("text")
-        personal_equipment_6_damage: str = self.label_hidden_personal_equipment_6_damage.cget("text")
-        personal_equipment_6_shots:  str = self.label_hidden_personal_equipment_6_shots.cget("text")
-        personal_equipment_6_cps:    str = self.label_hidden_personal_equipment_6_cps.cget("text")
-        personal_equipment_6_wps:    str = self.label_hidden_personal_equipment_6_wps.cget("text")
-        personal_equipment_6_notes:  str = self.label_hidden_personal_equipment_6_notes.cget("text")
-
-        self.label_personal_equipment_6_cost.configure(text=str(personal_equipment_6_cost * personal_equipment_6_qty))
-        self.label_personal_equipment_6_weight.configure(text=str(personal_equipment_6_weight * personal_equipment_6_qty))
-        self.label_personal_equipment_6_ge.configure(text=str(personal_equipment_6_ge * personal_equipment_6_qty))
-        self.label_personal_equipment_6_to_hit.configure(text=str(personal_equipment_6_to_hit))
-        self.label_personal_equipment_6_damage.configure(text=str(personal_equipment_6_damage))
-        self.label_personal_equipment_6_shots.configure(text=str(personal_equipment_6_shots))
-        self.label_personal_equipment_6_cps.configure(text=str(personal_equipment_6_cps))
-        self.label_personal_equipment_6_wps.configure(text=str(personal_equipment_6_wps))
-        self.label_personal_equipment_6_notes.configure(text=str(personal_equipment_6_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 7 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_7_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_7_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_7_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_7_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_7_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_7_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_7_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_7_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_7_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_7_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_7_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_7_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.label_personal_equipment_7_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_7_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_7, sticky="w")
-
-        self.var_personal_equipment_7_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_7_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_7_qty, width=3)
-        self.entry_personal_equipment_7_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_7, sticky="w")
-        self.var_personal_equipment_7_qty.trace_add("write", self.personal_equipment_qty_7_update)
-
-        self.button_personal_equipment_7_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_7_qty_up)
-        self.button_personal_equipment_7_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_7, sticky="w")
-        self.button_personal_equipment_7_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_7_qty_down)
-        self.button_personal_equipment_7_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_7, sticky="w")
-
-    def add_dropdown_personal_equipment_7_canvas(self, canvas_type):
-        self.selected_personal_equipment_7 = tk.StringVar()
-        self.selected_personal_equipment_7.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_7_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_7, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_7_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_7, sticky="w")
-        self.selected_personal_equipment_7.trace_add("write", self.on_select_personal_equipment_7)
-
-    def on_select_personal_equipment_7(self, *args):
-        selected_value = self.selected_personal_equipment_7.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_7_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_7_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_7_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_7_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_7_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_7_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_7_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_7_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_7_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_7_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_7_update()
-                return
-
-    def on_button_personal_equipment_7_qty_up(self, *args):
-        personal_equipment_7_qty = self.var_personal_equipment_7_qty.get()
-        personal_equipment_7_qty = personal_equipment_7_qty + 1
-        self.var_personal_equipment_7_qty.set(value=personal_equipment_7_qty)
-
-    def on_button_personal_equipment_7_qty_down(self, *args):
-        personal_equipment_7_qty = self.var_personal_equipment_7_qty.get()
-        personal_equipment_7_qty = max(personal_equipment_7_qty - 1, 0)
-        self.var_personal_equipment_7_qty.set(value=personal_equipment_7_qty)
-
-    def personal_equipment_qty_7_update(self, *args):
-        personal_equipment_7_qty = self.var_personal_equipment_7_qty.get()
-
-        personal_equipment_7_cost        = int(self.label_hidden_personal_equipment_7_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_7_weight  = int(self.label_hidden_personal_equipment_7_weight.cget("text"))
-        else:
-            personal_equipment_7_weight  = 0
-        personal_equipment_7_ge:     int = int(self.label_hidden_personal_equipment_7_ge.cget("text"))
-        personal_equipment_7_to_hit: str = self.label_hidden_personal_equipment_7_to_hit.cget("text")
-        personal_equipment_7_damage: str = self.label_hidden_personal_equipment_7_damage.cget("text")
-        personal_equipment_7_shots:  str = self.label_hidden_personal_equipment_7_shots.cget("text")
-        personal_equipment_7_cps:    str = self.label_hidden_personal_equipment_7_cps.cget("text")
-        personal_equipment_7_wps:    str = self.label_hidden_personal_equipment_7_wps.cget("text")
-        personal_equipment_7_notes:  str = self.label_hidden_personal_equipment_7_notes.cget("text")
-
-        self.label_personal_equipment_7_cost.configure(text=str(personal_equipment_7_cost * personal_equipment_7_qty))
-        self.label_personal_equipment_7_weight.configure(text=str(personal_equipment_7_weight * personal_equipment_7_qty))
-        self.label_personal_equipment_7_ge.configure(text=str(personal_equipment_7_ge * personal_equipment_7_qty))
-        self.label_personal_equipment_7_to_hit.configure(text=str(personal_equipment_7_to_hit))
-        self.label_personal_equipment_7_damage.configure(text=str(personal_equipment_7_damage))
-        self.label_personal_equipment_7_shots.configure(text=str(personal_equipment_7_shots))
-        self.label_personal_equipment_7_cps.configure(text=str(personal_equipment_7_cps))
-        self.label_personal_equipment_7_wps.configure(text=str(personal_equipment_7_wps))
-        self.label_personal_equipment_7_notes.configure(text=str(personal_equipment_7_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 8 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_8_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_8_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_8_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_8_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_8_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_8_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_8_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_8_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_8_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_8_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_8_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_8_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.label_personal_equipment_8_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_8_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_8, sticky="w")
-
-        self.var_personal_equipment_8_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_8_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_8_qty, width=3)
-        self.entry_personal_equipment_8_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_8, sticky="w")
-        self.var_personal_equipment_8_qty.trace_add("write", self.personal_equipment_qty_8_update)
-
-        self.button_personal_equipment_8_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_8_qty_up)
-        self.button_personal_equipment_8_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_8, sticky="w")
-        self.button_personal_equipment_8_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_8_qty_down)
-        self.button_personal_equipment_8_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_8, sticky="w")
-
-    def add_dropdown_personal_equipment_8_canvas(self, canvas_type):
-        self.selected_personal_equipment_8 = tk.StringVar()
-        self.selected_personal_equipment_8.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_8_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_8, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_8_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_8, sticky="w")
-        self.selected_personal_equipment_8.trace_add("write", self.on_select_personal_equipment_8)
-
-    def on_select_personal_equipment_8(self, *args):
-        selected_value = self.selected_personal_equipment_8.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_8_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_8_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_8_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_8_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_8_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_8_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_8_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_8_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_8_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_8_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_8_update()
-                return
-
-    def on_button_personal_equipment_8_qty_up(self, *args):
-        personal_equipment_8_qty = self.var_personal_equipment_8_qty.get()
-        personal_equipment_8_qty = personal_equipment_8_qty + 1
-        self.var_personal_equipment_8_qty.set(value=personal_equipment_8_qty)
-
-    def on_button_personal_equipment_8_qty_down(self, *args):
-        personal_equipment_8_qty = self.var_personal_equipment_8_qty.get()
-        personal_equipment_8_qty = max(personal_equipment_8_qty - 1, 0)
-        self.var_personal_equipment_8_qty.set(value=personal_equipment_8_qty)
-
-    def personal_equipment_qty_8_update(self, *args):
-        personal_equipment_8_qty = self.var_personal_equipment_8_qty.get()
-
-        personal_equipment_8_cost        = int(self.label_hidden_personal_equipment_8_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_8_weight  = int(self.label_hidden_personal_equipment_8_weight.cget("text"))
-        else:
-            personal_equipment_8_weight  = 0
-        personal_equipment_8_ge:     int = int(self.label_hidden_personal_equipment_8_ge.cget("text"))
-        personal_equipment_8_to_hit: str = self.label_hidden_personal_equipment_8_to_hit.cget("text")
-        personal_equipment_8_damage: str = self.label_hidden_personal_equipment_8_damage.cget("text")
-        personal_equipment_8_shots:  str = self.label_hidden_personal_equipment_8_shots.cget("text")
-        personal_equipment_8_cps:    str = self.label_hidden_personal_equipment_8_cps.cget("text")
-        personal_equipment_8_wps:    str = self.label_hidden_personal_equipment_8_wps.cget("text")
-        personal_equipment_8_notes:  str = self.label_hidden_personal_equipment_8_notes.cget("text")
-
-        self.label_personal_equipment_8_cost.configure(text=str(personal_equipment_8_cost * personal_equipment_8_qty))
-        self.label_personal_equipment_8_weight.configure(text=str(personal_equipment_8_weight * personal_equipment_8_qty))
-        self.label_personal_equipment_8_ge.configure(text=str(personal_equipment_8_ge * personal_equipment_8_qty))
-        self.label_personal_equipment_8_to_hit.configure(text=str(personal_equipment_8_to_hit))
-        self.label_personal_equipment_8_damage.configure(text=str(personal_equipment_8_damage))
-        self.label_personal_equipment_8_shots.configure(text=str(personal_equipment_8_shots))
-        self.label_personal_equipment_8_cps.configure(text=str(personal_equipment_8_cps))
-        self.label_personal_equipment_8_wps.configure(text=str(personal_equipment_8_wps))
-        self.label_personal_equipment_8_notes.configure(text=str(personal_equipment_8_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 9 processing here                           #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_9_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_9_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_9_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_9_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_9_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_9_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_9_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_9_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_9_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_9_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_9_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_9_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.label_personal_equipment_9_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_9_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_9, sticky="w")
-
-        self.var_personal_equipment_9_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_9_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_9_qty, width=3)
-        self.entry_personal_equipment_9_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_9, sticky="w")
-        self.var_personal_equipment_9_qty.trace_add("write", self.personal_equipment_qty_9_update)
-
-        self.button_personal_equipment_9_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_9_qty_up)
-        self.button_personal_equipment_9_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_9, sticky="w")
-        self.button_personal_equipment_9_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_9_qty_down)
-        self.button_personal_equipment_9_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_9, sticky="w")
-
-    def add_dropdown_personal_equipment_9_canvas(self, canvas_type):
-        self.selected_personal_equipment_9 = tk.StringVar()
-        self.selected_personal_equipment_9.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_9_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_9, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_9_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_9, sticky="w")
-        self.selected_personal_equipment_9.trace_add("write", self.on_select_personal_equipment_9)
-
-    def on_select_personal_equipment_9(self, *args):
-        selected_value = self.selected_personal_equipment_9.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_9_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_9_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_9_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_9_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_9_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_9_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_9_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_9_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_9_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_9_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_9_update()
-                return
-
-    def on_button_personal_equipment_9_qty_up(self, *args):
-        personal_equipment_9_qty = self.var_personal_equipment_9_qty.get()
-        personal_equipment_9_qty = personal_equipment_9_qty + 1
-        self.var_personal_equipment_9_qty.set(value=personal_equipment_9_qty)
-
-    def on_button_personal_equipment_9_qty_down(self, *args):
-        personal_equipment_9_qty = self.var_personal_equipment_9_qty.get()
-        personal_equipment_9_qty = max(personal_equipment_9_qty - 1, 0)
-        self.var_personal_equipment_9_qty.set(value=personal_equipment_9_qty)
-
-    def personal_equipment_qty_9_update(self, *args):
-        personal_equipment_9_qty = self.var_personal_equipment_9_qty.get()
-
-        personal_equipment_9_cost        = int(self.label_hidden_personal_equipment_9_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_9_weight  = int(self.label_hidden_personal_equipment_9_weight.cget("text"))
-        else:
-            personal_equipment_9_weight  = 0
-        personal_equipment_9_ge:     int = int(self.label_hidden_personal_equipment_9_ge.cget("text"))
-        personal_equipment_9_to_hit: str = self.label_hidden_personal_equipment_9_to_hit.cget("text")
-        personal_equipment_9_damage: str = self.label_hidden_personal_equipment_9_damage.cget("text")
-        personal_equipment_9_shots:  str = self.label_hidden_personal_equipment_9_shots.cget("text")
-        personal_equipment_9_cps:    str = self.label_hidden_personal_equipment_9_cps.cget("text")
-        personal_equipment_9_wps:    str = self.label_hidden_personal_equipment_9_wps.cget("text")
-        personal_equipment_9_notes:  str = self.label_hidden_personal_equipment_9_notes.cget("text")
-
-        self.label_personal_equipment_9_cost.configure(text=str(personal_equipment_9_cost * personal_equipment_9_qty))
-        self.label_personal_equipment_9_weight.configure(text=str(personal_equipment_9_weight * personal_equipment_9_qty))
-        self.label_personal_equipment_9_ge.configure(text=str(int(personal_equipment_9_ge) * personal_equipment_9_qty))
-        self.label_personal_equipment_9_to_hit.configure(text=str(personal_equipment_9_to_hit))
-        self.label_personal_equipment_9_damage.configure(text=str(personal_equipment_9_damage))
-        self.label_personal_equipment_9_shots.configure(text=str(personal_equipment_9_shots))
-        self.label_personal_equipment_9_cps.configure(text=str(personal_equipment_9_cps))
-        self.label_personal_equipment_9_wps.configure(text=str(personal_equipment_9_wps))
-        self.label_personal_equipment_9_notes.configure(text=str(personal_equipment_9_notes))
-        self.recalculate()
-
-    ######################################################################
-    # Personal Equipment Row 10 processing here                          #
-    ######################################################################
-    def add_labels_buttons_personal_equipment_10_canvas(self, canvas_type):
-        up_arrow = "\u2191"
-        down_arrow = "\u2193"
-
-        self.label_hidden_personal_equipment_10_name   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_cost   = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_ge     = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_damage = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_shots  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_cps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_wps    = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_hidden_personal_equipment_10_notes  = tk.Label(canvas_type, text="0", anchor="w")
-
-        self.label_personal_equipment_10_cost = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_10_cost.grid(column=self.grid_col_cost,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_weight = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_10_weight.grid(column=self.grid_col_weight ,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_ge  = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_10_ge.grid(column=self.grid_col_spaces,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_to_hit = tk.Label(canvas_type, text="0", anchor="w")
-        self.label_personal_equipment_10_to_hit.grid(column=self.grid_col_dp,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_damage = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_10_damage.grid(column=self.grid_col_max_weight,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_shots = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_10_shots.grid(column=self.grid_col_power_factors,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_cps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_10_cps.grid(column=self.grid_col_base_mpg,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_wps = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_10_wps.grid(column=self.grid_col_test_track,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.label_personal_equipment_10_notes = tk.Label(canvas_type, text="", anchor="w")
-        self.label_personal_equipment_10_notes.grid(column=self.grid_col_test_track_numbers,row=self.grid_row_personal_equipment_10, sticky="w")
-
-        self.var_personal_equipment_10_qty = tk.IntVar(value=0)
-        self.entry_personal_equipment_10_qty = ttk.Entry(canvas_type, textvariable=self.var_personal_equipment_10_qty, width=3)
-        self.entry_personal_equipment_10_qty.grid(column=self.grid_col_qty, row=self.grid_row_personal_equipment_10, sticky="w")
-        self.var_personal_equipment_10_qty.trace_add("write", self.personal_equipment_qty_10_update)
-
-        self.button_personal_equipment_10_qty_up = tk.Button(canvas_type, text=up_arrow, command=self.on_button_personal_equipment_10_qty_up)
-        self.button_personal_equipment_10_qty_up.grid(column=self.grid_left_up_button,row=self.grid_row_personal_equipment_10, sticky="w")
-        self.button_personal_equipment_10_qty_down = tk.Button(canvas_type, text=down_arrow, command=self.on_button_personal_equipment_10_qty_down)
-        self.button_personal_equipment_10_qty_down.grid(column=self.grid_left_down_button,row=self.grid_row_personal_equipment_10, sticky="w")
-
-    def add_dropdown_personal_equipment_10_canvas(self, canvas_type):
-        self.selected_personal_equipment_10 = tk.StringVar()
-        self.selected_personal_equipment_10.set("Personal Equipment")
-        options = self.get_personal_equipment_options()
-        # Create the dropdown widget
-        self.personal_equipment_10_dropdown = ttk.OptionMenu(canvas_type, self.selected_personal_equipment_10, "Personal Equipment", *options) #filled elsewhere
-        self.personal_equipment_10_dropdown.grid(column=self.grid_col_item, row=self.grid_row_personal_equipment_10, sticky="w")
-        self.selected_personal_equipment_10.trace_add("write", self.on_select_personal_equipment_10)
-
-    def on_select_personal_equipment_10(self, *args):
-        selected_value = self.selected_personal_equipment_10.get()
-        for entry in self.personal_equipment_list: #use the same self.personal_equipment_list for every personal_equipment dropdown
-            personal_equipment_name: str = entry.get("Item")
-            if selected_value == personal_equipment_name:
-                personal_equipment_cost:   str = entry.get("Cost")
-                personal_equipment_ge:     str = entry.get("GE")
-                personal_equipment_weight: str = entry.get("Weight")
-                personal_equipment_to_hit: str = entry.get("To-Hit")
-                personal_equipment_damage: str = entry.get("Damage")
-                personal_equipment_shots:  str = entry.get("Shots")
-                personal_equipment_cps:    str = entry.get("CPS")
-                personal_equipemnt_wps:    str = entry.get("WPS")
-                personal_equipment_notes:  str = entry.get("Notes")
-
-                self.label_hidden_personal_equipment_10_name.configure(text=str(personal_equipment_name))
-                self.label_hidden_personal_equipment_10_cost.configure(text=str(personal_equipment_cost))
-                self.label_hidden_personal_equipment_10_ge.configure(text=str(personal_equipment_ge))
-                self.label_hidden_personal_equipment_10_weight.configure(text=str(personal_equipment_weight))
-                self.label_hidden_personal_equipment_10_to_hit.configure(text=str(personal_equipment_to_hit))
-                self.label_hidden_personal_equipment_10_damage.configure(text=str(personal_equipment_damage))
-                self.label_hidden_personal_equipment_10_shots.configure(text=str(personal_equipment_shots))
-                self.label_hidden_personal_equipment_10_cps.configure(text=str(personal_equipment_cps))
-                self.label_hidden_personal_equipment_10_wps.configure(text=str(personal_equipemnt_wps))
-                self.label_hidden_personal_equipment_10_notes.configure(text=str(personal_equipment_notes))
-                self.personal_equipment_qty_10_update()
-                return
-
-    def on_button_personal_equipment_10_qty_up(self, *args):
-        personal_equipment_10_qty = self.var_personal_equipment_10_qty.get()
-        personal_equipment_10_qty = personal_equipment_10_qty + 1
-        self.var_personal_equipment_10_qty.set(value=personal_equipment_10_qty)
-
-    def on_button_personal_equipment_10_qty_down(self, *args):
-        personal_equipment_10_qty = self.var_personal_equipment_10_qty.get()
-        personal_equipment_10_qty = max(personal_equipment_10_qty - 1, 0)
-        self.var_personal_equipment_10_qty.set(value=personal_equipment_10_qty)
-
-    def personal_equipment_qty_10_update(self, *args):
-        personal_equipment_10_qty = self.var_personal_equipment_10_qty.get()
-
-        personal_equipment_10_cost        = int(self.label_hidden_personal_equipment_10_cost.cget("text"))
-        if self.age_value == 1: #use alternate grenade equivalent settings, otherwise set weight to zero
-            personal_equipment_10_weight  = int(self.label_hidden_personal_equipment_10_weight.cget("text"))
-        else:
-            personal_equipment_10_weight  = 0
-        personal_equipment_10_ge:     int = int(self.label_hidden_personal_equipment_10_ge.cget("text"))
-        personal_equipment_10_to_hit: str = self.label_hidden_personal_equipment_10_to_hit.cget("text")
-        personal_equipment_10_damage: str = self.label_hidden_personal_equipment_10_damage.cget("text")
-        personal_equipment_10_shots:  str = self.label_hidden_personal_equipment_10_shots.cget("text")
-        personal_equipment_10_cps:    str = self.label_hidden_personal_equipment_10_cps.cget("text")
-        personal_equipment_10_wps:    str = self.label_hidden_personal_equipment_10_wps.cget("text")
-        personal_equipment_10_notes:  str = self.label_hidden_personal_equipment_10_notes.cget("text")
-
-        self.label_personal_equipment_10_cost.configure(text=str(personal_equipment_10_cost * personal_equipment_10_qty))
-        self.label_personal_equipment_10_weight.configure(text=str(personal_equipment_10_weight * personal_equipment_10_qty))
-        self.label_personal_equipment_10_ge.configure(text=str(personal_equipment_10_ge * personal_equipment_10_qty))
-        self.label_personal_equipment_10_to_hit.configure(text=str(personal_equipment_10_to_hit))
-        self.label_personal_equipment_10_damage.configure(text=str(personal_equipment_10_damage))
-        self.label_personal_equipment_10_shots.configure(text=str(personal_equipment_10_shots))
-        self.label_personal_equipment_10_cps.configure(text=str(personal_equipment_10_cps))
-        self.label_personal_equipment_10_wps.configure(text=str(personal_equipment_10_wps))
-        self.label_personal_equipment_10_notes.configure(text=str(personal_equipment_10_notes))
-        self.recalculate()
-
     def facing_compilations(self) -> str:
         """
         Calculates and validates maximum allowable weapon space configurations per individual vehicle facing.
@@ -13121,10 +7202,6 @@ class Python_Designer():
             return default_val
 
         # Execute safe, timing-isolated extractions
-        #body_spaces = get_lbl_val("label_body_spaces")
-        #cargo_spaces = get_lbl_val("label_hidden_cargo_spaces")
-        #modification_spaces = get_lbl_val("label_modificiation_space")
-        #modification_cargo_spaces = get_lbl_val("label_hidden_modification_cargo_space")
         try:
             body_spaces: int = int(self.label_body_spaces.cget("text"))
         except tk.TclError:
@@ -13146,82 +7223,89 @@ class Python_Designer():
         facings_list: list = []
 
         # 2. SAFE PASS ONE: Dynamic processing for the 10 Weapon Row facings
-        for i in range(1, self.weapon_rows_count + 1):
-            facing_var_name = f"weapon_armor_facing_{i}"
-            space_lbl_name = f"label_sub_weapon_{i}_space"
-            
-            facing_str = "Facing"
-            if hasattr(self, facing_var_name):
-                var_obj = getattr(self, facing_var_name)
-                if var_obj is not None and hasattr(var_obj, "get"):
-                    try: facing_str = var_obj.get()
-                    except Exception: facing_str = "Facing"
-                elif isinstance(var_obj, str):
-                    facing_str = var_obj
-                
-            space_val = 0.0
-            if hasattr(self, space_lbl_name):
-                lbl_obj = getattr(self, space_lbl_name)
-                if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-                    try:
-                        txt = lbl_obj.cget("text").strip()
-                        if txt != "": space_val = float(txt)
-                    except (AttributeError, ValueError):
-                        pass
-                    
+        loop_max = len(self.weapon_spaces_label_objects)
+        for loop_index in range(0,loop_max):
+            space_obj = self.weapon_spaces_label_objects[loop_index]
+            facing_obj = self.weapon_mount_dropdown_string_vars[loop_index]
+            facing_str = facing_obj.get()
+            space_val = float(space_obj.cget("text"))
             facings_list.append({facing_str: space_val})
+
+        #for i in range(1, self.weapon_rows_count + 1):
+        #    facing_var_name = f"weapon_armor_facing_{i}"
+        #    space_lbl_name = f"label_sub_weapon_{i}_space"
+        #    facing_str = "Facing"
+        #    if hasattr(self, facing_var_name):
+        #        var_obj = getattr(self, facing_var_name)
+        #        if var_obj is not None and hasattr(var_obj, "get"):
+        #            try: facing_str = var_obj.get()
+        #            except Exception: facing_str = "Facing"
+        #        elif isinstance(var_obj, str):
+        #            facing_str = var_obj
+                
+        #    space_val = 0.0
+        #    if hasattr(self, space_lbl_name):
+        #        lbl_obj = getattr(self, space_lbl_name)
+        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
+        #            try:
+        #                txt = lbl_obj.cget("text").strip()
+        #                if txt != "": space_val = float(txt)
+        #            except (AttributeError, ValueError):
+        #                pass
+                    
+        #    facings_list.append({facing_str: space_val})
 
         # 3. SAFE PASS TWO: Dynamic processing for the 5 Component Armor facings
-        for i in range(1, 6):
-            facing_var_name = f"selected_component_armor_facing_{i}"
-            space_lbl_name = f"label_component_armor_{i}_space"
+        #for i in range(1, 6):
+        #    facing_var_name = f"selected_component_armor_facing_{i}"
+        #    space_lbl_name = f"label_component_armor_{i}_space"
             
-            facing_str = "Facing"
-            if hasattr(self, facing_var_name):
-                var_obj = getattr(self, facing_var_name)
-                if var_obj is not None and hasattr(var_obj, "get"):
-                    try: facing_str = var_obj.get()
-                    except Exception: pass
-                elif isinstance(var_obj, str):
-                    facing_str = var_obj
+        #    facing_str = "Facing"
+        #    if hasattr(self, facing_var_name):
+        #        var_obj = getattr(self, facing_var_name)
+        #        if var_obj is not None and hasattr(var_obj, "get"):
+        #            try: facing_str = var_obj.get()
+        #            except Exception: pass
+        #        elif isinstance(var_obj, str):
+        #            facing_str = var_obj
                 
-            space_val = 0.0
-            if hasattr(self, space_lbl_name):
-                lbl_obj = getattr(self, space_lbl_name)
-                if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-                    try:
-                        txt = lbl_obj.cget("text").strip()
-                        if txt != "": space_val = float(txt)
-                    except (AttributeError, ValueError):
-                        pass
+        #    space_val = 0.0
+        #    if hasattr(self, space_lbl_name):
+        #        lbl_obj = getattr(self, space_lbl_name)
+        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
+        #            try:
+        #                txt = lbl_obj.cget("text").strip()
+        #                if txt != "": space_val = float(txt)
+        #            except (AttributeError, ValueError):
+        #                pass
                     
-            facings_list.append({facing_str: space_val})
+        #    facings_list.append({facing_str: space_val})
 
         # 4. SAFE PASS THREE: Dynamic processing for the 5 Rocket Booster facings
-        for i in range(1, 6):
-            facing_var_name = f"selected_rocket_booster_facing_{i}"
-            space_lbl_name = f"label_rocket_booster_{i}_space"
+        #for i in range(1, 6):
+        #    facing_var_name = f"selected_rocket_booster_facing_{i}"
+        #    space_lbl_name = f"label_rocket_booster_{i}_space"
             
-            facing_str = "Facing"
-            if hasattr(self, facing_var_name):
-                var_obj = getattr(self, facing_var_name)
-                if var_obj is not None and hasattr(var_obj, "get"):
-                    try: facing_str = var_obj.get()
-                    except Exception: pass
-                elif isinstance(var_obj, str):
-                    facing_str = var_obj
+        #    facing_str = "Facing"
+        #    if hasattr(self, facing_var_name):
+        #        var_obj = getattr(self, facing_var_name)
+        #        if var_obj is not None and hasattr(var_obj, "get"):
+        #            try: facing_str = var_obj.get()
+        #            except Exception: pass
+        #        elif isinstance(var_obj, str):
+        #            facing_str = var_obj
                 
-            space_val = 0.0
-            if hasattr(self, space_lbl_name):
-                lbl_obj = getattr(self, space_lbl_name)
-                if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-                    try:
-                        txt = lbl_obj.cget("text").strip()
-                        if txt != "": space_val = float(txt)
-                    except (AttributeError, ValueError):
-                        pass
+        #    space_val = 0.0
+        #    if hasattr(self, space_lbl_name):
+        #        lbl_obj = getattr(self, space_lbl_name)
+        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
+        #            try:
+        #                txt = lbl_obj.cget("text").strip()
+        #                if txt != "": space_val = float(txt)
+        #            except (AttributeError, ValueError):
+        #                pass
                     
-            facings_list.append({facing_str: space_val})
+        #    facings_list.append({facing_str: space_val})
 
         # 5. AGGREGATION PASS: Tally up cumulative space metrics per vehicle side location
         front_facing:  float = 0.0
@@ -14619,20 +8703,6 @@ class Python_Designer():
         btn_save = tk.Button(popup, text="Apply Bumper Trigger", command=save_and_close, bg="lightgreen")
         btn_save.pack(fill="x", padx=10, pady=(0, 10))
 
-    def _safe_parse_label(self, label_attr_name: str, return_type=float):
-        """Safely extracts and converts a Tkinter label's text value, handling decimal strings."""
-        if hasattr(self, label_attr_name):
-            txt = getattr(self, label_attr_name).cget("text").strip()
-            if txt == "":
-                return 0.0 if return_type is float else 0
-            try:
-                # First convert to float to handle strings containing decimal points like '4000.0'
-                float_val = float(txt)
-                return return_type(float_val)
-            except ValueError:
-                return 0.0 if return_type is float else 0
-        return 0.0 if return_type is float else 0
-
     def _on_mouse_wheel_unified(self, event):
         """
         A single, cross-platform callback that processes mouse wheel movements
@@ -14649,6 +8719,322 @@ class Python_Designer():
                 self.my_canvas.yview_scroll(-1, "units")
             elif event.num == 5: # Scroll Down
                 self.my_canvas.yview_scroll(1, "units")
+
+    def add_new_weapon_row_tactical(self):
+        # 1. FORCE THE INTERNAL WEAPON FRAME TO INNER-LOCK COLUMNS 
+        column_track_vars = [
+            self.grid_col_item, self.grid_col_qty, self.grid_left_up_button,
+            self.grid_left_down_button, self.grid_col_weapon_ammo_entry,
+            self.grid_col_extra_mag_entry, self.grid_col_dp, self.grid_col_power_factors,
+            self.grid_col_base_mpg, self.grid_col_cost, self.grid_col_weight,
+            self.grid_col_spaces, self.grid_col_last_column
+        ]
+        for c_idx in column_track_vars:
+            global_width = self.second_frame.columnconfigure(c_idx, "minsize")
+            self.weapon_container_frame.columnconfigure(c_idx, minsize=global_width)
+
+        # 2. TEMPLATE HEADERS GENERATION (RUNS ONLY ON ENTRY 1 AT THE TOP)
+        if self.weapon_rows_count == 0:
+            headers_matrix = [
+                ("Weapon",      self.grid_col_item),
+                ("Qty",         self.grid_col_qty),
+                ("Ammo Qty",    self.grid_col_weapon_ammo_entry),
+                ("Extra Mags",  self.grid_col_extra_mag_entry),
+                ("Cost",        self.grid_col_cost),
+                ("Weight",      self.grid_col_weight),
+                ("Spaces",      self.grid_col_spaces),
+                ("Facing",      self.grid_col_dp),
+                ("To Hit",      self.grid_col_power_factors),
+                ("Damage",      self.grid_col_base_mpg),
+                ("DP",          self.grid_col_test_track), 
+            ]
+            for text, col_idx in headers_matrix:
+                lbl = tk.Label(self.weapon_container_frame, text=text, anchor="w")
+                lbl.grid(row=1, column=col_idx, sticky="w")
+
+        # Update counter tracking loops
+        self.weapon_rows_count += 1
+        idx = self.weapon_rows_count
+
+        # Each cluster spans exactly 2 structured row levels
+        row_top = 2 + ((idx - 1) * 2)
+        row_bottom = row_top + 1
+
+        # 3. ROW A (TOP LAYER): CATEGORY DROPDOWN 
+        cat_var = tk.StringVar(value="Weapon")
+        self.weapon_dropdown_string_vars.append(cat_var)
+        
+        categories = self.get_weapon_options_alt()
+        cat_drop = ttk.OptionMenu(self.weapon_container_frame, cat_var, "Weapon", *categories)
+        cat_drop.grid(row=row_top, column=self.grid_col_item, sticky="w")
+        self.weapon_dropdown_objects.append(cat_drop)
+
+        cat_var.trace_add(
+            "write", 
+            lambda *args, cv=cat_var, r=idx: self.on_weapon_category_changed(
+                selected_category=cv.get(), 
+                row_number=r, 
+                cluster_frame=self.weapon_container_frame
+            )
+        )
+
+        # 4. ROW B (BOTTOM LAYER): WEAPON QTY TRACK + CALCULATION TRACE
+        qty_var = tk.StringVar(value="0")
+        self.weapon_qty_string_vars.append(qty_var)
+        qty_var.trace_add("write", lambda *args, r=idx: self.on_select_sub_weapon_unified(row_number=idx))
+
+        qty_ent = ttk.Entry(self.weapon_container_frame, textvariable=qty_var, width=3, justify="center")
+        qty_ent.grid(row=row_bottom, column=self.grid_col_qty, sticky="w")
+        self.weapon_qty_entry_objects.append(qty_ent)
+
+        btn_up = tk.Button(self.weapon_container_frame, text="\u2191", command=lambda r=idx: self.on_button_sub_weapon_qty_unified(idx, direction="up"))
+        btn_up.grid(row=row_bottom, column=self.grid_left_up_button, sticky="nsew")
+        self.weapon_qty_up_button_objects.append(btn_up)
+        
+        btn_dn = tk.Button(self.weapon_container_frame, text="\u2193", command=lambda r=idx: self.on_button_sub_weapon_qty_unified(idx, direction="down"))
+        btn_dn.grid(row=row_bottom, column=self.grid_left_down_button, sticky="nsew")
+        self.weapon_qty_down_button_objects.append(btn_dn)
+
+        # 5. AMMO QTY TRACK + SPIN BUTTONS + CALCULATION TRACE
+        ammo_var = tk.StringVar(value="0")
+        self.weapon_ammo_qty_string_vars.append(ammo_var)
+        ammo_var.trace_add("write", lambda *args, r=idx: self.on_select_sub_weapon_unified(row_number=idx))
+        
+        ammo_ent = tk.Entry(self.weapon_container_frame, textvariable=ammo_var, width=3, justify="center")
+        ammo_ent.grid(row=row_bottom, column=self.grid_col_weapon_ammo_entry, sticky="w")
+        self.weapon_ammo_qty_entry_objects.append(ammo_ent)
+
+        ammo_btn_up = tk.Button(self.weapon_container_frame, text="\u2191", command=lambda r=idx: self.on_button_ammo_qty_unified(idx, direction="up"))
+        ammo_btn_up.grid(row=row_bottom, column=self.grid_col_weapon_ammo_qty_up, sticky="nsew")
+        self.weapon_ammo_qty_up_button_objects.append(ammo_btn_up)
+
+        ammo_btn_dn = tk.Button(self.weapon_container_frame, text="\u2193", command=lambda r=idx: self.on_button_ammo_qty_unified(idx, direction="down"))
+        ammo_btn_dn.grid(row=row_bottom, column=self.grid_col_weapon_ammo_qty_down, sticky="nsew")
+        self.weapon_ammo_qty_down_button_objects.append(ammo_btn_dn)
+
+        # 6. EXTRA MAGS QTY TRACK + SPIN BUTTONS + CALCULATION TRACE
+        mag_var = tk.StringVar(value="0")
+        self.weapon_extra_mag_qty_string_vars.append(mag_var)
+        mag_var.trace_add("write", self.on_update_extra_mags_qty_unified(row_number=idx))
+        
+        mag_ent = tk.Entry(self.weapon_container_frame, textvariable=mag_var, width=3, justify="center")
+        mag_ent.grid(row=row_bottom, column=self.grid_col_extra_mag_entry, sticky="w")
+        self.weapon_extra_mag_qty_entry_objects.append(mag_ent)
+
+        mag_btn_up = tk.Button(self.weapon_container_frame, text="\u2191", command=lambda r=idx: self.on_button_extra_mags_unified(idx, direction="up"))
+        mag_btn_up.grid(row=row_bottom, column=self.grid_col_extra_mag_qty_up, sticky="nsew")
+        self.weapon_extra_mag_qty_up_button_objects.append(mag_btn_up)
+
+        mag_btn_dn = tk.Button(self.weapon_container_frame, text="\u2193", command=lambda r=idx: self.on_button_extra_mags_unified(idx, direction="down"))
+        mag_btn_dn.grid(row=row_bottom, column=self.grid_col_extra_mag_qty_down, sticky="nsew")
+        self.weapon_extra_mag_qty_down_button_objects.append(mag_btn_dn)
+
+        # 7. STATISTICS FIELDS SHIFTED BACK INTO THEIR CONSTANT TRACK MARKS
+        lbl_cost = tk.Label(self.weapon_container_frame, text="0", width=8, anchor="w")
+        lbl_cost.grid(row=row_bottom, column=self.grid_col_cost, sticky="w")
+        self.weapon_cost_label_objects.append(lbl_cost)
+
+        lbl_weight = tk.Label(self.weapon_container_frame, text="0", width=8, anchor="w")
+        lbl_weight.grid(row=row_bottom, column=self.grid_col_weight, sticky="w")
+        self.weapon_weight_label_objects.append(lbl_weight)
+
+        lbl_spaces = tk.Label(self.weapon_container_frame, text="0", width=8, anchor="w")
+        lbl_spaces.grid(row=row_bottom, column=self.grid_col_spaces, sticky="w")
+        self.weapon_spaces_label_objects.append(lbl_spaces)
+
+        # 8. FACING CONTROLLER 
+        facing_var, facing_drop = self.add_weapon_facing_dropdown(canvas_type=self.weapon_container_frame, column_val=self.grid_col_dp, row_val=row_bottom)
+        self.weapon_mount_dropdown_string_vars.append(facing_var)
+        self.weapon_mount_dropdown_objects.append(facing_drop)
+
+        # 9. DYNAMIC STATISTICS LABELS
+        lbl_tohit = tk.Label(self.weapon_container_frame, text="-", width=6, anchor="w")
+        lbl_tohit.grid(row=row_bottom, column=self.grid_col_power_factors, sticky="w")
+        self.weapon_to_hit_label_objects.append(lbl_tohit)
+        
+        lbl_dmg = tk.Label(self.weapon_container_frame, text="-", width=6, anchor="w")
+        lbl_dmg.grid(row=row_bottom, column=self.grid_col_base_mpg, sticky="w")
+        self.weapon_damage_label_objects.append(lbl_dmg)
+
+        lbl_dp = tk.Label(self.weapon_container_frame, text="0", width=8, anchor="w")
+        lbl_dp.grid(row=row_bottom, column=self.grid_col_test_track, sticky="w")
+        self.weapon_dp_label_objects.append(lbl_dp)
+
+        # Force update scroll region dimensions
+        self.root.update_idletasks()
+        self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
+
+    def add_new_accessory_row(self):
+        """Appends active accessory inputs directly to the matching frame partition row"""
+
+        self.accessory_rows_count += 1
+        row_idx = self.accessory_rows_count
+
+        # 1. Structural Identifiers (Dynamic Scannable Labels)
+        lbl = tk.Label(self.accessory_container_frame, text=f"Accessory Row {row_idx}:", anchor="w")
+        lbl.grid(row=row_idx, column=0, sticky="w", padx=5, pady=2)
+
+        # 2. Map directly into your application's preconfigured variables matrix
+
+        #self.accessory_dropdown_string_vars = []
+        #self.accessory_qty_string_vars = []
+
+        qty_var = tk.StringVar(value="0")
+        self.accessory_qty_string_vars.append(qty_var)
+        qty_var.trace_add("write", lambda *args, r=row_idx: self.on_select_accessory_unified(row_number=row_idx))
+
+        name_var = tk.StringVar(value="Weapon")
+        self.accessory_dropdown_string_vars.append(name_var)
+
+        # 3. Dynamic Interactive Control Field Rendering
+        # Selectable Accessory Dropdown Box
+        cb_accessory = ttk.OptionMenu(self.accessory_container_frame, textvariable=name_var, values=self.accessories_list, width=25)
+        cb_accessory.grid(row=row_idx, column=self.grid_col_item)
+
+        # Quantity Entry Selector Field
+        ent_qty = ttk.Entry(self.accessory_container_frame, textvariable=qty_var, width=5)
+        ent_qty.grid(row=row_idx, column=self.grid_col_qty)
+        self.accessory_qty_string_vars.append(ent_qty)
+
+        btn_up = tk.Button(self.accessory_container_frame, text="\u2191", command=lambda r=row_idx: self.on_select_accessory_unified(row_idx, direction="up"))
+        btn_up.grid(row=row_idx, column=self.grid_left_up_button, sticky="nsew")
+        self.accessory_qty_up_button_objects.append(btn_up)
+        
+        btn_dn = tk.Button(self.accessory_container_frame, text="\u2193", command=lambda r=row_idx: self.on_select_accessory_unified(row_idx, direction="down"))
+        btn_dn.grid(row=row_idx, column=self.grid_left_down_button, sticky="nsew")
+        self.accessory_qty_down_button_objects.append(btn_dn)
+
+        # 4. Instant Screen Geometry Sync Pass
+        self.root.update_idletasks()
+        self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
+
+    def on_accessory_changed(self, event, row_idx):
+        """Uses the untouched self.accessories_list master array to change selection
+        focus without altering list positions, slicing, or filtering values.
+        """
+        selected_category = event.widget.get()
+    
+        # Isolate your row tracking components from your object matrix
+        target_item_dropdown = self.ca_dropdown_objects[row_idx - 1]
+        target_item_variable = self.ca_dropdown_string_vars[row_idx - 1]
+
+        # Ensure the dropdown contains the complete, unaltered master list
+        target_item_dropdown['values'] = self.accessories_list
+
+        # Jump focus directly to the first item matching the category keyword
+        if selected_category != "All Items":
+            for index, item in enumerate(self.accessories_list):
+                if selected_category.lower() in item.lower():
+                    # Set the text and highlight the item inside the open list
+                    target_item_variable.set(item)
+                    target_item_dropdown.current(index)
+                    return
+                
+        # Fallback default if "All Items" is chosen or no keyword matches
+        target_item_variable.set("Accessory")
+
+    def on_button_accessory_qty_unified(self, row_number: int, direction: str):
+        """
+        Handles up/down arrow button clicks for weapon quantities across all rows.
+        """
+        var_name = self.accessory_qty_string_vars[row_number-1]
+            
+        try:
+            var_value_str = var_name.get()
+            current_val = int(var_value_str)
+        except (ValueError, tk.TclError):
+            current_val = 0
+
+        new_val = current_val + 1 if direction == "up" else max(0, current_val - 1)
+        var_name.set(str(new_val))
+        if hasattr(self, "on_select_accessory_unified"): 
+            self.on_select_accessory_unified(row_number=row_number)        
+
+    def on_select_accessory_unified(self, row_number: int, *args):
+        """
+        Runs automatically whenever an accessory is picked.
+        Calculates cost, weight, and spaces for this row and updates the screen labels.
+        """
+        if getattr(self, 'is_loading', False):
+            return
+
+        # 1. Safely retrieve the selected sub-weapon name string
+        # We look it up from the array we built earlier
+        if row_number <= len(self.acessory_dropdown_string_vars):
+            selected_accessory = self.acessory_dropdown_string_vars[row_number - 1].get()
+        else:
+            return
+
+        # Get the category type to obtain the sub weapon data dictionary, from there once we know the selected weapon, get the weapon stats
+        try: category_name = self.accessory_dropdown_string_vars[row_number -1].get() 
+        except (IndexError, ValueError, tk.TclError): return #This is a systemic failure
+
+        # 2. Grab current quantities from the tracking string variables
+        try: qty = int(self._qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): qty = 0
+    
+        try: ammo_qty = int(self.weapon_ammo_qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): ammo_qty = 0
+    
+        try: extra_mags = int(self.weapon_extra_mag_qty_string_vars[row_number - 1].get())
+        except (IndexError, ValueError, tk.TclError): extra_mags = 0
+    
+        # 3. FETCH WEAPON BASE STATS FROM YOUR DATABASE
+        # (Replace 'self.get_weapon_base_stats' with your actual dictionary/database lookup function)
+
+        accessory_stats = next((entry for entry in self.accessory_list if entry["Drop-Down Name"] == selected_accessory), None)
+
+        #self.accessories_list = []
+        #entry_dict: dict = {
+        # "Accessory Name": "Accessory",
+        # "Cost": "0",
+        # "Space": "0",
+        # "Weight": "0",
+        # "DP": "",
+        # "Notes": "",
+        # "Turret Size": -2,
+        # "Cycle Only": 0}
+
+        if not accessory_stats:
+            # Fallback to zero if the item name isn't found
+            accessory_stats = {"base_cost": 0, "base_weight": 0, "base_space": 0.0, "ammo_cost_per": 0, "ammo_weight_per": 0}
+    
+        # 4. MATH ENGINE CALCULATIONS
+        total_cost   = int(c_res) if (c_res := float(accessory_stats["Cost"])   * qty).is_integer() else round(c_res, 2)
+        total_weight = int(w_res) if (w_res := float(accessory_stats["Weight"]) * qty).is_integer() else round(w_res, 2)
+        total_space  = int(s_res) if (s_res := float(accessory_stats["Space"])  * qty).is_integer() else round(s_res, 2)
+
+        dp_str = accessory_stats["DP"]
+        notes_str = accessory_stats["Notes"]
+    
+        # 5. REWRITE THE ROW LABELS ON SCREEN (Breaking the $0 loop!)
+        if row_number <= len(self.accessory_cost_label_objects):
+            cost_lbl = self.accessory_cost_label_objects[row_number - 1]
+            cost_lbl.config(text=f"{total_cost}")
+
+        if row_number <= len(self.accessory_weight_label_objects):
+            weight_lbl = self.accessory_weight_label_objects[row_number - 1]
+            weight_lbl.config(text=f"{total_weight}")
+
+        if row_number <= len(self.accessory_spaces_label_objects):
+            space_lbl = self.accessory_spaces_label_objects[row_number - 1]
+            space_lbl.config(text=f"{total_space}")
+
+        if row_number <= len(self.accessory_dp_label_objects):
+            dp_lbl = self.accessory_dp_label_objects[row_number - 1]
+            dp_lbl.config(text=f"{dp_str}")
+
+        if row_number <= len(self.accessory_to_hit_label_objects):
+            to_hit_lbl = self.accessory_to_hit_label_objects[row_number - 1]
+            to_hit_lbl.config(text=f"{to_hit_str}")
+
+        if row_number <= len(self.accessory_damage_label_objects):
+            dam_lbl = self.accessory_damage_label_objects[row_number - 1]
+            dam_lbl.config(text=f"{damage_str}")
+
+        # 6. TRIGGER THE GLOBAL RECALCULATE ENGINE FOR VEHICLE TOTALS
+        if hasattr(self, 'recalculate'):
+            self.recalculate()
 
 if __name__ == '__main__':
     print("Launching Python_Designer")
