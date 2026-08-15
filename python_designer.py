@@ -39,7 +39,7 @@ class Python_Designer():
     """Python_Designer class"""
     def __init__(self):
         """ Initial class, establish TKinter usage, labels, dropdowns and buttons"""
-        self.datestamp: str = "08_04_2026"
+        self.datestamp: str = "08_15_2026"
 
         self.weapon_dropdown_objects = []
         self.weapon_qty_entry_objects = []
@@ -98,6 +98,7 @@ class Python_Designer():
         self.component_armor_rows_count    = 0# 5
         self.rocket_booster_rows_count     = 0# 5
         self.personal_equipment_rows_count = 0#10
+        self.delete_btn_x                  = 940  # starting guess — see note below on tuning this
 
         #forced column widths
         self.grid_col_item_forced_width                 = 250
@@ -403,6 +404,28 @@ class Python_Designer():
         except (ValueError, TypeError):
             return default
     
+    def add_delete_button(self, parent_frame, reference_widget, command, height=None):
+        """Places a delete (X) button at a fixed X coordinate, aligned to reference_widget's
+        actual pixel Y position, so it lines up across every section's independently-laid-out frame."""
+        self.root.update_idletasks()
+        y = reference_widget.winfo_y()
+
+        btn = tk.Button(parent_frame, text="X", fg="white", bg="red", width=2, command=command)
+        btn_width = btn.winfo_reqwidth()
+
+        # Force the parent frame to be wide enough to fully contain a button placed at delete_btn_x —
+        # place() doesn't expand the parent's own computed size, so without this, the button's
+        # right edge can get clipped by the frame's actual boundary.
+        spacer = tk.Frame(parent_frame, width=self.delete_btn_x + btn_width, height=1)
+        spacer.place(x=0, y=0)
+        spacer.lower()  # push it behind everything else so it's invisible
+
+        if height is not None:
+            btn.place(x=self.delete_btn_x, y=y, height=height)
+        else:
+            btn.place(x=self.delete_btn_x, y=y)
+        return btn
+
     def load_menus(self):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -9728,11 +9751,16 @@ class Python_Designer():
         self.weapon_dp_label_objects.append(lbl_dp)
 
         # 10. DELETE BUTTON — spans both rows of this weapon's cluster
-        del_btn = tk.Button(
-            self.weapon_container_frame, text="X", fg="white", bg="red", width=2,
-            command=lambda r=idx: self.delete_weapon_row(r - 1)
-        )
-        del_btn.grid(row=row_top, column=self.grid_col_last_column, rowspan=2, sticky="nsew", padx=(5, 0))
+        #del_btn = tk.Button(
+        #    self.weapon_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=idx: self.delete_weapon_row(r - 1)
+        #)
+        #del_btn.grid(row=row_top, column=self.grid_col_last_column, rowspan=2, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.weapon_container_frame, reference_widget=cat_drop,
+            command=lambda r=idx: self.delete_weapon_row(r - 1),
+            height=cat_drop.winfo_reqheight() + qty_ent.winfo_reqheight()
+        )        
         self.weapon_delete_button_objects.append(del_btn)
 
         # Force update scroll region dimensions
@@ -9877,11 +9905,15 @@ class Python_Designer():
         name_var.trace_add("write", lambda *args, r=row_idx: self.on_select_accessory_unified(row_number=row_idx))
         qty_var.trace_add("write", lambda *args, r=row_idx: self.on_select_accessory_unified(row_number=row_idx))
 
-        del_btn = tk.Button(
-            self.accessory_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.accessory_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_idx - 1: self.delete_accessory_row(r)
+        #)
+        #del_btn.grid(row=row_idx, column=self.grid_col_last_column, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.accessory_container_frame, reference_widget=cb_accessory,
             command=lambda r=row_idx - 1: self.delete_accessory_row(r)
         )
-        del_btn.grid(row=row_idx, column=self.grid_col_last_column, sticky="nsew", padx=(5, 0))
         self.accessory_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
@@ -10164,11 +10196,15 @@ class Python_Designer():
         entry.bind("<Button-1>", lambda event, idx=row_number_for_this_row: self.open_link_selector(event, idx))
         self.links_combos.append(entry)
         
-        del_btn = tk.Button(
-            self.links_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.links_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_number_for_this_row: self.delete_link_row(r)
+        #)
+        #del_btn.grid(row=row_idx, column=self.grid_col_last_column, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.links_container_frame, reference_widget=entry,
             command=lambda r=row_number_for_this_row: self.delete_link_row(r)
         )
-        del_btn.grid(row=row_idx, column=self.grid_col_last_column, sticky="nsew", padx=(5, 0))
         self.link_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
@@ -10278,11 +10314,15 @@ class Python_Designer():
         entry.bind("<Button-1>", lambda event, idx=row_number_for_this_row: self.open_bt_selector(event, idx))
         self.bt_entry_fields.append(entry)
     
-        del_btn = tk.Button(
-            self.bt_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.bt_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_number_for_this_row: self.delete_bt_row(r)
+        #)
+        #del_btn.grid(row=row_idx, column=self.grid_col_test_track + 1, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.bt_container_frame, reference_widget=entry,
             command=lambda r=row_number_for_this_row: self.delete_bt_row(r)
         )
-        del_btn.grid(row=row_idx, column=self.grid_col_test_track + 1, sticky="nsew", padx=(5, 0))
         self.bt_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
@@ -10544,11 +10584,15 @@ class Python_Designer():
         lbl_dp.grid(column=self.grid_col_dp, row=row_idx, sticky="w")
         self.ca_dp_label_objects.append(lbl_dp)
 
-        del_btn = tk.Button(
-            self.ca_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.ca_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_number_for_this_row: self.delete_ca_row(r)
+        #)
+        #del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.ca_container_frame, reference_widget=ca_dropdown,
             command=lambda r=row_number_for_this_row: self.delete_ca_row(r)
         )
-        del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
         self.ca_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
@@ -10698,11 +10742,15 @@ class Python_Designer():
         lbl_thrust.grid(column=self.grid_col_power_factors, row=row_idx, sticky="w")
         self.rb_thrust_label_objects.append(lbl_thrust)
     
-        del_btn = tk.Button(
-            self.rb_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.rb_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_number_for_this_row: self.delete_rb_row(r)
+        #)
+        #del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.rb_container_frame, reference_widget=pounds_entry,
             command=lambda r=row_number_for_this_row: self.delete_rb_row(r)
         )
-        del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
         self.rb_delete_button_objects.append(del_btn)
     
         self.root.update_idletasks()
@@ -10964,11 +11012,15 @@ class Python_Designer():
         self.pe_notes_label_objects.append(lbl_notes)    
         pe_var.trace_add("write", lambda *args, r=row_number_for_this_row: self.on_select_pe_unified(r))
     
-        del_btn = tk.Button(
-            self.pe_container_frame, text="X", fg="white", bg="red", width=2,
+        #del_btn = tk.Button(
+        #    self.pe_container_frame, text="X", fg="white", bg="red", width=2,
+        #    command=lambda r=row_number_for_this_row: self.delete_pe_row(r)
+        #)
+        #del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
+        del_btn = self.add_delete_button(
+            self.pe_container_frame, reference_widget=pe_dropdown,
             command=lambda r=row_number_for_this_row: self.delete_pe_row(r)
         )
-        del_btn.grid(column=self.grid_col_last_column, row=row_idx, sticky="nsew", padx=(5, 0))
         self.pe_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
