@@ -30,7 +30,6 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 import re
-import json
 from datetime import datetime
 import webbrowser
 from fpdf import FPDF
@@ -60,8 +59,6 @@ class Python_Designer():
         self.weapon_extra_mag_qty_up_button_objects = []
         self.weapon_extra_mag_qty_down_button_objects = []
         self.weapon_mount_dropdown_objects = []
-        self.weapon_link_up_button_objects = []
-        self.weapon_link_down_button_objects = []
         self.weapon_cost_label_objects = []
         self.weapon_weight_label_objects = []
         self.weapon_spaces_label_objects = []
@@ -87,7 +84,6 @@ class Python_Designer():
         self.link_row_ids = []
         self.next_link_id = 1
         self.link_label_objects = []
-        #self.link_cost_label_objects = []
         self.link_entry_vars = []
 
 
@@ -95,8 +91,6 @@ class Python_Designer():
         self.link_rows_count               = 0#10
         self.bt_rows_count                 = 0#10
         self.accessory_rows_count          = 0#30
-        self.component_armor_rows_count    = 0# 5
-        self.rocket_booster_rows_count     = 0# 5
         self.personal_equipment_rows_count = 0#10
         self.delete_btn_x                  = 940  # starting guess — see note below on tuning this
 
@@ -177,7 +171,6 @@ class Python_Designer():
         self.load_menus()
         
         self.gas_tank_dropdown = None     
-        self.hc_adjusted: float = 0.0
         self.age_value: int = 0
 
         self.canvas_type = None
@@ -505,7 +498,7 @@ class Python_Designer():
 
         # 2. Re-create a clean, empty canvas sub-frame in its place
         self.weapon_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
-        self.weapon_container_frame.grid(row=112, column=self.grid_col_item, columnspan=10, sticky="nsew", padx=5, pady=5)
+        self.weapon_container_frame.grid(row=114, column=0, columnspan=30, sticky="nsew")
 
         # 3. Clean up the underlying data memory values
         self.weapon_rows_count = 0
@@ -593,7 +586,6 @@ class Python_Designer():
         self.link_row_ids = []
         self.link_selections = []
         self.link_label_objects = []
-        self.link_cost_label_objects = []
         self.link_entry_vars = []
         self.links_combos = []
         self.link_delete_button_objects = []
@@ -752,8 +744,10 @@ class Python_Designer():
         self.recalculate()
 
     def menu_file_open(self, *args):
-        self.current_file_path = filedialog.askopenfilename()  # Open file selection dialog
-        self.load_record(self.current_file_path)
+        potential_file_path = filedialog.askopenfilename()  # Open file selection dialog
+        if potential_file_path is not None:
+            self.current_file_path = potential_file_path
+            self.load_record(self.current_file_path)
 
     def menu_file_save(self, *args):
         if self.current_file_path == "":
@@ -765,415 +759,6 @@ class Python_Designer():
         self.current_file_path = filedialog.asksaveasfilename()  # Open file selection dialog
         self.save_record(self.current_file_path)
         messagebox.showinfo("File Save As", f"{self.current_file_path} saved.")
-
-    def menu_file_print2(self, *args):
-        output_dict: dict = {}
-        output_dict["Body"] = ""
-        var_sloped_armor: int = int(self.var_sloped_armor.get())
-        if var_sloped_armor == 1: #include the sloped reference
-            output_dict["Body"] += "Sloped "
-        local_mod: str = str(self.selected_modifications.get())
-        if local_mod not in ["No Mods", "Modifications"]:
-            output_dict["Body"] += local_mod + " "
-        output_dict["Body"] += str(self.selected_body.get())
-        output_dict["Body_Name"] = str(self.selected_body.get())
-        if int(self.var_six_wheel_chassis.get()) == 1:
-            output_dict["Body"] += " with six wheel chassis"
-        output_dict["Chassis"] = str(self.selected_chassis.get())
-        output_dict["Suspension"] = str(self.selected_suspension.get())
-        output_dict["Engine"] = str(self.selected_engine.get())
-        if self.label_engine_type.cget("text") == "Gas":
-            if self.var_engine_gas_super_charger.get() == 1:
-                output_dict["Engine"] += ", " + "SuperCharger"
-            if self.var_engine_gas_vp_turbo.get() == 1:
-                output_dict["Engine"] += ", " + "Variable Pitch Turbo Charger"
-            if self.var_engine_gas_tube_headers.get() == 1:
-                output_dict["Engine"] += ", " + "Tubular Headers"
-            if self.var_engine_gas_blue_print.get() == 1:
-                output_dict["Engine"] += ", " + "Blueprinting"
-            if self.var_engine_gas_turbo.get() == 1:
-                output_dict["Engine"] += ", " + "TurboCharger"
-            output_dict["GasTank"] = str(self.selected_gas_tank.get())
-            output_dict["GasQty"] = str(self.var_gas_gallon_qty.get())
-            output_dict["GasDp"] = str(self.label_gas_tank_dp.cget("text"))
-        else:
-            if self.var_engine_electric_super_conductors.get() == 1:
-                output_dict["Engine"] += ", " + "Super Conductors"
-            if self.var_engine_electric_platnium_catalysts.get():
-                output_dict["Engine"] += ", " + "Platnium Catalysts"
-            if self.var_engine_electric_extra_power_cells.get() == 1:
-                output_dict["Engine"] += ", " + "Extra Power Cells"
-
-        output_dict["Total_Cost"] = str(self.label_total_cost.cget("text"))
-        output_dict["Total_Weight"] = str(self.label_total_weight.cget("text"))
-        output_dict["Total_Space"] = str(self.label_total_space.cget("text"))
-        output_dict["Final_Engine_MPG"] = str(self.label_final_engine_mpg.cget("text"))
-        output_dict["Total_Power_Factors"] = str(self.label_total_power_factors.cget("text"))
-        output_dict["Top_Speed"] = str(self.label_top_speed.cget("text"))
-        output_dict["Max_Weight_Top_Speed"] = str(self.label_max_weight_top_speed.cget("text"))
-        output_dict["Accel"] = str(self.label_accel.cget("text"))
-        output_dict["Max_Accel"] = str(self.label_max_accel.cget("text"))
-        output_dict["HC"] = str(self.label_max_hc.cget("text"))
-        output_dict["MPG"] = str(self.label_final_engine_mpg.cget("text"))
-        output_dict["Range"] = str(self.label_range.cget("text"))
-        output_dict["Engine_Type"] = str(self.label_engine_type.cget("text"))
-        output_dict["Engine_DP"] = str(self.label_engine_dp.cget("text"))
-        output_dict["Outer_Armor_Name"] = str(self.selected_outer_armor.get())
-        output_dict["Inner_Armor_Name"] = str(self.selected_inner_armor.get())
-
-        if int(self.var_front_tire_qty.get()) > 0: #only list front tires if they exist
-            output_dict["front_tire_dp"] = str(self.label_front_tire_dp.cget("text"))
-            output_dict["front_tire_qty"] = str(self.var_front_tire_qty.get())
-            output_dict["front_tire"] = ""
-            if self.var_front_tire_steelbelting.get() == 1:
-                output_dict["front_tire"] += "Steelbelted" + " "
-            if self.var_front_tire_radial.get() == 1:
-                output_dict["front_tire"] += "Radial" + " "
-            if self.var_front_tire_fireproof.get() == 1:
-                output_dict["front_tire"] += "Fireproof" + " "
-            if self.var_front_tire_offroad.get() == 1:
-                output_dict["front_tire"] += "OffRoad" + " "
-            if self.var_front_tire_racing_slick.get() == 1:
-                output_dict["front_tire"] += "Racing Slicks" + " "
-            output_dict["front_tire"] += str(self.selected_front_tire.get())
-        if int(self.var_rear_tire_qty.get()) > 0: #only list rear tires if they exist
-            output_dict["rear_tire_dp"] = str(self.label_rear_tire_dp.cget("text"))
-            output_dict["rear_tire_qty"] = str(int(self.var_rear_tire_qty.get()))
-            output_dict["rear_tire"] = ""
-            if int(self.var_rear_tire_steelbelting.get()) == 1:
-                output_dict["rear_tire"] += "Steelbelted" + " "
-            if int(self.var_rear_tire_radial.get()) == 1:
-                output_dict["rear_tire"] += "Radial" + " "
-            if int(self.var_rear_tire_fireproof.get()) == 1:
-                output_dict["rear_tire"] += "Fireproof" + " "
-            if int(self.var_rear_tire_offroad.get()) == 1:
-                output_dict["rear_tire"] += "OffRoad" + " "
-            if int(self.var_rear_tire_racing_slick.get()) == 1:
-                output_dict["rear_tire"] += "Racing Slicks" + " "
-            output_dict["rear_tire"] += str(self.selected_rear_tire.get())
-        if int(self.var_driver_gunner_qty.get()) > 0:
-            output_dict["driver_gunner"] = str(self.var_driver_gunner_qty.get())
-        if int(self.var_passenger_qty.get()) > 0:
-            output_dict["passenger"] = str(self.var_passenger_qty.get())
-
-        output_dict["armor_outer_front_qty"]  = str(self.var_outer_front_armor_allocation_qty.get())
-        output_dict["armor_outer_back_qty"]   = str(self.var_outer_back_armor_allocation_qty.get())
-        output_dict["armor_outer_left_qty"]   = str(self.var_outer_left_armor_allocation_qty.get())
-        output_dict["armor_outer_right_qty"]  = str(self.var_outer_right_armor_allocation_qty.get())
-        output_dict["armor_outer_top_qty"]    = str(self.var_outer_top_armor_allocation_qty.get())
-        output_dict["armor_outer_bottom_qty"] = str(self.var_outer_underbody_armor_allocation_qty.get())
-
-        output_dict["armor_inner_front_qty"]  = str(self.var_inner_front_armor_allocation_qty.get())
-        output_dict["armor_inner_back_qty"]   = str(self.var_inner_back_armor_allocation_qty.get())
-        output_dict["armor_inner_left_qty"]   = str(self.var_inner_left_armor_allocation_qty.get())
-        output_dict["armor_inner_right_qty"]  = str(self.var_inner_right_armor_allocation_qty.get())
-        output_dict["armor_inner_top_qty"]    = str(self.var_inner_top_armor_allocation_qty.get())
-        output_dict["armor_inner_bottom_qty"] = str(self.var_inner_underbody_armor_allocation_qty.get())
-
-        for index in range(1, self.weapon_rows_count + 1):
-            # Safely fetch the main conditional canvas attribute
-            canvas_attr = getattr(self, f"selected_sub_weapon_{index}_canvas", None)
-            
-            if canvas_attr is not None:
-                output_dict[f"weapon_{index}_qty"]    = getattr(self, f"var_sub_weapon_{index}_qty").get()
-                output_dict[f"weapon_{index}_name"]   = canvas_attr.get()
-                output_dict[f"weapon_{index}_facing"] = getattr(self, f"weapon_armor_facing_{index}").get()
-                output_dict[f"weapon_{index}_to_hit"] = getattr(self, f"label_sub_weapon_{index}_tohit").cget("text")
-                output_dict[f"weapon_{index}_damage"] = getattr(self, f"label_sub_weapon_{index}_damage").cget("text")
-                output_dict[f"weapon_{index}_ammo"]   = getattr(self, f"var_sub_weapon_ammo_{index}_qty").get()
-                output_dict[f"weapon_{index}_dp"]     = getattr(self, f"label_hidden_sub_weapon_{index}_dp").cget("text")
-                output_dict[f"weapon_type_{index}"]   = str(getattr(self, f"selected_weapon_alt_{index}").get())
-            else:
-                output_dict[f"weapon_{index}_qty"]    = ""
-                output_dict[f"weapon_{index}_name"]   = ""
-                output_dict[f"weapon_{index}_facing"] = ""
-                output_dict[f"weapon_{index}_to_hit"] = ""
-                output_dict[f"weapon_{index}_damage"] = ""
-                output_dict[f"weapon_{index}_ammo"]   = ""
-                output_dict[f"weapon_{index}_dp"]     = ""
-                output_dict[f"weapon_type_{index}"]   = ""
-
-
-        #if self.selected_sub_weapon_1_canvas is not None:
-        #    output_dict["weapon_1_qty"]    = self.var_sub_weapon_1_qty.get()
-        #    output_dict["weapon_1_name"]   = self.selected_sub_weapon_1_canvas.get()
-        #    output_dict["weapon_1_facing"] = self.weapon_armor_facing_1.get()
-        #    output_dict["weapon_1_to_hit"] = self.label_sub_weapon_1_tohit.cget("text")
-        #    output_dict["weapon_1_damage"] = self.label_sub_weapon_1_damage.cget("text")
-        #    output_dict["weapon_1_ammo"]   = self.var_sub_weapon_ammo_1_qty.get()
-        #    output_dict["weapon_1_dp"]     = self.label_hidden_sub_weapon_1_dp.cget("text")
-        #else:
-        #    output_dict["weapon_1_qty"]    = ""
-        #    output_dict["weapon_1_name"]   = ""
-        #    output_dict["weapon_1_facing"] = ""
-        #    output_dict["weapon_1_to_hit"] = ""
-        #    output_dict["weapon_1_damage"] = ""
-        #    output_dict["weapon_1_ammo"]   = ""
-        #    output_dict["weapon_1_dp"]     = ""
-        #if self.selected_sub_weapon_2_canvas is not None:
-        #    output_dict["weapon_2_qty"]    = self.var_sub_weapon_2_qty.get()
-        #    output_dict["weapon_2_name"]   = self.selected_sub_weapon_2_canvas.get()
-        #    output_dict["weapon_2_facing"] = self.weapon_armor_facing_2.get()
-        #    output_dict["weapon_2_to_hit"] = self.label_sub_weapon_2_tohit.cget("text")
-        #    output_dict["weapon_2_damage"] = self.label_sub_weapon_2_damage.cget("text")
-        #    output_dict["weapon_2_ammo"]   = self.var_sub_weapon_ammo_2_qty.get()
-        #    output_dict["weapon_2_dp"]     = self.label_hidden_sub_weapon_2_dp.cget("text")
-        #else:
-        #    output_dict["weapon_2_qty"]    = ""
-        #    output_dict["weapon_2_name"]   = ""
-        #    output_dict["weapon_2_facing"] = ""
-        #    output_dict["weapon_2_to_hit"] = ""
-        #    output_dict["weapon_2_damage"] = ""
-        #    output_dict["weapon_2_ammo"]   = ""
-        #    output_dict["weapon_2_dp"]     = ""
-        #if self.selected_sub_weapon_3_canvas is not None:
-        #    output_dict["weapon_3_qty"]    = self.var_sub_weapon_3_qty.get()
-        #    output_dict["weapon_3_name"]   = self.selected_sub_weapon_3_canvas.get()
-        #    output_dict["weapon_3_facing"] = self.weapon_armor_facing_3.get()
-        #    output_dict["weapon_3_to_hit"] = self.label_sub_weapon_3_tohit.cget("text")
-        #    output_dict["weapon_3_damage"] = self.label_sub_weapon_3_damage.cget("text")
-        #    output_dict["weapon_3_ammo"]   = self.var_sub_weapon_ammo_3_qty.get()
-        #    output_dict["weapon_3_dp"]     = self.label_hidden_sub_weapon_3_dp.cget("text")
-        #else:
-        #    output_dict["weapon_3_qty"]    = ""
-        #    output_dict["weapon_3_name"]   = ""
-        #    output_dict["weapon_3_facing"] = ""
-        #    output_dict["weapon_3_to_hit"] = ""
-        #    output_dict["weapon_3_damage"] = ""
-        #    output_dict["weapon_3_ammo"]   = ""
-        #    output_dict["weapon_3_dp"]     = ""
-        #if self.selected_sub_weapon_4_canvas is not None:
-        #    output_dict["weapon_4_qty"]    = self.var_sub_weapon_4_qty.get()
-        #    output_dict["weapon_4_name"]   = self.selected_sub_weapon_4_canvas.get()
-        #    output_dict["weapon_4_facing"] = self.weapon_armor_facing_4.get()
-        #    output_dict["weapon_4_to_hit"] = self.label_sub_weapon_4_tohit.cget("text")
-        #    output_dict["weapon_4_damage"] = self.label_sub_weapon_4_damage.cget("text")
-        #    output_dict["weapon_4_ammo"]   = self.var_sub_weapon_ammo_4_qty.get()
-        #    output_dict["weapon_4_dp"]     = self.label_hidden_sub_weapon_4_dp.cget("text")
-        #else:
-        #    output_dict["weapon_4_qty"]    = ""
-        #    output_dict["weapon_4_name"]   = ""
-        #    output_dict["weapon_4_facing"] = ""
-        #    output_dict["weapon_4_to_hit"] = ""
-        #    output_dict["weapon_4_damage"] = ""
-        #    output_dict["weapon_4_ammo"]   = ""
-        #    output_dict["weapon_4_dp"]     = ""
-        #if self.selected_sub_weapon_5_canvas is not None:
-        #    output_dict["weapon_5_qty"]    = self.var_sub_weapon_5_qty.get()
-        #    output_dict["weapon_5_name"]   = self.selected_sub_weapon_5_canvas.get()
-        #    output_dict["weapon_5_facing"] = self.weapon_armor_facing_5.get()
-        #    output_dict["weapon_5_to_hit"] = self.label_sub_weapon_5_tohit.cget("text")
-        #    output_dict["weapon_5_damage"] = self.label_sub_weapon_5_damage.cget("text")
-        #    output_dict["weapon_5_ammo"]   = self.var_sub_weapon_ammo_5_qty.get()
-        #    output_dict["weapon_5_dp"]     = self.label_hidden_sub_weapon_5_dp.cget("text")
-        #else:
-        #    output_dict["weapon_5_qty"]    = ""
-        #    output_dict["weapon_5_name"]   = ""
-        #    output_dict["weapon_5_facing"] = ""
-        #    output_dict["weapon_5_to_hit"] = ""
-        #    output_dict["weapon_5_damage"] = ""
-        #    output_dict["weapon_5_ammo"]   = ""
-        #    output_dict["weapon_5_dp"]     = ""
-        #if self.selected_sub_weapon_6_canvas is not None:
-        #    output_dict["weapon_6_qty"]    = self.var_sub_weapon_6_qty.get()
-        #    output_dict["weapon_6_name"]   = self.selected_sub_weapon_6_canvas.get()
-        #    output_dict["weapon_6_facing"] = self.weapon_armor_facing_6.get()
-        #    output_dict["weapon_6_to_hit"] = self.label_sub_weapon_6_tohit.cget("text")
-        #    output_dict["weapon_6_damage"] = self.label_sub_weapon_6_damage.cget("text")
-        #    output_dict["weapon_6_ammo"]   = self.var_sub_weapon_ammo_6_qty.get()
-        #    output_dict["weapon_6_dp"]     = self.label_hidden_sub_weapon_6_dp.cget("text")
-        #else:
-        #    output_dict["weapon_6_qty"]    = ""
-        #    output_dict["weapon_6_name"]   = ""
-        #    output_dict["weapon_6_facing"] = ""
-        #    output_dict["weapon_6_to_hit"] = ""
-        #    output_dict["weapon_6_damage"] = ""
-        #    output_dict["weapon_6_ammo"]   = ""
-        #    output_dict["weapon_6_dp"]     = ""
-        #if self.selected_sub_weapon_7_canvas is not None:
-        #    output_dict["weapon_7_qty"]    = self.var_sub_weapon_7_qty.get()
-        #    output_dict["weapon_7_name"]   = self.selected_sub_weapon_7_canvas.get()
-        #    output_dict["weapon_7_facing"] = self.weapon_armor_facing_7.get()
-        #    output_dict["weapon_7_to_hit"] = self.label_sub_weapon_7_tohit.cget("text")
-        #    output_dict["weapon_7_damage"] = self.label_sub_weapon_7_damage.cget("text")
-        #    output_dict["weapon_7_ammo"]   = self.var_sub_weapon_ammo_7_qty.get()
-        #    output_dict["weapon_7_dp"]     = self.label_hidden_sub_weapon_7_dp.cget("text")
-        #else:
-        #    output_dict["weapon_7_qty"]    = ""
-        #    output_dict["weapon_7_name"]   = ""
-        #    output_dict["weapon_7_facing"] = ""
-        #    output_dict["weapon_7_to_hit"] = ""
-        #    output_dict["weapon_7_damage"] = ""
-        #    output_dict["weapon_7_ammo"]   = ""
-        #    output_dict["weapon_7_dp"]     = ""
-        #if self.selected_sub_weapon_8_canvas is not None:
-        #    output_dict["weapon_8_qty"]    = self.var_sub_weapon_8_qty.get()
-        #    output_dict["weapon_8_name"]   = self.selected_sub_weapon_8_canvas.get()
-        #    output_dict["weapon_8_facing"] = self.weapon_armor_facing_8.get()
-        #    output_dict["weapon_8_to_hit"] = self.label_sub_weapon_8_tohit.cget("text")
-        #    output_dict["weapon_8_damage"] = self.label_sub_weapon_8_damage.cget("text")
-        #    output_dict["weapon_8_ammo"]   = self.var_sub_weapon_ammo_8_qty.get()
-        #    output_dict["weapon_8_dp"]     = self.label_hidden_sub_weapon_8_dp.cget("text")
-        #else:
-        #    output_dict["weapon_8_qty"]    = ""
-        #    output_dict["weapon_8_name"]   = ""
-        #    output_dict["weapon_8_facing"] = ""
-        #    output_dict["weapon_8_to_hit"] = ""
-        #    output_dict["weapon_8_damage"] = ""
-        #    output_dict["weapon_8_ammo"]   = ""
-        #    output_dict["weapon_8_dp"]     = ""
-        #if self.selected_sub_weapon_9_canvas is not None:
-        #    output_dict["weapon_9_qty"]    = self.var_sub_weapon_9_qty.get()
-        #    output_dict["weapon_9_name"]   = self.selected_sub_weapon_9_canvas.get()
-        #    output_dict["weapon_9_facing"] = self.weapon_armor_facing_9.get()
-        #    output_dict["weapon_9_to_hit"] = self.label_sub_weapon_9_tohit.cget("text")
-        #    output_dict["weapon_9_damage"] = self.label_sub_weapon_9_damage.cget("text")
-        #    output_dict["weapon_9_ammo"]   = self.var_sub_weapon_ammo_9_qty.get()
-        #    output_dict["weapon_9_dp"]     = self.label_hidden_sub_weapon_9_dp.cget("text")
-        #else:
-        #    output_dict["weapon_9_qty"]    = ""
-        #    output_dict["weapon_9_name"]   = ""
-        #    output_dict["weapon_9_facing"] = ""
-        #    output_dict["weapon_9_to_hit"] = ""
-        #    output_dict["weapon_9_damage"] = ""
-        #    output_dict["weapon_9_ammo"]   = ""
-        #    output_dict["weapon_9_dp"]     = ""
-        #if self.selected_sub_weapon_10_canvas is not None:
-        #    output_dict["weapon_10_qty"]    = self.var_sub_weapon_10_qty.get()
-        #    output_dict["weapon_10_name"]   = self.selected_sub_weapon_10_canvas.get()
-        #    output_dict["weapon_10_facing"] = self.weapon_armor_facing_10.get()
-        #    output_dict["weapon_10_to_hit"] = self.label_sub_weapon_10_tohit.cget("text")
-        #    output_dict["weapon_10_damage"] = self.label_sub_weapon_10_damage.cget("text")
-        #    output_dict["weapon_10_ammo"]   = self.var_sub_weapon_ammo_10_qty.get()
-        #    output_dict["weapon_10_dp"]     = self.label_hidden_sub_weapon_10_dp.cget("text")
-        #else:
-        #    output_dict["weapon_10_qty"]    = ""
-        #    output_dict["weapon_10_name"]   = ""
-        #    output_dict["weapon_10_facing"] = ""
-        #    output_dict["weapon_10_to_hit"] = ""
-        #    output_dict["weapon_10_damage"] = ""
-        #    output_dict["weapon_10_ammo"]   = ""
-        #    output_dict["weapon_10_dp"]     = ""
-
-        #output_dict["weapon_type_1"] = str(self.selected_weapon_alt_1.get())
-        #output_dict["weapon_type_2"] = str(self.selected_weapon_alt_2.get())
-        #output_dict["weapon_type_3"] = str(self.selected_weapon_alt_3.get())
-        #output_dict["weapon_type_4"] = str(self.selected_weapon_alt_4.get())
-        #output_dict["weapon_type_5"] = str(self.selected_weapon_alt_5.get())
-        #output_dict["weapon_type_6"] = str(self.selected_weapon_alt_6.get())
-        #output_dict["weapon_type_7"] = str(self.selected_weapon_alt_7.get())
-        #output_dict["weapon_type_8"] = str(self.selected_weapon_alt_8.get())
-        #output_dict["weapon_type_9"] = str(self.selected_weapon_alt_9.get())
-        #output_dict["weapon_type_10"] = str(self.selected_weapon_alt_10.get())
-
-        output_dict["accessory_1_qty"]   = str(self.var_accessories_1_qty.get())
-        output_dict["accessory_1_name"]  = str(self.selected_accessories_1.get())
-        output_dict["accessory_2_qty"]   = str(self.var_accessories_2_qty.get())
-        output_dict["accessory_2_name"]  = str(self.selected_accessories_2.get())
-        output_dict["accessory_3_qty"]   = str(self.var_accessories_3_qty.get())
-        output_dict["accessory_3_name"]  = str(self.selected_accessories_3.get())
-        output_dict["accessory_4_qty"]   = str(self.var_accessories_4_qty.get())
-        output_dict["accessory_4_name"]  = str(self.selected_accessories_4.get())
-        output_dict["accessory_5_qty"]   = str(self.var_accessories_5_qty.get())
-        output_dict["accessory_5_name"]  = str(self.selected_accessories_5.get())
-        output_dict["accessory_6_qty"]   = str(self.var_accessories_6_qty.get())
-        output_dict["accessory_6_name"]  = str(self.selected_accessories_6.get())
-        output_dict["accessory_7_qty"]   = str(self.var_accessories_7_qty.get())
-        output_dict["accessory_7_name"]  = str(self.selected_accessories_7.get())
-        output_dict["accessory_8_qty"]   = str(self.var_accessories_8_qty.get())
-        output_dict["accessory_8_name"]  = str(self.selected_accessories_8.get())
-        output_dict["accessory_9_qty"]   = str(self.var_accessories_9_qty.get())
-        output_dict["accessory_9_name"]  = str(self.selected_accessories_9.get())
-        output_dict["accessory_10_qty"]  = str(self.var_accessories_10_qty.get())
-        output_dict["accessory_10_name"] = str(self.selected_accessories_10.get())
-        output_dict["accessory_11_qty"]  = str(self.var_accessories_11_qty.get())
-        output_dict["accessory_11_name"] = str(self.selected_accessories_11.get())
-        output_dict["accessory_12_qty"]  = str(self.var_accessories_12_qty.get())
-        output_dict["accessory_12_name"] = str(self.selected_accessories_12.get())
-        output_dict["accessory_13_qty"]  = str(self.var_accessories_13_qty.get())
-        output_dict["accessory_13_name"] = str(self.selected_accessories_13.get())
-        output_dict["accessory_14_qty"]  = str(self.var_accessories_14_qty.get())
-        output_dict["accessory_14_name"] = str(self.selected_accessories_14.get())
-        output_dict["accessory_15_qty"]  = str(self.var_accessories_15_qty.get())
-        output_dict["accessory_15_name"] = str(self.selected_accessories_15.get())
-        output_dict["accessory_16_qty"]  = str(self.var_accessories_16_qty.get())
-        output_dict["accessory_16_name"] = str(self.selected_accessories_16.get())
-        output_dict["accessory_17_qty"]  = str(self.var_accessories_17_qty.get())
-        output_dict["accessory_17_name"] = str(self.selected_accessories_17.get())
-        output_dict["accessory_18_qty"]  = str(self.var_accessories_18_qty.get())
-        output_dict["accessory_18_name"] = str(self.selected_accessories_18.get())
-        output_dict["accessory_19_qty"]  = str(self.var_accessories_19_qty.get())
-        output_dict["accessory_19_name"] = str(self.selected_accessories_19.get())
-        output_dict["accessory_20_qty"]  = str(self.var_accessories_20_qty.get())
-        output_dict["accessory_20_name"] = str(self.selected_accessories_20.get())
-        output_dict["accessory_21_qty"]  = str(self.var_accessories_21_qty.get())
-        output_dict["accessory_21_name"] = str(self.selected_accessories_21.get())
-        output_dict["accessory_22_qty"]  = str(self.var_accessories_22_qty.get())
-        output_dict["accessory_22_name"] = str(self.selected_accessories_22.get())
-        output_dict["accessory_23_qty"]  = str(self.var_accessories_23_qty.get())
-        output_dict["accessory_23_name"] = str(self.selected_accessories_23.get())
-        output_dict["accessory_24_qty"]  = str(self.var_accessories_24_qty.get())
-        output_dict["accessory_24_name"] = str(self.selected_accessories_24.get())
-        output_dict["accessory_25_qty"]  = str(self.var_accessories_25_qty.get())
-        output_dict["accessory_25_name"] = str(self.selected_accessories_25.get())
-        output_dict["accessory_26_qty"]  = str(self.var_accessories_26_qty.get())
-        output_dict["accessory_26_name"] = str(self.selected_accessories_26.get())
-        output_dict["accessory_27_qty"]  = str(self.var_accessories_27_qty.get())
-        output_dict["accessory_27_name"] = str(self.selected_accessories_27.get())
-        output_dict["accessory_28_qty"]  = str(self.var_accessories_28_qty.get())
-        output_dict["accessory_28_name"] = str(self.selected_accessories_28.get())
-        output_dict["accessory_29_qty"]  = str(self.var_accessories_29_qty.get())
-        output_dict["accessory_29_name"] = str(self.selected_accessories_29.get())
-        output_dict["accessory_30_qty"]  = str(self.var_accessories_30_qty.get())
-        output_dict["accessory_30_name"] = str(self.selected_accessories_30.get())
-
-        output_dict["ca_1_facing"] = str(self.selected_component_armor_facing_1.get())
-        output_dict["ca_1_type"]   = str(self.selected_component_armor_1.get())
-        output_dict["ca_1_dp"]     = str(self.var_component_armor_count_qty_1.get())
-        output_dict["ca_2_facing"] = str(self.selected_component_armor_facing_2.get())
-        output_dict["ca_2_type"]   = str(self.selected_component_armor_2.get())
-        output_dict["ca_2_dp"]     = str(self.var_component_armor_count_qty_2.get())
-        output_dict["ca_3_facing"] = str(self.selected_component_armor_facing_3.get())
-        output_dict["ca_3_type"]   = str(self.selected_component_armor_3.get())
-        output_dict["ca_3_dp"]     = str(self.var_component_armor_count_qty_3.get())
-        output_dict["ca_4_facing"] = str(self.selected_component_armor_facing_4.get())
-        output_dict["ca_4_type"]   = str(self.selected_component_armor_4.get())
-        output_dict["ca_4_dp"]     = str(self.var_component_armor_count_qty_4.get())
-        output_dict["ca_5_facing"] = str(self.selected_component_armor_facing_5.get())
-        output_dict["ca_5_type"]   = str(self.selected_component_armor_5.get())
-        output_dict["ca_5_dp"]     = str(self.var_component_armor_count_qty_5.get())
-        output_dict["pe_name_1"]   = str(self.selected_personal_equipment_1.get())
-        output_dict["pe_qty_1"]    = int(self.var_personal_equipment_1_qty.get())
-        output_dict["pe_name_2"]   = str(self.selected_personal_equipment_2.get())
-        output_dict["pe_qty_2"]    = int(self.var_personal_equipment_2_qty.get())
-        output_dict["pe_name_3"]   = str(self.selected_personal_equipment_3.get())
-        output_dict["pe_qty_3"]    = int(self.var_personal_equipment_3_qty.get())
-        output_dict["pe_name_4"]   = str(self.selected_personal_equipment_4.get())
-        output_dict["pe_qty_4"]    = int(self.var_personal_equipment_4_qty.get())
-        output_dict["pe_name_5"]   = str(self.selected_personal_equipment_5.get())
-        output_dict["pe_qty_5"]    = int(self.var_personal_equipment_5_qty.get())
-        output_dict["pe_name_6"]   = str(self.selected_personal_equipment_6.get())
-        output_dict["pe_qty_6"]    = int(self.var_personal_equipment_6_qty.get())
-        output_dict["pe_name_7"]   = str(self.selected_personal_equipment_7.get())
-        output_dict["pe_qty_7"]    = int(self.var_personal_equipment_7_qty.get())
-        output_dict["pe_name_8"]   = str(self.selected_personal_equipment_8.get())
-        output_dict["pe_qty_8"]    = int(self.var_personal_equipment_8_qty.get())
-        output_dict["pe_name_9"]   = str(self.selected_personal_equipment_9.get())
-        output_dict["pe_qty_9"]    = int(self.var_personal_equipment_9_qty.get())
-        output_dict["pe_name_10"]   = str(self.selected_personal_equipment_10.get())
-        output_dict["pe_qty_10"]    = int(self.var_personal_equipment_10_qty.get())
-
-        # Insert inside menu_file_print() before self.make_pdf call
-        output_dict["links"] = []
-        for i in range(self.link_rows_count):
-            chosen_items = self.link_selections[i]
-            if chosen_items:
-                output_dict["links"].append({
-                    "link_index": i + 1,
-                    "items": chosen_items  # This exports a python list: ["Weapon 1: Machine Gun (Front)", "Weapon 2: Machine Gun (Front)"]
-                })
-
-        self.make_pdf(input_dict=output_dict)
     
     def menu_file_print(self, *args):
         output_dict: dict = {}
@@ -1192,25 +777,25 @@ class Python_Designer():
         output_dict["Suspension"] = str(self.selected_suspension.get())
         output_dict["Engine"] = str(self.selected_engine.get())
         if self.label_engine_type.cget("text") == "Gas":
-            if self.var_engine_gas_super_charger.get() == 1:
+            if self.to_int(self.var_engine_gas_super_charger.get()) == 1:
                 output_dict["Engine"] += ", " + "SuperCharger"
-            if self.var_engine_gas_vp_turbo.get() == 1:
+            if self.to_int(self.var_engine_gas_vp_turbo.get()) == 1:
                 output_dict["Engine"] += ", " + "Variable Pitch Turbo Charger"
-            if self.var_engine_gas_tube_headers.get() == 1:
+            if self.to_int(self.var_engine_gas_tube_headers.get()) == 1:
                 output_dict["Engine"] += ", " + "Tubular Headers"
-            if self.var_engine_gas_blue_print.get() == 1:
+            if self.to_int(self.var_engine_gas_blue_print.get()) == 1:
                 output_dict["Engine"] += ", " + "Blueprinting"
-            if self.var_engine_gas_turbo.get() == 1:
+            if self.to_int(self.var_engine_gas_turbo.get()) == 1:
                 output_dict["Engine"] += ", " + "TurboCharger"
             output_dict["GasTank"] = str(self.selected_gas_tank.get())
             output_dict["GasQty"] = str(self.var_gas_gallon_qty.get())
             output_dict["GasDp"] = str(self.label_gas_tank_dp.cget("text"))
         else:
-            if self.var_engine_electric_super_conductors.get() == 1:
+            if self.to_int(self.var_engine_electric_super_conductors.get()) == 1:
                 output_dict["Engine"] += ", " + "Super Conductors"
-            if self.var_engine_electric_platnium_catalysts.get():
+            if self.to_int(self.var_engine_electric_platnium_catalysts.get()):
                 output_dict["Engine"] += ", " + "Platnium Catalysts"
-            if self.var_engine_electric_extra_power_cells.get() == 1:
+            if self.to_int(self.var_engine_electric_extra_power_cells.get()) == 1:
                 output_dict["Engine"] += ", " + "Extra Power Cells"
     
         output_dict["Total_Cost"] = str(self.label_total_cost.cget("text"))
@@ -1234,15 +819,15 @@ class Python_Designer():
             output_dict["front_tire_dp"] = str(self.label_front_tire_dp.cget("text"))
             output_dict["front_tire_qty"] = str(self.var_front_tire_qty.get())
             output_dict["front_tire"] = ""
-            if self.var_front_tire_steelbelting.get() == 1:
+            if self.to_int(self.var_front_tire_steelbelting.get()) == 1:
                 output_dict["front_tire"] += "Steelbelted" + " "
-            if self.var_front_tire_radial.get() == 1:
+            if self.to_int(self.var_front_tire_radial.get()) == 1:
                 output_dict["front_tire"] += "Radial" + " "
-            if self.var_front_tire_fireproof.get() == 1:
+            if self.to_int(self.var_front_tire_fireproof.get()) == 1:
                 output_dict["front_tire"] += "Fireproof" + " "
-            if self.var_front_tire_offroad.get() == 1:
+            if self.to_int(self.var_front_tire_offroad.get()) == 1:
                 output_dict["front_tire"] += "OffRoad" + " "
-            if self.var_front_tire_racing_slick.get() == 1:
+            if self.to_int(self.var_front_tire_racing_slick.get()) == 1:
                 output_dict["front_tire"] += "Racing Slicks" + " "
             output_dict["front_tire"] += str(self.selected_front_tire.get())
         if int(self.var_rear_tire_qty.get()) > 0:
@@ -3378,8 +2963,6 @@ class Python_Designer():
         for i in range(self.link_rows_count):
             link_cost = 50 if len(self.link_selections[i]) >= 2 else 0
             active_links_cost += link_cost
-            #if i < len(self.link_cost_label_objects):
-            #    self.link_cost_label_objects[i].configure(text=str(link_cost))
 
         active_bt_cost = 50 * len(self.bt_selections) 
     
@@ -3629,7 +3212,7 @@ class Python_Designer():
         total_engine_mod_pf:      float = 0.0
         total_engine_mod_cost:    float = 0.0
 
-        if self.var_engine_gas_super_charger.get() == 1:
+        if self.to_int(self.var_engine_gas_super_charger.get()) == 1:
             engine_mod_space = engine_mod_space + 1
             engine_mod_weight = engine_weight * 0.2
             engine_mod_power_factors = engine_power_factors * 0.4
@@ -3638,37 +3221,37 @@ class Python_Designer():
             total_engine_mod_pf = total_engine_mod_pf + engine_mod_power_factors
             engine_mod_accel = engine_mod_accel + 5
             engine_mod_mpg = engine_mod_mpg - 1
-        if self.var_engine_gas_vp_turbo.get() == 1:
+        if self.to_int(self.var_engine_gas_vp_turbo.get()) == 1:
             engine_mod_power_factors = engine_power_factors * 0.25
             engine_mod_cost = 2000 + engine_mod_power_factors
             total_engine_mod_pf = total_engine_mod_pf + engine_mod_power_factors
             engine_mod_accel = engine_mod_accel + 5
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_gas_tube_headers.get() == 1:
+        if self.to_int(self.var_engine_gas_tube_headers.get()) == 1:
             engine_mod_cost = engine_cost * 0.2
             engine_mod_power_factors = engine_power_factors * 0.05
             total_engine_mod_pf = total_engine_mod_pf + engine_mod_power_factors
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_gas_blue_print.get() == 1:
+        if self.to_int(self.var_engine_gas_blue_print.get()) == 1:
             engine_mod_cost = engine_cost * 0.5
             engine_mod_power_factors = engine_power_factors * 0.1
             total_engine_mod_pf = total_engine_mod_pf + engine_mod_power_factors
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_gas_turbo.get() == 1:
+        if self.to_int(self.var_engine_gas_turbo.get()) == 1:
             engine_mod_power_factors = engine_power_factors * 0.25
             engine_mod_cost = 1000 + engine_mod_power_factors
             total_engine_mod_pf = total_engine_mod_pf + engine_mod_power_factors
             engine_mod_accel = engine_mod_accel + 5
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_electric_super_conductors.get() == 1:
+        if self.to_int(self.var_engine_electric_super_conductors.get()) == 1:
             engine_mod_cost = engine_cost * 0.5
             total_engine_mod_pf = total_engine_mod_pf + engine_power_factors * 0.1
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_electric_platnium_catalysts.get() == 1:
+        if self.to_int(self.var_engine_electric_platnium_catalysts.get()) == 1:
             engine_mod_cost = engine_cost * 0.2
             total_engine_mod_pf = total_engine_mod_pf + engine_power_factors * 0.05
             total_engine_mod_cost = total_engine_mod_cost + engine_mod_cost
-        if self.var_engine_electric_extra_power_cells.get() == 1:
+        if self.to_int(self.var_engine_electric_extra_power_cells.get()) == 1:
             engine_mod_cost = engine_cost * 0.25
             engine_mod_weight = engine_weight * 0.25
             engine_mod_dp = engine_mod_dp + 0.1
@@ -4018,53 +3601,6 @@ class Python_Designer():
             tire_hc_adjustment = tire_hc_adjustment + 0.5 # partial load
         return tire_hc_adjustment
 
-    def hc_addition2(self):
-        addition_list: list = []
-        body_type: str = self.selected_body.get()
-        if body_type in ["Pickup", "Pickup, 1 Spc Ext. Cab", "Pickup, 2 Spc Ext. Cab", "Camper", "Van"]:
-            total_weight: float = float(self.label_total_weight.cget("text"))
-            if total_weight >= 5500:
-                self.label_hidden_body_hc.configure(text="-1")
-            else:
-                self.label_hidden_body_hc.configure(text="0")
-
-        addition_list.append(int(self.label_hidden_body_hc.cget("text")))
-        addition_list.append(int(self.label_hc.cget("text")))
-        addition_list.append(float(self.label_hidden_front_tire_hc.cget("text")))
-        addition_list.append(float(self.label_hidden_rear_tire_hc.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_1.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_2.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_3.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_4.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_5.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_6.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_7.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_8.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_9.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_10.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_11.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_12.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_13.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_14.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_15.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_16.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_17.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_18.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_19.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_20.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_21.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_22.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_23.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_24.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_25.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_26.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_27.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_28.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_29.cget("text")))
-        addition_list.append(float(self.label_hidden_accessories_hc_30.cget("text")))
-        local_total = sum(addition_list)
-        self.label_max_hc.configure(text=str(local_total))
-    
     def hc_addition(self):
         addition_list: list = []
         body_type: str = self.selected_body.get()
@@ -4323,9 +3859,9 @@ class Python_Designer():
         self.accessories_list.append(entry_dict)
         entry_dict: dict = {"Accessory Name": "Smart Link",                                   "Cost": "500",   "Space": "",	    "Weight": "",      "DP": "",   "Notes": "Allows weapons in one location to be aimed and fired with others (same weapon)", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
-        entry_dict: dict = {"Accessory Name": "Spoiler/Airdam, Plastic",                      "Cost": "750",   "Space": "",	    "Weight": "140",   "DP": "",   "Notes": "Must have two for full effect!", "Turret Size":  -2, "Cycle Only": 0}
+        entry_dict: dict = {"Accessory Name": "Spoiler/Airdam, Plastic",                      "Cost": "0",   "Space": "",	    "Weight": "0",   "DP": "",   "Notes": "Must have two for full effect!", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
-        entry_dict: dict = {"Accessory Name": "Spoiler/Airdam, Metal",                        "Cost": "750",   "Space": "",	    "Weight": "140",   "DP": "",   "Notes": "Must have two for full effect!", "Turret Size":  -2, "Cycle Only": 0}
+        entry_dict: dict = {"Accessory Name": "Spoiler/Airdam, Metal",                        "Cost": "0",   "Space": "",	    "Weight": "0",   "DP": "",   "Notes": "Must have two for full effect!", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
         entry_dict: dict = {"Accessory Name": "Targeting Computer",                           "Cost": "1000",  "Space": "",	    "Weight": "",      "DP": "",   "Notes": " +1 To Hit for ONE position", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
@@ -6852,8 +6388,8 @@ class Python_Designer():
                     #    selected_cost_label.configure(text=self.float_to_str(item_cost))
                     #    selected_weight_label.configure(text=self.float_to_str(item_weight))
                     #    count_spoiler_airdam += qty
-                    case "Spoilers and Airdams, plastic" | "Spoilers and Airdams, Metal Airfoil":
-                        if name == "Spoilers and Airdams, plastic":
+                    case "Spoiler/Airdam, Plastic" | "Spoiler/Airdam, Metal":
+                        if name == "Spoiler/Airdam, Plastic":
                             material_keyword, cost_mult, weight_mult = "Plastic", 25.0, 10.0
                         else:
                             material_keyword, cost_mult, weight_mult = "MET", 10.0, 2.0
@@ -7759,82 +7295,6 @@ class Python_Designer():
             space_val = float(space_obj.cget("text"))
             facings_list.append({facing_str: space_val})
 
-        #for i in range(1, self.weapon_rows_count + 1):
-        #    facing_var_name = f"weapon_armor_facing_{i}"
-        #    space_lbl_name = f"label_sub_weapon_{i}_space"
-        #    facing_str = "Facing"
-        #    if hasattr(self, facing_var_name):
-        #        var_obj = getattr(self, facing_var_name)
-        #        if var_obj is not None and hasattr(var_obj, "get"):
-        #            try: facing_str = var_obj.get()
-        #            except Exception: facing_str = "Facing"
-        #        elif isinstance(var_obj, str):
-        #            facing_str = var_obj
-                
-        #    space_val = 0.0
-        #    if hasattr(self, space_lbl_name):
-        #        lbl_obj = getattr(self, space_lbl_name)
-        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-        #            try:
-        #                txt = lbl_obj.cget("text").strip()
-        #                if txt != "": space_val = float(txt)
-        #            except (AttributeError, ValueError):
-        #                pass
-                    
-        #    facings_list.append({facing_str: space_val})
-
-        # 3. SAFE PASS TWO: Dynamic processing for the 5 Component Armor facings
-        #for i in range(1, 6):
-        #    facing_var_name = f"selected_component_armor_facing_{i}"
-        #    space_lbl_name = f"label_component_armor_{i}_space"
-            
-        #    facing_str = "Facing"
-        #    if hasattr(self, facing_var_name):
-        #        var_obj = getattr(self, facing_var_name)
-        #        if var_obj is not None and hasattr(var_obj, "get"):
-        #            try: facing_str = var_obj.get()
-        #            except Exception: pass
-        #        elif isinstance(var_obj, str):
-        #            facing_str = var_obj
-                
-        #    space_val = 0.0
-        #    if hasattr(self, space_lbl_name):
-        #        lbl_obj = getattr(self, space_lbl_name)
-        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-        #            try:
-        #                txt = lbl_obj.cget("text").strip()
-        #                if txt != "": space_val = float(txt)
-        #            except (AttributeError, ValueError):
-        #                pass
-                    
-        #    facings_list.append({facing_str: space_val})
-
-        # 4. SAFE PASS THREE: Dynamic processing for the 5 Rocket Booster facings
-        #for i in range(1, 6):
-        #    facing_var_name = f"selected_rocket_booster_facing_{i}"
-        #    space_lbl_name = f"label_rocket_booster_{i}_space"
-            
-        #    facing_str = "Facing"
-        #    if hasattr(self, facing_var_name):
-        #        var_obj = getattr(self, facing_var_name)
-        #        if var_obj is not None and hasattr(var_obj, "get"):
-        #            try: facing_str = var_obj.get()
-        #            except Exception: pass
-        #        elif isinstance(var_obj, str):
-        #            facing_str = var_obj
-                
-        #    space_val = 0.0
-        #    if hasattr(self, space_lbl_name):
-        #        lbl_obj = getattr(self, space_lbl_name)
-        #        if lbl_obj is not None and hasattr(lbl_obj, "cget"):
-        #            try:
-        #                txt = lbl_obj.cget("text").strip()
-        #                if txt != "": space_val = float(txt)
-        #            except (AttributeError, ValueError):
-        #                pass
-                    
-        #    facings_list.append({facing_str: space_val})
-
         # 5. AGGREGATION PASS: Tally up cumulative space metrics per vehicle side location
         front_facing:  float = 0.0
         back_facing:   float = 0.0
@@ -7955,7 +7415,7 @@ class Python_Designer():
         weapon_rows = len(self.sub_weapon_dropdown_string_vars)
         accessory_rows = math.ceil(len(self.accessory_dropdown_string_vars) / 2)
         ca_rows = len(self.ca_dropdown_string_vars)
-        tire_rows = self.get_tire_row_count(input_dict)  # 0, 1, or 2 — see below
+        #tire_rows = self.get_tire_row_count(input_dict)  # 0, 1, or 2 — see below
         # ... tire_rows, armor_rows, etc. computed the same way
     
         # --- Lay out the right column, chaining start rows off each section's actual count ---
@@ -7967,31 +7427,21 @@ class Python_Designer():
         self.draw_accessories_border(pdf, right_row, accessory_rows)
         self.draw_accessories(pdf, input_dict, start_row=right_row)
         right_row = right_row + 2 + accessory_rows
+        self.draw_speed(pdf, input_dict, start_row=right_row + 1)
     
+        self.draw_car_image(pdf, input_dict)
         # --- Left column, same pattern ---
         left_row = 16
         if ca_rows > 0:
             self.draw_ca_border(pdf, left_row, ca_rows)
             self.draw_ca(pdf, input_dict, start_row=left_row)
             left_row = left_row + 1 + ca_rows
-        # if ca_rows == 0, left_row is untouched — next section slides up automatically
     
-        # ... continue chaining Engine, Tires, Armor, Walkaround the same way
-
-
-        #self.draw_weapons(pdf, input_dict)
-        #self.draw_accessories(pdf, input_dict)
-        #self.draw_speed(pdf, input_dict)
-        #self.draw_car_image(pdf, input_dict)
-        #self.draw_ca(pdf, input_dict)
-        #self.draw_engine(pdf, input_dict)
-        #self.draw_tires(pdf, input_dict)
-        #self.draw_armor(pdf, input_dict)
-        #self.draw_notes(pdf, input_dict)
-        self.draw_walkarounds(pdf, input_dict, start_row=left_row)
-        final_row = max(left_row, right_row)
-        #self.draw_speed_border(pdf, final_row, 18)
-        self.draw_speed(pdf, input_dict, start_row=right_row + 1)
+        left_row = self.draw_engine(pdf, input_dict, start_row=left_row)
+        left_row = self.draw_tires(pdf, input_dict, start_row=left_row)
+        left_row = self.draw_armor(pdf, input_dict, start_row=left_row)
+        left_row = self.draw_notes(pdf, input_dict, start_row=left_row)
+        left_row = self.draw_walkarounds(pdf, input_dict, start_row=left_row)
         self.end_pdf(pdf, pdf_output_file_name)
 
     def get_tire_row_count(self, input_dict: dict) -> int:
@@ -8032,8 +7482,11 @@ class Python_Designer():
         self.width_weapon_dp:     int = 10
         self.row_top:             int = 10
         self.row_2:               int = self.row_top + self.row_height
+        self.row_3:               int = self.row_2 + self.row_height
+        self.row_4:               int = self.row_3 + self.row_height
+        self.row_5:               int = self.row_4 + self.row_height
         self.row_car_image:       int = self.row_2 + self.row_height
-        self.row_ca_top:          int = self.row_top + self.row_height * 15
+        #self.row_ca_top:          int = self.row_top + self.row_height * 15
         self.row_speed_top:       int = self.row_top + self.row_height * 34
         self.row_last:            int = self.row_top + self.row_height * 54
 
@@ -8300,6 +7753,7 @@ class Python_Designer():
             return  # not enough room left on the page — skip the section entirely, including its header        
 
         pdf.set_xy(x=self.col_middle_line, y=input_row)
+        pdf.rect(x=self.col_middle_line, y=input_row, w=self.col_right_edge-self.col_middle_line+self.col_left_edge, h=self.row_height, style="F") #Weapons header
         pdf.cell(w=self.col_middle_line, h=self.row_height, ln=True, align='L', text="Speed and Handling Record")
         for self.row_index in range(1, range_limit + 1):
             line_str: str = f"   {self.row_index:>2} _____  10   9   8   7   6   5   4  3   2   1   0   -1   -2   -3   -4   -5   -6"
@@ -8310,8 +7764,7 @@ class Python_Designer():
         """Given an FPDF object and an input_dict, draw the car image section"""
         #create car image here with checkboxes for damage
         #Draw rectangles
-        column_count = 23
-        row_count = 20
+        #row_count = 20
         cell_width = 2
         cell_height = 2
         pdf.set_draw_color(0, 0, 0) # Set border color (RGB)
@@ -8602,7 +8055,7 @@ class Python_Designer():
             pdf.set_x(x=self.col_left_edge + third_quarter_x)
             pdf.cell(w = 10, h = self.row_height, text="PP", ln=False, align='L')
         if len(engine_list) > 0:
-            for entry_name, entry_dp in engine_list:
+            for _, entry_dp in engine_list:
                 engine_dp += int(entry_dp) # Add the component armor to the engine (this might go slightly wrong with metal)
         divider: int = math.ceil(engine_dp/8)
         if divider == 0:
@@ -8637,7 +8090,6 @@ class Python_Designer():
         driver_dp: int = 3
         gunner_dp: int = 3
 
-        body_armor_count = 0
         body_armor_list: list = []
         for pe_index in range (1,11):
             qty_index  = f"pe_qty_{pe_index}"
@@ -8646,7 +8098,6 @@ class Python_Designer():
                 name_index = f"pe_name_{pe_index}"
                 name_str   = input_dict.get(name_index, "")
                 if name_str in ['Body Armor', "Body Armor, Blended", "Body Armor, Improved", "Body Armor, Improved, Blended", "Impact Armor", "Spiked Armor"]:
-                    body_armor_count += 1
                     if name_str in ["Body Armor, Improved", "Body Armor, Improved, Blended", "Impact Armor", "Spiked Armor"]:
                         for qty_index in range(0, qty_value):
                             body_armor_list.append((name_str, qty_value, 6))
@@ -8691,7 +8142,7 @@ class Python_Designer():
                             forced_columns=4)
         d_g_dp: int = 0
         if len(d_g_list) > 0:
-            for entry_name, entry_dp in d_g_list:
+            for _, entry_dp in d_g_list:
                 d_g_dp += int(entry_dp) # Add the component armor to the driver (this might go slightly wrong with metal)
         if d_g_dp > 0:
             self.draw_block(pdf,
@@ -8781,7 +8232,6 @@ class Python_Designer():
         cell_width = 2
         cell_height = 2
         row_max = 1
-        row_max_add = 1
         cell_count = 0
         if block_count > 6: #large number
             row_max = 2
@@ -8844,9 +8294,12 @@ class Python_Designer():
                 pdf.cell(w=self.col_right_edge, h=self.row_height, ln=False, align='L', text=ca_dp)
             pdf.cell(w=self.col_right_edge, h=self.row_height, text="", ln=True, align='C')
 
-    def draw_engine(self, pdf: FPDF, input_dict: dict, start_row: int):
+    def draw_engine(self, pdf: FPDF, input_dict: dict, start_row: int)-> int:
         """Always exactly 1 header + 1 data row, fixed height."""
         pdf.set_xy(x=self.col_left_edge, y=self.row_y(start_row))
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #engine and tank header
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="D") #engine and tank
+
         pdf.cell(w=self.col_middle_line, h=self.row_height, ln=True, align='L', text="Engine and Tank DP:")
         pdf.set_x(x=self.col_left_edge)
         pdf.cell(w=self.col_right_edge, h=self.row_height, text=input_dict.get("Engine_Type", ""), ln=False, align='L')
@@ -8858,10 +8311,14 @@ class Python_Designer():
             pdf.set_x(x=self.col_engine_tkdp)
             pdf.cell(w=self.col_right_edge, h=self.row_height, text=input_dict.get("GasDp", ""), ln=False, align='L')
         pdf.cell(w=self.col_right_edge, h=self.row_height, text="", ln=True, align='C')
+        return start_row + 3
 
-    def draw_tires(self, pdf: FPDF, input_dict: dict, start_row: int):
+    def draw_tires(self, pdf: FPDF, input_dict: dict, start_row: int)-> int:
         """Only draws rows that actually have data — 0, 1, or 2 lines."""
         pdf.set_xy(x=self.col_left_edge, y=self.row_y(start_row))
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #tires header
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row + 1), w=self.col_middle_line-self.col_left_edge, h=self.row_height*2,  style="D") #tires
+
         pdf.cell(w=self.col_middle_line, h=self.row_height, ln=True, align='L', text="Tires:")
     
         local_front_tire_qty  = str(input_dict.get("front_tire_qty", ""))
@@ -8888,9 +8345,13 @@ class Python_Designer():
             pdf.set_x(x=self.col_ca_dp)
             pdf.cell(h=self.row_height, text=local_rear_tire_dp, ln=False, align='L')
             pdf.cell(w=self.col_right_edge, h=self.row_height, text="", ln=True, align='C')
+        return start_row + 3
 
-    def draw_armor(self, pdf: FPDF, input_dict: dict):
+    def draw_armor(self, pdf: FPDF, input_dict: dict, start_row: int)-> int:
         """Given an FPDF object and an input_dict, draw the Notes section"""
+        pdf.set_xy(x=self.col_left_edge, y=self.row_y(start_row))
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #armor header
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height*8,  style="D") #armor
         pdf.cell(w=self.col_middle_line, h = self.row_height, ln=True, align='L', text="Armor:")
 
         local_outer_front_qty  = input_dict.get("armor_outer_front_qty","")
@@ -8990,21 +8451,93 @@ class Python_Designer():
             pdf.set_x(x=self.col_middle_armor)
             pdf.cell(h = self.row_height, text=local_inner_bottom_qty, ln=False, align='L')
         pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
+        return start_row + 8
+        
+    def format_speed_quarter(self, value: float) -> str:
+        """Rounds to the nearest 0.25 and formats: whole numbers show no decimal,
+        quarter-steps show exactly two decimal places (e.g. 56.75, 63.00 -> 63)."""
+        rounded = round(value * 4) / 4
+        if rounded == int(rounded):
+            return str(int(rounded))
+        return f"{rounded:.2f}"
 
-    def draw_notes(self, pdf: FPDF, input_dict: dict):
+    def draw_notes(self, pdf: FPDF, input_dict: dict, start_row: int) -> int:
         """Given an FPDF object and an input_dict, draw the Notes section"""
-        pdf.cell(w = self.col_middle_line, h = self.row_height, ln=False, align='L', text="Notes:")
-        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
-        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
-        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
-        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
-        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='C')
-
-    def draw_walkarounds(self, pdf: FPDF, input_dict: dict, start_row: int):
-        """Given an FPDF object and an input_dict, draw the WalkAround section"""
         pdf.set_xy(x=self.col_left_edge, y=self.row_y(start_row))
         pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #Walkaround header
+        pdf.cell(w = self.col_middle_line, h = self.row_height, ln=False, align='L', text="Notes:")
+        pdf.cell(w = self.col_right_edge, h = self.row_height, text="", ln=True, align='L')
+        
+        has_spoiler_airdam = False
+        has_htm            = False
+        has_hdhtm          = False
+        has_overdrive      = False
+        output_text: str   = ""
+        total_spoiler_airdam_qty: int = 0
+        
+        acc_index = 1
+        while f"accessory_{acc_index}_name" in input_dict:
+            acc_name = input_dict.get(f"accessory_{acc_index}_name", "")
+            acc_qty = input_dict.get(f"accessory_{acc_index}_qty", "0")
+        
+            if acc_qty != "0" and acc_name != "Accessory":
+                if "Spoiler" in acc_name or "Airdam" in acc_name:
+                    total_spoiler_airdam_qty += self.to_int(acc_qty, default=0)
+                elif "HDHTM" in acc_name or "Heavy Duty" in acc_name:
+                    has_hdhtm = True
+                elif "HTM" in acc_name:
+                    has_htm = True
+                elif "Overdrive" in acc_name:
+                    has_overdrive = True
+        
+            acc_index += 1
+        has_spoiler_airdam = total_spoiler_airdam_qty >= 2
+
+        # Notes contents HC with spoiler and airdam, if it is there
+        if has_spoiler_airdam:
+            output_text = f"HC w/Spoiler or Airdam: {int(float(input_dict.get('HC', '0'))) + 1}"
+        else:
+            output_text = ""
+        pdf.set_x(x=self.col_left_edge)            
+        pdf.cell(w = self.col_middle_line, h = self.row_height, text=output_text, ln=True, align='L')
+        # top speed with HTMS, if it's purchased
+        if has_htm:
+            speed_val = self.to_int(input_dict.get('Top_Speed', '0')) * 0.75            
+            output_text = f"Top Speed w/ HTMs: {self.format_speed_quarter(speed_val)}"
+        else:
+            output_text = ""
+        pdf.set_x(x=self.col_left_edge)            
+        pdf.cell(w = self.col_middle_line, h = self.row_height, text=output_text, ln=True, align='L')
+        # top speed with HDHTMs, if it's purchased
+        if has_hdhtm:
+            speed_val = self.to_int(input_dict.get('Top_Speed', '0')) * 2 / 3
+            output_text = f"Top Speed w/ HDHTMs: {self.format_speed_quarter(speed_val)}"
+        else:
+            output_text = ""
+        pdf.set_x(x=self.col_left_edge)            
+        pdf.cell(w = self.col_middle_line, h = self.row_height, text=output_text, ln=True, align='L')
+        # top speed with overdrive, if it's purchased
+        if has_overdrive:
+            speed_val = self.to_int(input_dict.get('Top_Speed', '0')) + 20
+            output_text = f"Top Speed w/ Overdrive: {self.format_speed_quarter(speed_val)}"
+        else:
+            output_text = ""
+        pdf.set_x(x=self.col_left_edge)            
+        pdf.cell(w = self.col_middle_line, h = self.row_height, text=output_text, ln=True, align='L')
+        return start_row + 5
+
+    def draw_walkarounds(self, pdf: FPDF, input_dict: dict, start_row: int) -> int:
+        """Given an FPDF object and an input_dict, draw the WalkAround section"""
+        return_row: int = 0
+        pdf.set_xy(x=self.col_left_edge, y=self.row_y(start_row))
+        walkaround_top_y = self.row_y(start_row + 1)
+        available_rows = int((self.row_last - walkaround_top_y) / self.row_height)
+        available_rows = max(available_rows, 0)
+        pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #Walkaround header
+        #pdf.rect(x=self.col_left_edge, y=self.row_y(start_row + 1), w=self.col_middle_line-self.col_left_edge, h=self.row_height*available_rows, style="D") #Walkaround header
+        #pdf.rect(x=self.col_left_edge, y=self.row_y(start_row), w=self.col_middle_line-self.col_left_edge, h=self.row_height,    style="F") #Walkaround header
         pdf.cell(w=self.col_middle_line, h = self.row_height, ln=True, align='L', text="Walkaround:")
+        return_row = return_row + 1
 
         #Walkaround Line 1
         crew_count: int = int(input_dict.get("driver_gunner", 0))
@@ -9013,6 +8546,7 @@ class Python_Designer():
         line_text: str = f'{input_dict.get("Body", "")}, {input_dict.get("Engine_Type", "")} Engine, Crew: {crew_count}'
         pdf.set_x(self.col_left_edge)
         pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
+        return_row = return_row + 1
 
         #Walkaround Line 2
         pass_text: str = ""
@@ -9022,6 +8556,7 @@ class Python_Designer():
         line_text: str = f'{pass_text}{tire_text}'
         pdf.set_x(self.col_left_edge)
         pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
+        return_row = return_row + 1
 
         #Walkaround Line 3
         spoiler_airdam_text: str = ""
@@ -9045,12 +8580,14 @@ class Python_Designer():
             pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
         else:
             pdf.cell(h = self.row_height, text=" ", ln=1)
+        return_row = return_row + 1
         line_text: str = f'{wheelhub_text}{wheelguard_text}{bumper_spike_text}'
         pdf.set_x(self.col_left_edge)
         if len(line_text) > 0:
             pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
         else:
             pdf.cell(h = self.row_height, text=" ", ln=1)
+        return_row = return_row + 1
 
         # Weapons section of WalkAround
         local_weapon_list: list = [] #CRL
@@ -9068,6 +8605,7 @@ class Python_Designer():
                 pdf.set_x(self.col_left_edge)
                 line_text = f'{local_entry[0]} {local_entry[1]} {local_entry[2]}'
                 pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
+                return_row = return_row + 1
         
         for pe_index in range(1,len(self.pe_dropdown_string_vars) + 1):
             name_index: str = str(f'pe_name_{pe_index}')
@@ -9078,6 +8616,8 @@ class Python_Designer():
                 pdf.set_x(self.col_left_edge)
                 line_text = f'{qty_entry} {name_entry}'
                 pdf.cell(h = self.row_height, text=line_text, ln=True, align='L')
+                return_row = return_row + 1
+        return start_row + return_row
 
     def end_pdf(self, pdf: FPDF, output_name: str):
         """Given an FPDF object and an output name, finish the file and display it"""
@@ -9086,153 +8626,6 @@ class Python_Designer():
         if os.path.exists(output_name):
             webbrowser.open(output_name)
         print("PDF generated successfully as fpdf_example.pdf")
-
-    def scan_available_firing_actions2(self, include_links=False) -> list:
-        """Scans weapons, accessories, and boosters to find all valid link targets."""
-        actions = ["None"]
-    
-        # 1. Scan the 10 Weapon rows
-        for i in range(1, self.weapon_rows_count + 1):
-            # Fallback tracking for common Tkinter naming variations in your file
-            wpn_name_attr = f"selected_sub_weapon_{i}_canvas"
-            if not hasattr(self, wpn_name_attr):
-                wpn_name_attr = f"selected_sub_weapon_{i}"
-            
-            wpn_facing_attr = f"weapon_armor_facing_{i}"
-            if not hasattr(self, wpn_facing_attr):
-                wpn_facing_attr = f"selected_weapon_facing_{i}"
-            
-            # Dynamic lookup for your quantity entry or dropdown variable
-            wpn_qty_attr = f"var_sub_weapon_{i}_qty" 
-            if not hasattr(self, wpn_qty_attr):
-                wpn_qty_attr = f"var_sub_weapon_{i}_qty" # alternate fallback
-
-            if hasattr(self, wpn_name_attr) and getattr(self, wpn_name_attr):
-                name = getattr(self, wpn_name_attr).get()
-
-                # Fetch facing cleanly
-                #self.weapon_armor_facing_1
-                facing = "Facing"
-                if hasattr(self, wpn_facing_attr) and getattr(self, wpn_facing_attr):
-                    try:
-                        facing = getattr(self, wpn_facing_attr).get()
-                    except AttributeError: #This might be a string and not a TKinter value
-                        facing = str(getattr(self, wpn_facing_attr, "Facing"))
-
-                # Fetch quantity cleanly (default to 1 if not found or blank)
-                qty = "1"
-                #if hasattr(self, wpn_qty_attr) and getattr(self, wpn_qty_attr):
-                #    qty_val = getattr(self, wpn_qty_attr).get()
-                #    if qty_val and str(qty_val).strip() not in ["", "0"]:
-                #        qty = str(qty_val).strip()
-                # 1. Retrieve the variable object safely
-                var_obj = getattr(self, wpn_qty_attr, None)
-                qty_val = 0 # Default to zero if the object is missing or blank
-    
-                if var_obj is not None:
-                    try:
-                        # 2. Extract raw text first to watch for blank field resets
-                        raw_text = var_obj.get()
-                        if str(raw_text).strip() != "":
-                            qty_val = int(raw_text)
-                    except (ValueError, tk.TclError):
-                        # 3. Prevent crashing if the field is empty or contains non-numeric symbols
-                        qty_val = 0
-                
-                if name and name not in ["Weapon", "", "None", "Choose Weapon"]:
-                    # UPDATED: Includes the quantity format marker in the string description
-                    actions.append(f"Weapon {i}: {name} (Qty: {qty}) ({facing})")
-                
-        # 2. Scan the 30 Accessory slots
-        linkable_accessories = [
-            "Fire Extinguisher", "Improved Fire Extinguisher", 
-            "HTM", "HDHTM", "Overdrive", "Nitrous Oxide"
-        ]
-        for i in range(1, 31):
-            acc_attr = f"selected_accessories_{i}"
-            if hasattr(self, acc_attr):
-                acc_name = getattr(self, acc_attr).get()
-                if acc_name in linkable_accessories:
-                    actions.append(f"Accessory {i}: {acc_name}")
-                
-        # 3. Scan Rocket Boosters (up to 5)
-        for i in range(1, 6):
-            booster_lbs = f"var_rocket_booster_pounds_qty_{i}"
-            booster_facing = f"selected_rocket_booster_facing_{i}"
-            if hasattr(self, booster_lbs):
-                lbs = getattr(self, booster_lbs).get()
-                facing = getattr(self, booster_facing).get() if hasattr(self, booster_facing) else "Facing"
-                if lbs and int(lbs) > 0:
-                    actions.append(f"Rocket Booster {i} ({lbs} lbs - {facing})")
-
-        # 4. NEW: Scan active Links (only available for Bumper Triggers)
-        if include_links:
-            for i in range(self.link_rows_count):
-                if hasattr(self, 'link_selections') and self.link_selections[i]:
-                    actions.append(f"Link #{i+1} (Active)")                    
-                
-        return actions
-    
-    def scan_available_firing_actions3(self, include_links=False) -> list:
-        """Scans dynamic weapon and accessory rows to find all valid link targets.
-        Returns a list of dicts: {"id": <stable id string>, "label": <display text>, "type": <category>}
-        """
-        actions = []
-    
-        # 1. Weapons — explode by qty, since each physical unit is independently linkable
-        linkable_accessory_names = [
-            "Fire Extinguisher", "Improved Fire Extinguisher",
-            "HTM", "HDHTM", "Overdrive", "Nitrous Oxide"
-        ]
-    
-        for idx in range(len(self.weapon_row_ids)):
-            row_id = self.weapon_row_ids[idx]
-            name = self.weapon_dropdown_string_vars[idx].get()
-            if not name or name in ["Weapon", "None", "Choose Weapon"]:
-                continue
-    
-            facing = "Facing"
-            if idx < len(self.weapon_mount_dropdown_string_vars):
-                try:
-                    facing = self.weapon_mount_dropdown_string_vars[idx].get()
-                except (AttributeError, tk.TclError):
-                    facing = "Facing"
-    
-            qty = self.to_int(self.weapon_qty_string_vars[idx].get(), default=1)
-            #qty = max(qty, 1)  # a weapon row with qty 0 shouldn't be linkable, but avoid a zero-iteration surprise silently vanishing an otherwise-valid row
-    
-            for unit_num in range(1, qty + 1):
-                action_id = f"weapon-{row_id}-{unit_num}"
-                if qty > 1:
-                    label = f"Weapon: {name} ({unit_num} of {qty}) ({facing})"
-                else:
-                    label = f"Weapon: {name} ({facing})"
-                actions.append({"id": action_id, "label": label, "type": "weapon"})
-    
-        # 2. Linkable accessories — always exactly one action per row, qty is never > 1 for these
-        for idx in range(len(self.accessory_row_ids)):
-            row_id = self.accessory_row_ids[idx]
-            name = self.accessory_dropdown_string_vars[idx].get()
-            if name not in linkable_accessory_names:
-                continue
-    
-            action_id = f"accessory-{row_id}"
-            label = f"Accessory: {name}"
-            actions.append({"id": action_id, "label": label, "type": "accessory"})
-    
-        # 3. Bumper Triggers — placeholder for the next section; same shape, added when that
-        #    dynamic list exists (self.bumper_trigger_row_ids, etc.)
-        # for idx in range(len(self.bumper_trigger_row_ids)):
-        #     ...
-        #     actions.append({"id": f"bumper-{row_id}", "label": ..., "type": "bumper_trigger"})
-    
-        # 4. Existing active Links, if requested (e.g. for Bumper Triggers linking to a Link group)
-        if include_links:
-            for i in range(self.link_rows_count):
-                if hasattr(self, 'link_selections') and self.link_selections[i]:
-                    actions.append({"id": f"link-{i}", "label": f"Link #{i+1} (Active)", "type": "link"})
-    
-        return actions
     
     def scan_available_firing_actions(self, include_links=False) -> list:
         """Scans dynamic weapon and accessory rows to find all valid link targets.
@@ -9319,68 +8712,6 @@ class Python_Designer():
                         label=action, command=tk._setit(self.selected_link_target[i], action)
                     )
 
-    def open_link_selector2(self, event, row_index):
-        """Opens a pop-up checklist window to select multiple actions for a link row."""
-        # Get current available firing actions from your scanner
-        available_actions = self.scan_available_firing_actions()
-        if len(available_actions) <= 1:  # Only "None" is available
-            return
-
-        # Create top-level pop-up window
-        popup = tk.Toplevel()
-        popup.title(f"Configure Link #{row_index + 1}")
-        popup.geometry(f"+{event.x_root}+{event.y_root}") # Open right under the mouse
-        popup.grab_set() # Keep focus on this window until closed
-
-        # Frame with scrollbar for long action lists
-        frame = tk.Frame(popup)
-        frame.pack(fill="both", expand=True, padx=10, pady=10)
-    
-        canvas = tk.Canvas(frame)
-        scrollbar = tk.Scrollbar(frame, orient="vertical", command=canvas.yview)
-        scroll_frame = tk.Frame(canvas)
-    
-        scroll_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-    
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-        # Dictionary to track checkbox variables
-        chk_vars = {}
-        current_selections = self.link_selections[row_index]
-
-        def save_and_close():
-            # Gather all checked items (ignoring "None")
-            chosen = [act for act, var in chk_vars.items() if var.get() and act != "None"]
-            self.link_selections[row_index] = chosen
-        
-            # Update UI text field
-            if chosen:
-                self.link_entry_vars[row_index].set(", ".join(chosen))
-            else:
-                self.link_entry_vars[row_index].set("No items linked")
-            
-            self.recalculate() # Trigger cost updates
-            popup.destroy()
-
-            # Populate checkboxes
-        for action in available_actions:
-            if action == "None":
-                continue
-            var = tk.BooleanVar(value=(action in current_selections))
-            chk_vars[action] = var
-            cb = tk.Checkbutton(scroll_frame, text=action, variable=var, anchor="w")
-            cb.pack(fill="x", anchor="w", pady=2)
-
-        # Save button
-        btn_save = tk.Button(popup, text="Apply Link", command=save_and_close, bg="lightgreen")
-        btn_save.pack(fill="x", padx=10, pady=(0, 10))
-    
     def open_link_selector(self, event, row_index):
         """Opens a pop-up checklist window to select multiple actions for a link row."""
         available_actions = self.scan_available_firing_actions()
@@ -9540,7 +8871,7 @@ class Python_Designer():
             self.weapon_container_frame.destroy()
     
         self.weapon_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
-        self.weapon_container_frame.grid(row=112, column=0, columnspan=10, sticky="nsew", padx=5, pady=5)
+        self.weapon_container_frame.grid(row=114, column=0, columnspan=30, sticky="nsew")
     
         self.weapon_rows_count = 0
         self.next_weapon_id = 1
@@ -9769,6 +9100,7 @@ class Python_Designer():
 
     def delete_accessory_row(self, row_index: int):
         """Deletes the accessory row at 0-based row_index, rebuilding the section from surviving data."""
+        row_index = row_index - 1
         surviving_rows = []
         for i in range(len(self.accessory_dropdown_string_vars)):
             if i == row_index:
@@ -9804,7 +9136,7 @@ class Python_Designer():
             self.accessory_container_frame, text="➕ Add Accessory Row",
             command=self.add_new_accessory_row, bg="#e1f5fe"
         )
-        self.add_accessory_btn.grid(row=0, column=0, columnspan=1, sticky="w", padx=5, pady=5)
+        self.add_accessory_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
     
         self.is_loading = True
         for row_data in surviving_rows:
@@ -9831,7 +9163,7 @@ class Python_Designer():
         column_track_vars = [
             self.grid_col_item, self.grid_col_qty, self.grid_left_up_button,
             self.grid_left_down_button, self.grid_col_cost, self.grid_col_weight,
-            self.grid_col_spaces, self.grid_col_dp, self.grid_col_last_column
+            self.grid_col_spaces, self.grid_col_dp
         ]
         for c_idx in column_track_vars:
             global_width = self.second_frame.columnconfigure(c_idx, "minsize")
@@ -9907,42 +9239,17 @@ class Python_Designer():
 
         #del_btn = tk.Button(
         #    self.accessory_container_frame, text="X", fg="white", bg="red", width=2,
-        #    command=lambda r=row_idx - 1: self.delete_accessory_row(r)
+        #    command=lambda r=row_idx - 1: self.delete_accessory_row(r=)
         #)
         #del_btn.grid(row=row_idx, column=self.grid_col_last_column, sticky="nsew", padx=(5, 0))
         del_btn = self.add_delete_button(
             self.accessory_container_frame, reference_widget=cb_accessory,
-            command=lambda r=row_idx - 1: self.delete_accessory_row(r)
+            command=lambda r=row_idx-1: self.delete_accessory_row(row_index=r)
         )
         self.accessory_delete_button_objects.append(del_btn)
 
         self.root.update_idletasks()
         self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
-
-    def on_accessory_changed(self, event, row_idx):
-        """Uses the untouched self.accessories_list master array to change selection
-        focus without altering list positions, slicing, or filtering values.
-        """
-        selected_category = event.widget.get()
-    
-        # Isolate your row tracking components from your object matrix
-        target_item_dropdown = self.ca_dropdown_objects[row_idx - 1]
-        target_item_variable = self.ca_dropdown_string_vars[row_idx - 1]
-
-        # Ensure the dropdown contains the complete, unaltered master list
-        target_item_dropdown['values'] = self.accessories_list
-
-        # Jump focus directly to the first item matching the category keyword
-        if selected_category != "All Items":
-            for index, item in enumerate(self.accessories_list):
-                if selected_category.lower() in item.lower():
-                    # Set the text and highlight the item inside the open list
-                    target_item_variable.set(item)
-                    target_item_dropdown.current(index)
-                    return
-                
-        # Fallback default if "All Items" is chosen or no keyword matches
-        target_item_variable.set("Accessory")
 
     def on_button_accessory_qty_unified(self, row_number: int, direction: str):
         """
@@ -10041,62 +9348,6 @@ class Python_Designer():
         if hasattr(self, 'recalculate'):
             self.recalculate()
 
-    def add_new_link_row_header2(self):
-        """Add a new row for linking two or more firing actions"""
-
-        # 1. FORCE THE INTERNAL ACCESSORY FRAME TO INNER-LOCK COLUMNS
-        column_track_vars = [
-            self.grid_col_item, self.grid_col_qty, self.grid_left_up_button,
-            self.grid_left_down_button, self.grid_col_cost, self.grid_col_weight,
-            self.grid_col_spaces, self.grid_col_dp, self.grid_col_last_column
-        ]
-        for c_idx in column_track_vars:
-            global_width = self.second_frame.columnconfigure(c_idx, "minsize")
-            self.accessory_container_frame.columnconfigure(c_idx, minsize=global_width)
-
-        # 2. TEMPLATE HEADERS GENERATION (RUNS ONLY ON ENTRY 1 AT THE TOP)
-        if self.accessory_rows_count == 0:
-            headers_matrix = [ #columnspan
-                ("Link",           1, self.grid_col_item),
-                ("Cost",           1, self.grid_col_cost),
-                ("Link Selection", 1, self.grid_col_dp),
-            ]
-            for text, span, col_idx in headers_matrix:
-                lbl = tk.Label(self.accessory_container_frame, text=text, anchor="w")
-                lbl.grid(row=1, column=col_idx, sticky="w", columnspan=span)
-
-        self.accessory_rows_count += 1
-        row_idx = self.accessory_rows_count + 1   # +1 reserves row=1 for the header
-
-        # 7. STATISTICS FIELDS SHIFTED BACK INTO THEIR CONSTANT TRACK MARKS
-        lbl_cost = tk.Label(self.accessory_container_frame, text="", width=8, anchor="w")
-        lbl_cost.grid(row=row_idx, column=self.grid_col_cost, sticky="w")
-        self.accessory_cost_label_objects.append(lbl_cost)
-
-        lbl_hc = tk.StringVar(self.accessory_container_frame)
-        self.accessory_hc_string_vars.append(lbl_hc)
-
-        # 4. Instant Screen Geometry Sync Pass
-
-        self.root.update_idletasks()
-        self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
-
-    def add_new_link_row2(self):
-        """Add the meat of a link"""
-        if len(self.links_combos) == 0:
-            self.add_new_link_row_header()
-
-        current_row = len(self.links_combos)
-        tk.Label(self.links_container_frame, text=f"Link #{current_row + 1}:").grid(row=current_row, column=self.grid_col_item, sticky="w")
-        
-        # Read-only Entry field that behaves like a clickable button
-        entry = tk.Entry(self.links_container_frame, textvariable="Link", width=50, state="readonly", cursor="hand2")
-        entry.grid(row=current_row, column=self.grid_col_qty, columnspan=15, sticky="ew", padx=5, pady=2)
-        
-        # Bind left-mouse-click to open our popup window
-        entry.bind("<Button-1>", lambda event, idx=current_row: self.open_link_selector(event, current_row))
-        self.links_combos.append(entry)
-    
     def add_new_link_row_header(self):
         """Add the header row for the Links section (runs once, on the first link row)."""
     
@@ -10139,7 +9390,6 @@ class Python_Designer():
         self.link_row_ids = []
         self.link_selections = []
         self.link_label_objects = []
-        self.link_cost_label_objects = []
         self.link_entry_vars = []
         self.links_combos = []
         self.link_delete_button_objects = []
@@ -10182,10 +9432,6 @@ class Python_Designer():
         lbl_link = tk.Label(self.links_container_frame, text=f"Link #{len(self.links_combos) + 1}:", anchor="w")
         lbl_link.grid(row=row_idx, column=self.grid_col_item, sticky="w")
         self.link_label_objects.append(lbl_link)
-    
-        #lbl_cost = tk.Label(self.links_container_frame, text="0", width=8, anchor="w")
-        #lbl_cost.grid(row=row_idx, column=self.grid_col_cost, sticky="w")
-        #self.link_cost_label_objects.append(lbl_cost)
     
         entry_var = tk.StringVar(value="Click Here to Create Link")
         self.link_entry_vars.append(entry_var)
