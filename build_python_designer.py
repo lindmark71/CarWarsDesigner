@@ -1,6 +1,6 @@
 import PyInstaller.__main__
 
-PyInstaller.__main__([
+PyInstaller.__main__.run([
     '--onefile'
-    ,'C:\\CarWars\\MadHat\\python_designer.py'
+    ,'C:\\CarWars\\CarWarsOnline\\CarWarsDesigner\\python_designer.py'
 ])
