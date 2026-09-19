@@ -134,6 +134,7 @@ class Python_Designer():
         self.next_link_id = 1
         self.link_label_objects = []
         self.link_entry_vars = []
+        self.link_cost_label_objects = []
 
         self.crew_rows_count               = 0
         self.weapon_rows_count             = 0
@@ -486,8 +487,6 @@ class Python_Designer():
         self.var_gas_gallon_qty.set(0)
         self.var_front_tire_qty.set(0)
         self.var_rear_tire_qty.set(0)
-        self.var_driver_gunner_qty.set(0)
-        self.var_passenger_qty.set(0)
         self.var_outer_armor_qty.set(0)
         self.var_inner_armor_qty.set(0)
         self.var_front_tire_steelbelting.set(0)
@@ -504,14 +503,6 @@ class Python_Designer():
         self.selected_rear_tire.set('Tires')
         self.selected_outer_armor.set('Outer Armor')
         self.selected_inner_armor.set('Inner Armor')
-
-        # 3. Reset the component armor values back to pristine baselines
-        #for i in range(1, 6):
-        #    getattr(self, f"selected_component_armor_{i}").set('Component armor')
-        #    getattr(self, f"selected_component_armor_facing_{i}").set('Facing')
-        #    getattr(self, f"var_component_armor_spaces_qty_{i}").set(0)
-        #    getattr(self, f"var_component_armor_count_qty_{i}").set(0)
-
 
         # Create the weapons framework partition
         self.crew_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
@@ -660,6 +651,7 @@ class Python_Designer():
         self.link_entry_vars = []
         self.links_combos = []
         self.link_delete_button_objects = []
+        self.link_cost_label_objects = []
         
         self.add_link_btn = tk.Button( self.links_container_frame, text="➕ Add Link Row", command=self.add_new_link_row, bg="#e1f5fe")
         self.add_link_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
@@ -891,10 +883,16 @@ class Python_Designer():
             if self.to_int(self.var_rear_tire_racing_slick.get()) == 1:
                 output_dict["rear_tire"] += "Racing Slicks" + " "
             output_dict["rear_tire"] += str(self.selected_rear_tire.get())
-        if self.to_int(self.var_driver_gunner_qty.get()) > 0:
-            output_dict["driver_gunner"] = str(self.var_driver_gunner_qty.get())
-        if self.to_int(self.var_passenger_qty.get()) > 0:
-            output_dict["passenger"] = str(self.var_passenger_qty.get())
+        driver_gunner_count = 0
+        passenger_count = 0
+        for entry in self.crew_dropdown_string_vars:
+            crew_title = entry.get()
+            if crew_title in ["Driver", "Gunner"]:
+                driver_gunner_count += 1
+            elif crew_title in ["Passnger"]:
+                passenger_count += 1
+        output_dict["driver_gunner"] = str(driver_gunner_count)
+        output_dict["passenger"] = str(passenger_count)
     
         output_dict["armor_outer_front_qty"]  = str(self.var_outer_front_armor_allocation_qty.get())
         output_dict["armor_outer_back_qty"]   = str(self.var_outer_back_armor_allocation_qty.get())
@@ -922,6 +920,35 @@ class Python_Designer():
             output_dict[f"weapon_{i}_dp"]     = self.weapon_dp_label_objects[index].cget("text")
             output_dict[f"weapon_type_{i}"]   = self.weapon_dropdown_string_vars[index].get()
     
+        # --- TARGETING COMPUTERS ---
+        #self.next_tc_id = 1
+        #self.tc_row_ids = []
+        #self.tc_rows_count = 0
+        #self.tc_dropdown_string_vars = []
+        #self.tc_dropdown_objects = []
+        #self.tc_qty_string_vars = []
+        #self.tc_qty_entry_objects = []
+        #self.tc_qty_up_button_objects = []
+        #self.tc_qty_down_button_objects = []
+        #self.tc_cost_label_objects = []
+        #self.tc_weight_label_objects = []
+        #self.tc_spaces_label_objects = []
+        #self.tc_notes_label_objects = []
+        #self.tc_crew_string_vars = []
+        #self.tc_crew_dropdown_objects = []
+        #self.tc_weapon_string_vars = []
+        #self.tc_weapon_dropdown_objects = []
+        #self.tc_delete_button_objects = []        
+        for index in range (len(self.tc_dropdown_string_vars)):
+            i = index + 1
+            output_dict[f"tc_{i}_qty"] = self.tc_qty_string_vars[index].get()
+            output_dict[f"tc_{i}_name"] = self.tc_dropdown_string_vars[index].get()
+            output_dict[f"tc_{i}_cost"] = self.tc_cost_label_objects[index].cget("text")
+            output_dict[f"tc_{i}_weight"] = self.tc_weight_label_objects[index].cget("text")
+            output_dict[f"tc_{i}_space"] = self.tc_spaces_label_objects[index].cget("text")
+            output_dict[f"tc_{i}_crew"] = self.tc_crew_string_vars[index].get()
+            output_dict[f"tc_{i}_weapon"] = self.tc_weapon_string_vars[index].get()
+
         # --- ACCESSORIES ---
         for index in range(len(self.accessory_dropdown_string_vars)):
             i = index + 1
@@ -1506,9 +1533,12 @@ class Python_Designer():
         for i in range(len(self.rb_pounds_qty_string_vars)):
             entry_dict[f"self.rb_pounds_qty_{i}"] = self.rb_pounds_qty_string_vars[i].get()
             entry_dict[f"self.rb_facing_{i}"] = self.rb_facing_string_vars[i].get()            
-        
-        entry_dict["self.var_alternate_grenade_equivalent"] = self.var_alternate_grenade_equivalent.get() #CRL
-        
+
+        if self.var_alternate_grenade_equivalent is not None:
+            entry_dict["self.var_alternate_grenade_equivalent"] = self.var_alternate_grenade_equivalent.get() #CRL
+        else:
+            entry_dict["self.var_alternate_grenade_equivalent"] = "0"
+            
         for i in range(len(self.pe_dropdown_string_vars)):
             entry_dict[f"self.pe_selection_{i}"] = self.pe_dropdown_string_vars[i].get()
             entry_dict[f"self.pe_qty_{i}"] = self.pe_qty_string_vars[i].get()
@@ -2515,14 +2545,6 @@ class Python_Designer():
         self.rear_tire_adjustment()
         self.recalculate()
 
-    #def on_changed_driver_gunner_qty(self, *args):
-    #    driver_gunner_qty = self.to_int(self.var_driver_gunner_qty.get())
-    #    passenger_qty = self.to_int(self.var_passenger_qty.get())
-    #    self.var_driver_gunner_qty.set(value=driver_gunner_qty)
-    #    self.label_driver_gunner_weight.configure(text=str(150*(driver_gunner_qty + passenger_qty)))
-    #    self.label_driver_gunner_space.configure(text=str(driver_gunner_qty * 2 + passenger_qty))
-    #    self.recalculate()
-
     def on_changed_outer_armor_qty(self, *args):
         body_armor_cost:    float = float(self.label_hidden_body_armor_cost.cget("text")) #this could be a decimal
         body_armor_weight:  float = float(self.label_hidden_body_armor_weight.cget("text")) #this could be a decimal
@@ -2823,7 +2845,7 @@ class Python_Designer():
 
         active_links_cost = 0
         for i in range(self.link_rows_count):
-            link_cost = 50 if len(self.link_selections[i]) >= 2 else 0
+            link_cost = self.compute_link_cost(self.link_selections[i])
             active_links_cost += link_cost
 
         active_bt_cost = 50 * len(self.bt_selections) 
@@ -2899,10 +2921,6 @@ class Python_Designer():
         cost_list.append(total_accessories_cost)
         cost_list.append(active_links_cost)
         cost_list.append(active_bt_cost)
-
-        # Sum up accessory totals for the vehicle instantly
-        total_accessory_cost   = sum(a["cost"] for a in accessories_data)
-        cost_list.append(total_accessory_cost)
 
         # Sum up component armor totals instantly
         total_component_armor_cost   = sum(c["cost"] for c in component_armor_data)
@@ -3718,8 +3736,6 @@ class Python_Designer():
         entry_dict: dict = {"Accessory Name": "Improved FE (IFE)",                            "Cost": "500",   "Space": "1",	"Weight": "200",   "DP": "",   "Notes": "Will put out fire on 1 - 4 (1 - 3 with gas) on 1D6", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
         entry_dict: dict = {"Accessory Name": "Ramplate",                                     "Cost": "0",     "Space": "",	    "Weight": "0",     "DP": "",   "Notes": "", "Turret Size":  -2, "Cycle Only": 0}
-        self.accessories_list.append(entry_dict)
-        entry_dict: dict = {"Accessory Name": "Smart Link",                                   "Cost": "500",   "Space": "",	    "Weight": "",      "DP": "",   "Notes": "Allows weapons in one location to be aimed and fired with others (same weapon)", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
         entry_dict: dict = {"Accessory Name": "Spoiler/Airdam, Plastic",                      "Cost": "0",   "Space": "",	    "Weight": "0",   "DP": "",   "Notes": "Must have two for full effect!", "Turret Size":  -2, "Cycle Only": 0}
         self.accessories_list.append(entry_dict)
@@ -7522,25 +7538,6 @@ class Python_Designer():
     
         return actions
 
-    def update_link_dropdowns(self, *args):
-        """Refreshes options in all link dropdown menus based on current design status."""
-        available_actions = self.scan_available_firing_actions()
-    
-        for i in range(self.link_rows_count):
-            if self.link_dropdown_sources[i] and self.link_dropdown_targets[i]:
-                # Clear old menu choices
-                self.link_dropdown_sources[i]['menu'].delete(0, 'end')
-                self.link_dropdown_targets[i]['menu'].delete(0, 'end')
-            
-                # Repopulate options
-                for action in available_actions:
-                    self.link_dropdown_sources[i]['menu'].add_command(
-                        label=action, command=tk._setit(self.selected_link_source[i], action)
-                    )
-                    self.link_dropdown_targets[i]['menu'].add_command(
-                        label=action, command=tk._setit(self.selected_link_target[i], action)
-                    )
-
     def open_link_selector(self, event, row_index):
         """Opens a pop-up checklist window to select multiple actions for a link row."""
         available_actions = self.scan_available_firing_actions()
@@ -8303,9 +8300,8 @@ class Python_Designer():
     def refresh_all_tc_dropdowns(self):
         """Call this after ANY crew/weapon/link row is added, deleted, or
         (for crew) has its Title changed -- otherwise a TC row's Assigned
-        Crew / Assigned Weapon choices go stale. Hook this in alongside
-        wherever update_link_dropdowns() already gets called for the same
-        reason, plus inside on_select_crew_unified()."""
+        Crew / Assigned Weapon choices go stale. Hook this in
+        inside on_select_crew_unified()."""
         for row_number in range(len(self.tc_dropdown_string_vars)):
             self.refresh_tc_row_crew_options(row_number)
             self.refresh_tc_row_weapon_options(row_number)
@@ -8468,9 +8464,6 @@ class Python_Designer():
         self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
         self.recalculate()
  
-    # =========================================================================
-    # HANDLERS
-    # =========================================================================
     def on_button_targeting_computer_qty_unified(self, row_number: int, direction: str):
         """Handles up/down arrow clicks for a targeting computer row's qty."""
         var = self.tc_qty_string_vars[row_number]
@@ -8508,9 +8501,6 @@ class Python_Designer():
  
         self.recalculate()
  
-    # =========================================================================
-    # RECALCULATE HOOK
-    # =========================================================================
     def _tc_totals_for_recalculate(self):
         """Returns (total_cost, total_weight, total_space) across all TC
         rows -- call from recalculate() the same way accessories_data is
@@ -8710,17 +8700,18 @@ class Python_Designer():
 
         # 1. Safely retrieve the selected sub-weapon name string
         # We look it up from the array we built earlier
-        if row_number <= len(self.accessory_dropdown_string_vars):
-            selected_accessory = self.accessory_dropdown_string_vars[row_number - 1].get()
+        index_value : int = row_number - 2
+        if index_value <= len(self.accessory_dropdown_string_vars):
+            selected_accessory = self.accessory_dropdown_string_vars[index_value].get()
         else:
             return
 
         # Get the category type to obtain the sub weapon data dictionary, from there once we know the selected weapon, get the weapon stats
-        try: category_name = self.accessory_dropdown_string_vars[row_number -1].get() 
+        try: category_name = self.accessory_dropdown_string_vars[index_value].get() 
         except (IndexError, ValueError, tk.TclError): return #This is a systemic failure
 
         # 2. Grab current quantities from the tracking string variables
-        try: qty = self.to_int(self.accessory_qty_string_vars[row_number - 1].get())
+        try: qty = self.to_int(self.accessory_qty_string_vars[index_value].get())
         except (IndexError, ValueError, tk.TclError): qty = 0
     
         # 3. FETCH WEAPON BASE STATS FROM YOUR DATABASE
@@ -8741,24 +8732,24 @@ class Python_Designer():
         notes_str = accessory_stats["Notes"]
     
         # 5. REWRITE THE ROW LABELS ON SCREEN (Breaking the $0 loop!)
-        if row_number <= len(self.accessory_cost_label_objects):
-            cost_lbl = self.accessory_cost_label_objects[row_number - 1]
+        if index_value <= len(self.accessory_cost_label_objects):
+            cost_lbl = self.accessory_cost_label_objects[index_value]
             cost_lbl.config(text=f"{total_cost}")
 
-        if row_number <= len(self.accessory_weight_label_objects):
-            weight_lbl = self.accessory_weight_label_objects[row_number - 1]
+        if index_value <= len(self.accessory_weight_label_objects):
+            weight_lbl = self.accessory_weight_label_objects[index_value]
             weight_lbl.config(text=f"{total_weight}")
 
-        if row_number <= len(self.accessory_spaces_label_objects):
-            space_lbl = self.accessory_spaces_label_objects[row_number - 1]
+        if index_value <= len(self.accessory_spaces_label_objects):
+            space_lbl = self.accessory_spaces_label_objects[index_value]
             space_lbl.config(text=f"{total_space}")
 
-        if row_number <= len(self.accessory_notes_label_objects):
-            notes_lbl = self.accessory_notes_label_objects[row_number - 1]
+        if index_value <= len(self.accessory_notes_label_objects):
+            notes_lbl = self.accessory_notes_label_objects[index_value]
             notes_lbl.config(text=f"{notes_str}")
 
-        #if row_number <= len(self.accessory_hc_string_vars):
-        #    hc_lbl = self.accessory_hc_string_vars[row_number - 1]
+        #if index_value <= len(self.accessory_hc_string_vars):
+        #    hc_lbl = self.accessory_hc_string_vars[index_value]
         #    hc_lbl.config(text=f"{total_space}")
 
         # 6. TRIGGER THE GLOBAL RECALCULATE ENGINE FOR VEHICLE TOTALS
@@ -8773,7 +8764,7 @@ class Python_Designer():
     
         # 1. FORCE THE INTERNAL LINK FRAME TO INNER-LOCK COLUMNS
         column_track_vars = [
-            self.grid_col_item, self.grid_col_cost, self.grid_col_qty
+            self.grid_col_item, self.grid_col_cost, self.grid_col_qty, self.grid_col_max_weight
         ]
         for c_idx in column_track_vars:
             global_width = self.second_frame.columnconfigure(c_idx, "minsize")
@@ -8783,6 +8774,7 @@ class Python_Designer():
         headers_matrix = [
             ("Link",           1, self.grid_col_item),
             ("Link Selection", 1, self.grid_col_qty),
+            ("Cost",           1, self.grid_col_max_weight),
         ]
         for text, span, col_idx in headers_matrix:
             lbl = tk.Label(self.links_container_frame, text=text, anchor="w")
@@ -8813,11 +8805,9 @@ class Python_Designer():
         self.link_entry_vars = []
         self.links_combos = []
         self.link_delete_button_objects = []
+        self.link_cost_label_objects = []
     
-        self.add_link_btn = tk.Button(
-            self.links_container_frame, text="➕ Add Link Row",
-            command=self.add_new_link_row, bg="#e1f5fe"
-        )
+        self.add_link_btn = tk.Button(self.links_container_frame, text="➕ Add Link Row", command=self.add_new_link_row, bg="#e1f5fe")
         self.add_link_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
     
         id_to_label = {a["id"]: a["label"] for a in self.scan_available_firing_actions(include_links=True)}
@@ -8831,6 +8821,7 @@ class Python_Designer():
                 self.link_entry_vars[idx].set(", ".join(display_labels))
             else:
                 self.link_entry_vars[idx].set("Click Here to Create Link")
+            self.refresh_link_cost_display(idx)
     
         self.root.update_idletasks()
         self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
@@ -8847,6 +8838,7 @@ class Python_Designer():
         # Stable ID + per-row selections list — this is what open_link_selector needs to not crash
         self.link_row_ids.append(self.next_link_id)
         self.next_link_id += 1
+        self.link_rows_count += 1
         self.link_selections.append([])
     
         lbl_link = tk.Label(self.links_container_frame, text=f"Link #{len(self.links_combos) + 1}:", anchor="w")
@@ -8855,6 +8847,10 @@ class Python_Designer():
     
         entry_var = tk.StringVar(value="Click Here to Create Link")
         self.link_entry_vars.append(entry_var)
+
+        lbl_cost = tk.Label(self.links_container_frame, text="0", anchor="w", width=20)
+        lbl_cost.grid(row=row_idx, column=self.grid_col_max_weight, sticky="w")
+        self.link_cost_label_objects.append(lbl_cost)
     
         link_span = self.grid_col_test_track - self.grid_col_qty + 1
         entry = tk.Entry(self.links_container_frame, textvariable=entry_var, width=100, state="readonly", cursor="hand2")
@@ -8873,8 +8869,44 @@ class Python_Designer():
         )
         self.link_delete_button_objects.append(del_btn)
 
+        self.refresh_link_cost_display(row_number_for_this_row)
+
         self.root.update_idletasks()
         self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
+
+    def refresh_link_cost_display(self, row_number: int):
+        """Updates one link row's Cost label to show the actual dollar
+        amount AND whether it qualifies as a Smart Link -- bold green
+        text for a genuine smart link, plain gray for an ordinary one or
+        an empty/not-yet-configured link."""
+        selections = self.link_selections[row_number]
+        label = self.link_cost_label_objects[row_number]
+ 
+        if len(selections) < 2:
+            label.configure(text="$0", fg="#666666", font=("TkDefaultFont", 9))
+            return
+ 
+        cost = self.compute_link_cost(selections)
+        if self.link_qualifies_for_smart_link(selections):
+            label.configure(text=f"${cost} \u2014 SMART LINK", fg="#0a7d2c", font=("TkDefaultFont", 9, "bold"))
+        else:
+            label.configure(text=f"${cost} \u2014 Regular Link", fg="#666666", font=("TkDefaultFont", 9))
+
+    def update_link_dropdowns(self, *args):
+        """Refreshes every link's displayed Cost/Smart-Link status.
+        Called from the end of recalculate(), so this fires whenever
+        anything relevant changes (weapons added/removed, facings
+        changed, link selections edited, etc.).
+ 
+        NOTE: kept the original function name (despite it no longer
+        being about dropdowns at all) to avoid needing to also change
+        recalculate()'s call site -- this function's old body was dead
+        code from an earlier Links UI design and referenced widgets
+        (self.link_dropdown_sources, self.selected_link_source, etc.)
+        that don't exist anywhere in the current codebase.
+        """
+        for i in range(self.link_rows_count):
+            self.refresh_link_cost_display(i)
 
     def add_new_bt_row_header(self):
         """Add the header row for the Bumper Trigger section (runs once, on the first BT row)."""
@@ -9753,6 +9785,72 @@ class Python_Designer():
         self.age_value = self.to_int(self.var_alternate_grenade_equivalent.get(), default=0)
         for idx in range(len(self.pe_qty_string_vars)):
             self.calculate_pe_unified(idx)
+
+    def _resolve_weapon_name_and_facing(self, action_id: str):
+        """Given a weapon action id ("weapon-{row_id}-{unit}"), returns
+        (base_weapon_name, facing) for whichever weapon row currently
+        has that row_id, or (None, None) if it can't be resolved (e.g.
+        the weapon was deleted after the link was created). Mirrors the
+        exact row_id -> position lookup scan_available_firing_actions()
+        already uses, just returning the raw values instead of a
+        formatted label string."""
+        parts = action_id.split("-")
+        if len(parts) != 3 or parts[0] != "weapon":
+            return None, None
+        try:
+            row_id = int(parts[1])
+        except ValueError:
+            return None, None
+ 
+        if row_id not in self.weapon_row_ids:
+            return None, None
+        idx = self.weapon_row_ids.index(row_id)
+ 
+        if idx >= len(self.sub_weapon_dropdown_string_vars):
+            return None, None
+        full_name = self.sub_weapon_dropdown_string_vars[idx].get()
+ 
+        # "ammo type doesn't matter" -- strip the " - <variant>" suffix
+        # (e.g. "Vulcan MG - Reg" / "Vulcan MG - HD" both become "Vulcan MG")
+        base_name = full_name.split(" - ")[0].strip()
+ 
+        facing = "Facing"
+        if idx < len(self.weapon_mount_dropdown_string_vars):
+            try:
+                facing = self.weapon_mount_dropdown_string_vars[idx].get()
+            except (AttributeError, tk.TclError):
+                facing = "Facing"
+ 
+        return base_name, facing
+ 
+    def link_qualifies_for_smart_link(self, member_action_ids: list) -> bool:
+        """True if every member of this link is the identical weapon
+        (ammo type ignored) and their facings can all actually converge
+        on one target -- see the ASSUMPTIONS note above for exactly what
+        "can converge" means here."""
+        resolved = [self._resolve_weapon_name_and_facing(aid) for aid in member_action_ids]
+        if any(name is None for name, facing in resolved):
+            return False  # a member couldn't be resolved -- be conservative
+ 
+        names = {name for name, facing in resolved}
+        if len(names) != 1:
+            return False  # not all identical weapons
+ 
+        facings = {facing for name, facing in resolved}
+        if len(facings) <= 1:
+            return False  # all same facing -- ordinary link, no smart targeting needed
+ 
+        fixed_facings = facings - {"Top"}
+        return len(fixed_facings) <= 1
+ 
+    def compute_link_cost(self, member_action_ids: list) -> int:
+        """Default cost for a link: $50 normally, $500 if it qualifies
+        as a genuine Smart Link (identical weapons, facings that can
+        actually converge on one target)."""
+        if len(member_action_ids) < 2:
+            return 0
+        return 500 if self.link_qualifies_for_smart_link(member_action_ids) else 50
+
 
 if __name__ == '__main__':
     print("Launching Python_Designer")
