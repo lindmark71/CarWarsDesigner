@@ -38,7 +38,7 @@ class Python_Designer():
     """Python_Designer class"""
     def __init__(self):
         """ Initial class, establish TKinter usage, labels, dropdowns and buttons"""
-        self.datestamp: str = "08_15_2026"
+        self.datestamp: str = "11_01_2026"
 
         self.weapon_dropdown_objects = []
         self.weapon_qty_entry_objects = []
@@ -364,7 +364,7 @@ class Python_Designer():
         self.rb_thrust_label_objects = []
         self.rb_delete_button_objects = []
         
-        self.var_alternate_grenade_equivalent = None
+        self.var_alternate_grenade_equivalent = tk.StringVar(value="0")
         self.age_value = 0
         self.next_pe_id = 1
         self.pe_row_ids = []
@@ -471,7 +471,7 @@ class Python_Designer():
     def menu_file_new(self, *args):
         # 1. Reset all your core vehicle configuration values safely
         self.selected_body.set('Body')
-        self.selected_modifications.set('No Mods')
+        self.selected_modifications.set('Modifications')
         self.selected_chassis.set('Chassis')
         self.selected_suspension.set('Suspension')
         self.selected_engine.set('Engine')
@@ -504,6 +504,19 @@ class Python_Designer():
         self.selected_outer_armor.set('Outer Armor')
         self.selected_inner_armor.set('Inner Armor')
 
+        self.var_outer_front_armor_allocation_qty.set("0")
+        self.var_outer_back_armor_allocation_qty.set("0")
+        self.var_outer_left_armor_allocation_qty.set("0")
+        self.var_outer_right_armor_allocation_qty.set("0")
+        self.var_outer_top_armor_allocation_qty.set("0")
+        self.var_outer_underbody_armor_allocation_qty.set("0")
+        self.var_inner_front_armor_allocation_qty.set("0")
+        self.var_inner_back_armor_allocation_qty.set("0")
+        self.var_inner_left_armor_allocation_qty.set("0")
+        self.var_inner_right_armor_allocation_qty.set("0")
+        self.var_inner_top_armor_allocation_qty.set("0")
+        self.var_inner_underbody_armor_allocation_qty.set("0")
+
         # Create the weapons framework partition
         self.crew_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
         self.crew_container_frame.grid(row=self.crew_row, column=0, columnspan=30, sticky="nsew")
@@ -531,7 +544,13 @@ class Python_Designer():
      
         self.crew_weight_label_objects = []
         self.crew_spaces_label_objects = []
-        # self.crew_delete_button_objects already exists
+
+        # Create the crew framework partition
+        self.crew_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
+        self.crew_container_frame.grid(row=self.crew_row, column=0, columnspan=30, sticky="nsew")
+
+        self.add_crew_btn = tk.Button(self.crew_container_frame, text="➕ Add Crew Row", command=self.add_new_crew_row, bg="#e1f5fe")
+        self.add_crew_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
 
         # =====================================================================
         # THE NEW ATOMIC RESET WEAPONS STEP
@@ -602,7 +621,6 @@ class Python_Designer():
                 # Create the targeting computer framework partition
         self.tc_container_frame = tk.Frame(self.second_frame, bg=self.second_frame.cget('bg'))
         self.tc_container_frame.grid(row=self.targeting_computer_row, column=0, columnspan=30, sticky="nsew")
-
 
         self.add_tc_btn = tk.Button(self.tc_container_frame, text="➕ Add Targeting Computer Row",  command=self.add_new_tc_row, bg="#e1f5fe")
         self.add_tc_btn.grid(row=0, column=self.grid_col_item, sticky="w", padx=5, pady=5)        
@@ -675,7 +693,6 @@ class Python_Designer():
         
         self.add_bt_btn = tk.Button(self.bt_container_frame, text="➕ Add Bumper Trigger", command=self.add_new_bt_row, bg="#e1f5fe")
         self.add_bt_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
-        
         
         # =====================================================================
         # COMPONENT ARMOR — full reset
@@ -776,6 +793,8 @@ class Python_Designer():
         self.add_pe_btn = tk.Button(self.pe_container_frame, text="➕ Add Personal Equipment Row", command=self.add_new_pe_row, bg="#e1f5fe")
         self.add_pe_btn.grid(row=0, column=self.grid_col_item, columnspan=1, sticky="w", padx=5, pady=5)
 
+        self.hide_electric_engine_options()
+        self.hide_gas_engine_options()
         # 6. Synchronize screen layout bounds tracking pass
         self.root.update_idletasks()
         self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all"))
@@ -1010,7 +1029,7 @@ class Python_Designer():
         display_info: str = "How Does This Work?\n"
         display_info += "Welcome to the Python Car Wars Designer tool.\n"
         display_info += "\n"
-        display_info += "Using dropdown list boxes, select vehicle body, modifications, chassis and suspension.\n"
+        display_info += "Select buttons to add weapons, targeting computersUsing dropdown list boxes, select vehicle body, modifications, chassis and suspension.\n"
         display_info += "\n"
         display_info += "Select engine and modifications, tires, crew, armor selections and allocations,\n"
         display_info += "\n"
@@ -1054,11 +1073,11 @@ class Python_Designer():
         display_info += "\n"
         display_info += "8) Off-Road tires should increase the HC by 1 if on all tires, when off-road.  That has been included now.\n"
         display_info += "\n"
-        display_info += "8) A disconnect between weapon rows 3 and 4 has been resolved\n"
-        display_info += "\n"
         display_info += "9) The File->Print menu option now generated a PDF file for the current status of a design.\n"
         display_info += "\n"
         display_info += "10) Vans over a certain weight lose one point of HC automatically.  Calculate for this.\n"
+        display_info += "\n"
+        display_info += "11) A new format allows for any number of crew, weapons, accessories, computers, links, bumper triggers, component armor, and personal equipment.\n"
         display_info += "\n"
         messagebox.showinfo("What's New", display_info)
 
@@ -1384,6 +1403,7 @@ class Python_Designer():
         file_output_list = []
         entry_dict: dict = {}
         entry_dict["total_cost"]                                    = self.label_total_cost.cget("text") #This value needs to be saved to identify uploaded files to the webserver
+        entry_dict["total_weight"]                                  = self.label_total_weight.cget("text") #This one, too.
         entry_dict["top_speed"]                                     = self.label_top_speed.cget("text")
         entry_dict["accel"]                                         = self.label_accel.cget("text")
         entry_dict["max_accel"]                                     = self.label_max_accel.cget("text")
@@ -1597,8 +1617,13 @@ class Python_Designer():
         tk.Label(canvas_type, text="Top Speed",                         anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_suspension,                sticky="w")
         tk.Label(canvas_type, text="Acceleration",                      anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine,                    sticky="w")
         tk.Label(canvas_type, text="HC",                                anchor="w").grid(column=self.grid_col_test_track,           row=self.grid_row_engine_mods_header,        sticky="w")
+        ttk.Separator(canvas_type, orient='horizontal').grid(column=self.grid_col_test_track, row=self.grid_row_form_total, sticky="new", columnspan=2)
+        ttk.Separator(canvas_type, orient='horizontal').grid(column=self.grid_col_test_track, row=self.grid_row_chassis, sticky="new", columnspan=2)
+        ttk.Separator(canvas_type, orient='horizontal').grid(column=self.grid_col_test_track, row=self.grid_row_gas_engine_mods, sticky="new", columnspan=2)
+        ttk.Separator(canvas_type, orient='vertical').grid(column=self.grid_col_test_track, row=self.grid_row_form_total, sticky="nsw", rowspan=8)
+        ttk.Separator(canvas_type, orient='vertical').grid(column=self.grid_col_test_track_numbers, row=self.grid_row_form_total, sticky="nse", rowspan=8)
         #tk.Label(canvas_type, text="Crew",                              anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
-        #tk.Label(canvas_type, text="Crew: Driver/Gunners : Passengers", anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_crew_header,               sticky="w")
+        #tk.Label(canvas_type, text="Crew: Driver/Gunners : Passengers", anchor="w").grid(column=self.grid_col_item,                 row=selfwgrid_row_crew_header,               sticky="w")
         #tk.Label(canvas_type, text="Accessories",                       anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_accessories_header,        sticky="w")
         #tk.Label(canvas_type, text="Notes",                             anchor="w").grid(column=self.grid_col_max_weight,           row=self.grid_row_accessories_header,        sticky="w")
         #tk.Label(canvas_type, text="Component Armor",                   anchor="w").grid(column=self.grid_col_item,                 row=self.grid_row_component_header,          sticky="w")
@@ -1986,6 +2011,8 @@ class Python_Designer():
         self.label_valid_weight.grid(column=self.grid_col_cost, row=self.grid_row_red_alert, sticky="w")
         self.label_valid_accessories = tk.Label(canvas_type, text="", anchor="w")
         self.label_valid_accessories.grid(column=self.grid_col_weight, row=self.grid_row_red_alert, sticky="w")
+        self.label_valid_ammo_qty = tk.Label(canvas_type, text="", anchor="w")
+        self.label_valid_ammo_qty.grid(column=self.grid_col_spaces, row=self.grid_row_red_alert, sticky="w")
 
     def on_changed_entry_outer_armor_allocation_qty(self, *args):
         try:
@@ -2227,7 +2254,6 @@ class Python_Designer():
         self.selected_modifications.set("Modifications") # Set default option
         # Options for the dropdown
         options = ["No Mods"
-                   , "No Mods"
                    , "CA Frame"
                    , "Streamlined"
                    , "CA/Streamlined"]
@@ -2411,8 +2437,8 @@ class Python_Designer():
         for entry in self.chassis_list:
             chassis_type: str = entry.get("Chassis")
             if selected_value == chassis_type: # get the values in the body lines for final adjustment
-                body_cost: int = self.label_body_cost.cget("text")
-                body_max_weight: int = self.label_body_max_weight.cget("text")
+                body_cost: int = int(self.label_body_cost.cget("text"))
+                body_max_weight: int = int(self.label_body_max_weight.cget("text"))
                 chassis_cost: int = math.ceil(entry.get("Cost") * body_cost)
                 chassis_max_weight = int(body_max_weight * float(entry.get("Max Weight")))
                 self.label_chassis_cost.configure(text=str(chassis_cost))
@@ -2806,6 +2832,65 @@ class Python_Designer():
                 "space":  float(crew_space_str),
             })
 
+        
+        # ==========================================
+        # ADD THIS INSIDE THE WEAPONS LOOP IN recalculate()
+        # ==========================================
+        # (Presuming your loop uses 'index' or 'loop_index' to parse tracking rows)
+        
+        for index in range(len(self.sub_weapon_dropdown_string_vars)):
+            # 1. Safely parse user ammo entries and extra magazine selectors
+            try:
+                user_ammo_qty = int(self.weapon_ammo_qty_string_vars[index].get())
+            except (ValueError, IndexError, tk.TclError):
+                user_ammo_qty = 0
+        
+            try:
+                user_extra_mags = int(self.weapon_extra_mag_qty_string_vars[index].get())
+            except (ValueError, IndexError, tk.TclError):
+                user_extra_mags = 0
+
+            try:
+                weapon_count = int(self.weapon_qty_string_vars[index].get())
+                if weapon_count < 1:  # Safeguard against zero or broken counts
+                    weapon_count = 1
+            except (ValueError, IndexError, tk.TclError):
+                weapon_count = 1                
+        
+            # 2. Extract weapon definition dictionary using your existing alternative lookup function
+            # (Matches your dynamic load_record dictionary mechanics)
+            selected_weapon_name = self.sub_weapon_dropdown_string_vars[index].get()
+            
+            # Presuming you fetch sub lists based on parent category
+            category_name = self.weapon_dropdown_string_vars[index].get()
+            weapon_sub_list = self.get_weapon_sub_list(category=category_name)
+            
+            weapon_stats = next((entry for entry in weapon_sub_list if entry.get("Drop-Down Name") == selected_weapon_name), None)
+            
+            if weapon_stats and 'Shots' in weapon_stats:
+                base_shots = self.to_int(weapon_stats['Shots'], default=0)
+                
+                # Calculate maximum legal capacity matching your rule set
+                max_allowed_ammo = base_shots * (weapon_count + user_extra_mags)
+                
+                # 3. INTERCEPT AND EVALUATE RED FLAG
+                if user_ammo_qty > max_allowed_ammo:
+                    # Option A: Turn the weapon cost or damage text red to immediately warn the user on that specific row
+                    #if index < len(self.weapon_cost_label_objects):
+                    #    self.weapon_cost_label_objects[index].configure(fg="red", text="OVER AMMO!")
+                        
+                    # Option B: Print structural alert text globally to your primary validity dashboard labels
+                    self.label_valid_ammo_qty.configure(
+                        text=f"🔴 Row {index + 1}: Selected Ammo ({user_ammo_qty}) exceeds allowed max ({max_allowed_ammo})!", 
+                        fg="red"
+                    )
+                else:
+                    self.label_valid_ammo_qty.configure(text="")
+                    # Revert UI state if formatting clears
+                    if index < len(self.weapon_cost_label_objects):
+                        # Put your normal base cost mapping string variable updates here
+                        pass 
+
         # This single loop processes all 10 weapon rows automatically
         weapons_data = []
         
@@ -2825,7 +2910,7 @@ class Python_Designer():
             } #mag cost and weight is already include in the ammo cost and weight, don't include it here as well
             weapons_data.append(wpn_stats)
 
-    # --- Targeting Computer totals (added) ---
+        # --- Targeting Computer totals (added) ---
         tc_total_cost, tc_total_weight, tc_total_space = self._tc_totals_for_recalculate()
 
         accessories_data = []
@@ -3059,15 +3144,15 @@ class Python_Designer():
         self.update_all_rocket_booster_thrust()
 
         facings_text: str = self.facing_compilations()
-        self.label_valid_spaces.configure(text=facings_text)
+        self.label_valid_spaces.configure(text=facings_text, fg="red")
         weight_text: str = ""
         space_text: str = ""
         if total_weight > max_weight:
-            weight_text = "DESIGN OVER WEIGHT"
-        self.label_valid_weight.configure(text=weight_text)
+            weight_text = "Design OverWeight"
+        self.label_valid_weight.configure(text=weight_text, fg="red")
         if total_spaces < 0.0:
-            space_text = "DESIGN HAS TOO MANY SPACES USED"
-            self.label_valid_spaces.configure(text=space_text)
+            space_text = "Design Has Too Many Spaces Used"
+            self.label_valid_spaces.configure(text=space_text, fg="red")
         self.update_link_dropdowns()
 
     def float_to_str(self, input_value: float) -> str:
@@ -9590,7 +9675,7 @@ class Python_Designer():
             global_width = self.second_frame.columnconfigure(c_idx, "minsize")
             self.pe_container_frame.columnconfigure(c_idx, minsize=global_width)
     
-        self.var_alternate_grenade_equivalent = tk.StringVar(value="0")
+        #self.var_alternate_grenade_equivalent = tk.StringVar(value="0")
         self.check_alternate_grenade_equivalent = tk.Checkbutton(
             self.pe_container_frame, text="Alternate Grenade Equivalent",
             variable=self.var_alternate_grenade_equivalent,
@@ -9850,7 +9935,6 @@ class Python_Designer():
         if len(member_action_ids) < 2:
             return 0
         return 500 if self.link_qualifies_for_smart_link(member_action_ids) else 50
-
 
 if __name__ == '__main__':
     print("Launching Python_Designer")
